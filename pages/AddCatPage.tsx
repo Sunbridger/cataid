@@ -11,7 +11,7 @@ const AddCatPage: React.FC = () => {
   const { success, error, info } = useToast();
   const [loading, setLoading] = useState(false);
   const [generatingBio, setGeneratingBio] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
 
   const [formData, setFormData] = useState({
     name: '',
@@ -20,7 +20,8 @@ const AddCatPage: React.FC = () => {
     gender: 'Male' as 'Male' | 'Female',
     tags: [] as string[],
     description: '',
-    imageFile: null as File | null
+    imageFiles: [] as File[],
+    imagePreviews: [] as string[]
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -38,11 +39,34 @@ const AddCatPage: React.FC = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setFormData(prev => ({ ...prev, imageFile: file }));
-      setImagePreview(URL.createObjectURL(file));
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files);
+      const totalFiles = [...formData.imageFiles, ...newFiles].slice(0, 9);
+
+      const newPreviews = totalFiles.map(file => URL.createObjectURL(file));
+
+      setFormData(prev => ({
+        ...prev,
+        imageFiles: totalFiles,
+        imagePreviews: newPreviews
+      }));
     }
+  };
+
+  const removeImage = (index: number) => {
+    const newFiles = [...formData.imageFiles];
+    newFiles.splice(index, 1);
+
+    const newPreviews = [...formData.imagePreviews];
+    // Revoke the old URL to avoid memory leaks
+    URL.revokeObjectURL(newPreviews[index]);
+    newPreviews.splice(index, 1);
+
+    setFormData(prev => ({
+      ...prev,
+      imageFiles: newFiles,
+      imagePreviews: newPreviews
+    }));
   };
 
   const handleGenerateBio = async () => {
@@ -78,7 +102,7 @@ const AddCatPage: React.FC = () => {
         breed: formData.breed,
         description: formData.description,
         tags: formData.tags,
-        imageFile: formData.imageFile // 传入图片文件，API 会自动上传
+        imageFiles: formData.imageFiles // 传入图片文件数组，API 会自动上传
       });
       success('发布成功！');
       navigate('/');
@@ -108,38 +132,41 @@ const AddCatPage: React.FC = () => {
 
           {/* Image Upload */}
           <div className="space-y-3">
-            <label className="block text-sm font-semibold text-slate-700">猫咪照片 <span className="text-brand-500">*</span></label>
-            <div className="flex justify-center">
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className={`w-40 h-40 rounded-3xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden relative cursor-pointer hover:bg-white hover:border-brand-300 transition-all shadow-sm group ${imagePreview ? 'border-solid border-transparent' : ''}`}
-              >
-                {imagePreview ? (
-                  <>
-                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-[2px]">
-                      <Upload className="text-white mb-1" size={24} />
-                      <span className="text-white text-xs font-bold tracking-wide">更换图片</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="bg-white p-3 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform">
-                      <Upload className="text-brand-400 group-hover:text-brand-500 transition-colors" size={24} />
-                    </div>
-                    <span className="text-xs font-semibold text-slate-500 group-hover:text-brand-600 transition-colors">点击上传照片</span>
-                  </>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </div>
+            <label className="block text-sm font-semibold text-slate-700">猫咪照片 (最多9张) <span className="text-brand-500">*</span></label>
+
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
+              {formData.imagePreviews.map((preview, index) => (
+                <div key={index} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group">
+                  <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                  </button>
+                </div>
+              ))}
+
+              {formData.imageFiles.length < 9 && (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="aspect-square rounded-xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:bg-white hover:border-brand-300 transition-all text-slate-400 hover:text-brand-500"
+                >
+                  <Upload size={20} className="mb-1" />
+                  <span className="text-[10px] font-bold">上传照片</span>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </div>
+              )}
             </div>
-            <p className="text-xs text-center text-slate-400">支持 JPG/PNG，建议使用正方形图片</p>
+            <p className="text-xs text-slate-400">支持 JPG/PNG，第一张将作为封面图</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">

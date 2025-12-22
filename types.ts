@@ -22,7 +22,7 @@ export interface NewCatInput {
   description: string;
   tags: string[];
   status?: CatStatus;
-  imageFile?: File | null;
+  imageFiles?: File[] | null;
 }
 
 export interface AdoptionApplication {

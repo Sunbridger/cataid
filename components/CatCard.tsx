@@ -18,7 +18,7 @@ const CatCard: React.FC<CatCardProps> = ({ cat }) => {
     >
       <div className="relative aspect-square md:aspect-[4/3] overflow-hidden bg-slate-100">
         <img
-          src={cat.image_url}
+          src={cat.image_url.split(',')[0]}
           alt={cat.name}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="lazy"

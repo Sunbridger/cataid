@@ -83,15 +83,20 @@ export const catApi = {
   /**
    * 创建猫咪（支持图片上传）
    */
-  create: async (cat: Omit<NewCatInput, 'imageFile'> & { image_url?: string; imageFile?: File | null }): Promise<Cat | null> => {
+  create: async (cat: Omit<NewCatInput, 'imageFiles'> & { image_url?: string; imageFiles?: File[] | null }): Promise<Cat | null> => {
     try {
-      let imageUrl = cat.image_url;
+      let imageUrl = cat.image_url || '';
 
       // 如果有图片文件，先上传
-      if (cat.imageFile) {
-        const uploadedUrl = await catApi.uploadImage(cat.imageFile);
-        if (uploadedUrl) {
-          imageUrl = uploadedUrl;
+      if (cat.imageFiles && cat.imageFiles.length > 0) {
+        const uploadPromises = cat.imageFiles.map(file => catApi.uploadImage(file));
+        const uploadedUrls = await Promise.all(uploadPromises);
+
+        // 过滤掉上传失败的 null 值
+        const validUrls = uploadedUrls.filter((url): url is string => url !== null);
+
+        if (validUrls.length > 0) {
+          imageUrl = validUrls.join(',');
         }
       }
 

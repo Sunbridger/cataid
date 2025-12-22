@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { catService, adoptionService } from '../services/apiService';
 import { chatAboutCat } from '../services/geminiService';
 import { Cat, AdoptionApplication } from '../types';
-import { Loader2, ArrowLeft, Heart, MessageCircle, Send, Sparkles, CheckCircle2, XCircle, Clock, X } from 'lucide-react';
+import { Loader2, ArrowLeft, Heart, MessageCircle, Send, Sparkles, CheckCircle2, XCircle, Clock, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { useToast } from '../context/ToastContext';
 
@@ -12,6 +12,7 @@ const CatDetailsPage: React.FC = () => {
   const { success, error } = useToast();
   const [cat, setCat] = useState<Cat | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   // Chat state
   const [chatOpen, setChatOpen] = useState(false);
@@ -98,7 +99,7 @@ const CatDetailsPage: React.FC = () => {
       const newApp = await adoptionService.submitApplication({
         catId: cat.id,
         catName: cat.name,
-        catImage: cat.image_url,
+        catImage: cat.image_url.split(',')[0],
         applicantName: adoptForm.name,
         contactInfo: adoptForm.contact,
         reason: adoptForm.reason
@@ -196,24 +197,79 @@ const CatDetailsPage: React.FC = () => {
 
       <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-slate-100 flex flex-col md:flex-row">
         {/* Image Side */}
+        {/* Image Side */}
         <div className="md:w-1/2 bg-slate-100 relative h-96 md:h-auto group">
-          <img
-            src={cat.image_url}
-            alt={cat.name}
-            className={`w-full h-full object-cover ${isAdopted ? 'grayscale-[0.8]' : ''}`}
-          />
+          {(() => {
+            const images = cat.image_url.split(',');
+            const hasMultipleImages = images.length > 1;
+
+            return (
+              <>
+                <div className="relative w-full h-full overflow-hidden">
+                  <div
+                    className="flex transition-transform duration-500 ease-out h-full"
+                    style={{ transform: `translateX(-${activeImageIndex * 100}%)` }}
+                  >
+                    {images.map((img, idx) => (
+                      <img
+                        key={idx}
+                        src={img}
+                        alt={`${cat.name} ${idx + 1}`}
+                        className={`w-full h-full object-cover flex-shrink-0 ${isAdopted ? 'grayscale-[0.8]' : ''}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {hasMultipleImages && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setActiveImageIndex(curr => curr === 0 ? images.length - 1 : curr - 1);
+                      }}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-slate-800 p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all z-10"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setActiveImageIndex(curr => curr === images.length - 1 ? 0 : curr + 1);
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-slate-800 p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all z-10"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                      {images.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setActiveImageIndex(idx)}
+                          className={`w-2 h-2 rounded-full transition-all ${idx === activeImageIndex ? 'bg-white w-4' : 'bg-white/50 hover:bg-white/80'
+                            }`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            );
+          })()}
+
           {isAdopted && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[2px]">
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[2px] z-20 pointer-events-none">
               <div className="bg-white/90 px-6 py-3 rounded-2xl transform -rotate-12 shadow-2xl border-4 border-slate-800">
                 <span className="text-3xl font-black text-slate-800 uppercase tracking-widest">已领养</span>
               </div>
             </div>
           )}
-          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm uppercase tracking-wide">
+          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm uppercase tracking-wide z-20">
             {cat.breed}
           </div>
 
-          <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold shadow-sm uppercase tracking-wide
+          <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold shadow-sm uppercase tracking-wide z-20
              ${status === '可领养' ? 'bg-green-100 text-green-700' :
               status === '待定' ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-600'}`}>
             {status}
