@@ -22,7 +22,7 @@ const App: React.FC = () => {
         </main>
         <footer className="bg-white border-t border-brand-100 py-6 mt-12">
           <div className="container mx-auto px-4 text-center text-slate-500 text-sm">
-            <p>© 2024 猫猫领养平台. 基于 React, Supabase 和 Gemini AI 构建.</p>
+            <p>© 2025 猫猫领养平台</p>
           </div>
         </footer>
       </div>
