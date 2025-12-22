@@ -180,7 +180,7 @@ const CatDetailsPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto relative pt-4 md:pt-0">
+    <div className="max-w-4xl mx-auto relative pt-20 md:pt-0">
       {/* Mobile App-like Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md shadow-sm z-30 flex items-center px-4 border-b border-slate-100">
         <Link to="/" className="p-2 -ml-2 text-slate-800 active:bg-slate-100 rounded-full transition-colors">
