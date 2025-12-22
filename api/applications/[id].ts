@@ -12,14 +12,14 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 let MOCK_APPLICATIONS = [
   {
     id: 'app-1',
-    catId: '2',
-    catName: '黑夜 (Midnight)',
-    catImage: 'https://picsum.photos/id/40/600/600',
-    applicantName: '张三',
-    contactInfo: '13800138000',
+    cat_id: '2',
+    cat_name: '黑夜 (Midnight)',
+    cat_image: 'https://picsum.photos/id/40/600/600',
+    applicant_name: '张三',
+    contact_info: '13800138000',
     reason: '家里有一只猫了，想找个伴。',
     status: 'pending',
-    createdAt: new Date().toISOString()
+    created_at: new Date().toISOString()
   }
 ];
 
@@ -35,6 +35,22 @@ function setCorsHeaders(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
+
+// 将数据库 snake_case 转换为前端 camelCase
+function toCamelCase(item: any) {
+  if (!item) return item;
+  return {
+    id: item.id,
+    catId: item.cat_id,
+    catName: item.cat_name,
+    catImage: item.cat_image,
+    applicantName: item.applicant_name,
+    contactInfo: item.contact_info,
+    reason: item.reason,
+    status: item.status,
+    createdAt: item.created_at
+  };
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -57,7 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!data) {
         return res.status(404).json({ error: '申请不存在' });
       }
-      return res.status(200).json({ data });
+      return res.status(200).json({ data: toCamelCase(data) });
     }
 
     // PUT /api/applications/[id] - 审核申请
