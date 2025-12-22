@@ -4,9 +4,11 @@ import { catService } from '../services/apiService';
 import { generateCatBio } from '../services/geminiService';
 import { Sparkles, Upload, ArrowRight, Loader2 } from 'lucide-react';
 import { CAT_CATEGORIES } from '../constants';
+import { useToast } from '../context/ToastContext';
 
 const AddCatPage: React.FC = () => {
   const navigate = useNavigate();
+  const { success, error, info } = useToast();
   const [loading, setLoading] = useState(false);
   const [generatingBio, setGeneratingBio] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -45,7 +47,7 @@ const AddCatPage: React.FC = () => {
 
   const handleGenerateBio = async () => {
     if (!formData.name || !formData.breed || formData.tags.length === 0) {
-      alert("请先输入名字、品种，并至少选择一个性格标签。");
+      info("请先输入名字、品种，并至少选择一个性格标签。");
       return;
     }
     setGeneratingBio(true);
@@ -78,10 +80,11 @@ const AddCatPage: React.FC = () => {
         tags: formData.tags,
         imageFile: formData.imageFile // 传入图片文件，API 会自动上传
       });
+      success('发布成功！');
       navigate('/');
-    } catch (error) {
-      console.error(error);
-      alert('发布失败，请查看控制台详情。');
+    } catch (err) {
+      console.error(err);
+      error('发布失败，请查看控制台详情。');
     } finally {
       setLoading(false);
     }

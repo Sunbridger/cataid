@@ -5,8 +5,11 @@ import { chatAboutCat } from '../services/geminiService';
 import { Cat, AdoptionApplication } from '../types';
 import { Loader2, ArrowLeft, Heart, MessageCircle, Send, Sparkles, CheckCircle2, XCircle, Clock, X } from 'lucide-react';
 
+import { useToast } from '../context/ToastContext';
+
 const CatDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { success, error } = useToast();
   const [cat, setCat] = useState<Cat | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -110,10 +113,11 @@ const CatDetailsPage: React.FC = () => {
 
       // Refresh cat data to show status change if needed
       loadCat(cat.id);
+      success('申请已提交，请耐心等待审核！');
 
-    } catch (error) {
-      console.error(error);
-      alert('提交失败，请重试');
+    } catch (err) {
+      console.error(err);
+      error('提交失败，请重试');
     } finally {
       setSubmitting(false);
     }

@@ -4,7 +4,10 @@ import { Cat, CatStatus, AdoptionApplication, ApplicationStatus } from '../types
 import { CAT_STATUSES } from '../constants';
 import { Loader2, Settings, FileText, CheckCircle, XCircle } from 'lucide-react';
 
+import { useToast } from '../context/ToastContext';
+
 const AdminPage: React.FC = () => {
+  const { success, error } = useToast();
   const [activeTab, setActiveTab] = useState<'cats' | 'applications'>('applications'); // Default to applications for easier testing
 
   // Cat Management State
@@ -51,9 +54,10 @@ const AdminPage: React.FC = () => {
       setUpdatingId(id);
       await catService.updateStatus(id, newStatus);
       setCats(cats.map(cat => cat.id === id ? { ...cat, status: newStatus } : cat));
+      success('状态更新成功');
     } catch (err) {
       console.error("Failed to update status", err);
-      alert("更新状态失败");
+      error("更新状态失败");
     } finally {
       setUpdatingId(null);
     }
@@ -76,16 +80,18 @@ const AdminPage: React.FC = () => {
       // so the "Cats Management" tab reflects the changes immediately.
       if (status === 'approved') {
         setCats(prev => prev.map(c => c.id === app.catId ? { ...c, status: '已领养' } : c));
+        success('已通过申请');
       } else if (status === 'rejected') {
         const cat = cats.find(c => c.id === app.catId);
         if (cat && cat.status === '待定') {
           setCats(prev => prev.map(c => c.id === app.catId ? { ...c, status: '可领养' } : c));
         }
+        success('已拒绝申请');
       }
 
     } catch (err) {
       console.error(err);
-      alert('操作失败，请重试');
+      error('操作失败，请重试');
     } finally {
       setProcessingAppId(null);
     }
