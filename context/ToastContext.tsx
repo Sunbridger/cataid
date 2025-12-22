@@ -42,18 +42,18 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <ToastContext.Provider value={{ showToast, success, error, info }}>
       {children}
-      <div className="fixed top-20 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
+      <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
         {toasts.map(toast => (
           <div
             key={toast.id}
-            className={`pointer-events-auto min-w-[300px] max-w-sm w-full bg-white rounded-xl shadow-lg border p-4 flex items-start gap-3 animate-in slide-in-from-right-full fade-in duration-300 ${toast.type === 'success' ? 'border-green-100 bg-green-50/50' :
-                toast.type === 'error' ? 'border-red-100 bg-red-50/50' :
-                  'border-blue-100 bg-blue-50/50'
+            className={`pointer-events-auto min-w-[300px] max-w-sm w-full bg-white rounded-xl shadow-xl border p-4 flex items-start gap-3 animate-in slide-in-from-top-full fade-in duration-300 ${toast.type === 'success' ? 'border-green-100 bg-green-50' :
+                toast.type === 'error' ? 'border-red-100 bg-red-50' :
+                  'border-blue-100 bg-blue-50'
               }`}
           >
             <div className={`mt-0.5 ${toast.type === 'success' ? 'text-green-500' :
-                toast.type === 'error' ? 'text-red-500' :
-                  'text-blue-500'
+              toast.type === 'error' ? 'text-red-500' :
+                'text-blue-500'
               }`}>
               {toast.type === 'success' && <CheckCircle2 size={20} />}
               {toast.type === 'error' && <AlertCircle size={20} />}
@@ -61,8 +61,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             </div>
             <div className="flex-1">
               <p className={`text-sm font-medium ${toast.type === 'success' ? 'text-green-800' :
-                  toast.type === 'error' ? 'text-red-800' :
-                    'text-blue-800'
+                toast.type === 'error' ? 'text-red-800' :
+                  'text-blue-800'
                 }`}>
                 {toast.message}
               </p>

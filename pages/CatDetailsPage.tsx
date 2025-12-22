@@ -180,8 +180,17 @@ const CatDetailsPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto relative">
-      <Link to="/" className="inline-flex items-center text-slate-500 hover:text-brand-600 mb-6 font-medium transition-colors">
+    <div className="max-w-4xl mx-auto relative pt-4 md:pt-0">
+      {/* Mobile App-like Header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md shadow-sm z-30 flex items-center px-4 border-b border-slate-100">
+        <Link to="/" className="p-2 -ml-2 text-slate-800 active:bg-slate-100 rounded-full transition-colors">
+          <ArrowLeft size={24} />
+        </Link>
+        <span className="font-bold text-lg ml-2 truncate">{cat.name} 的档案</span>
+      </div>
+
+      {/* Desktop Back Button */}
+      <Link to="/" className="hidden md:inline-flex items-center text-slate-500 hover:text-brand-600 mb-6 font-medium transition-colors">
         <ArrowLeft size={18} className="mr-1" /> 返回列表
       </Link>
 
