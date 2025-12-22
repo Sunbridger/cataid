@@ -1,0 +1,206 @@
+/**
+ * 猫咪数据相关 API
+ * 部署在 Vercel，使用 Service Role Key 访问 Supabase
+ */
+import { createClient } from '@supabase/supabase-js';
+
+// 从环境变量获取服务端密钥（仅在服务端可见）
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// 演示模式数据
+const MOCK_CATS = [
+  {
+    id: '1',
+    name: '小橘 (Ginger)',
+    age: 2,
+    gender: 'Female',
+    breed: '橘猫',
+    description: '小橘是一只精力充沛的小老虎，喜欢追逐激光笔，也喜欢在阳光下打盹。她话很多，会经常跟你喵喵叫，分享她的一天。',
+    image_url: 'https://picsum.photos/id/237/600/600',
+    tags: ['活泼好动', '话唠'],
+    status: '可领养',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '2',
+    name: '黑夜 (Midnight)',
+    age: 5,
+    gender: 'Male',
+    breed: '孟买猫',
+    description: '黑夜里的神秘影子……等等，其实只是一只想要温暖大腿的粘人黑猫。一开始可能有点害羞，但一旦信任你，呼噜声就像柴油引擎一样响。',
+    image_url: 'https://picsum.photos/id/40/600/600',
+    tags: ['高冷安静', '老年猫'],
+    status: '可领养',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '3',
+    name: '雪球 (Snowball)',
+    age: 1,
+    gender: 'Male',
+    breed: '波斯混血',
+    description: '雪球就是一团长了眼睛的云朵。他需要每天梳毛和膜拜。作为回报，他会提供柔软的头槌和踩奶服务。',
+    image_url: 'https://picsum.photos/id/219/600/600',
+    tags: ['幼猫', '需要伺候'],
+    status: '已领养',
+    created_at: new Date().toISOString()
+  }
+];
+
+// 判断是否为演示模式
+const isDemoMode = !supabaseUrl || !supabaseServiceKey;
+
+// 创建服务端 Supabase 客户端（带 Service Role Key）
+const supabase = !isDemoMode
+  ? createClient(supabaseUrl!, supabaseServiceKey!, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  })
+  : null;
+
+export default async function handler(req: Request) {
+  const url = new URL(req.url);
+  const method = req.method;
+  const pathParts = url.pathname.split('/').filter(Boolean);
+
+  // CORS 头
+  const headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+
+  // 处理 OPTIONS 预检请求
+  if (method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers });
+  }
+
+  try {
+    // GET /api/cats - 获取所有猫咪
+    if (method === 'GET' && pathParts.length === 2) {
+      const data = await getAllCats();
+      return new Response(JSON.stringify({ data }), { headers });
+    }
+
+    // GET /api/cats/:id - 获取单只猫咪
+    if (method === 'GET' && pathParts.length === 3) {
+      const id = pathParts[2];
+      const data = await getCatById(id);
+      if (!data) {
+        return new Response(JSON.stringify({ error: '猫咪不存在' }), { status: 404, headers });
+      }
+      return new Response(JSON.stringify({ data }), { headers });
+    }
+
+    // POST /api/cats - 创建猫咪
+    if (method === 'POST') {
+      const body = await req.json();
+      const data = await createCat(body);
+      return new Response(JSON.stringify({ data }), { status: 201, headers });
+    }
+
+    // PUT /api/cats/:id/status - 更新猫咪状态
+    if (method === 'PUT' && pathParts.length === 4 && pathParts[3] === 'status') {
+      const id = pathParts[2];
+      const { status } = await req.json();
+      await updateCatStatus(id, status);
+      return new Response(JSON.stringify({ success: true }), { headers });
+    }
+
+    return new Response(JSON.stringify({ error: '未找到路由' }), { status: 404, headers });
+
+  } catch (error) {
+    console.error('API Error:', error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : '服务器内部错误' }),
+      { status: 500, headers }
+    );
+  }
+}
+
+// ===== 数据库操作函数 =====
+
+async function getAllCats() {
+  if (isDemoMode || !supabase) {
+    console.log('[Demo Mode] 返回模拟数据');
+    return MOCK_CATS;
+  }
+
+  const { data, error } = await supabase
+    .from('cats')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
+async function getCatById(id: string) {
+  if (isDemoMode || !supabase) {
+    return MOCK_CATS.find(c => c.id === id) || null;
+  }
+
+  const { data, error } = await supabase
+    .from('cats')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+interface CreateCatInput {
+  name: string;
+  age: number;
+  gender: string;
+  breed: string;
+  description: string;
+  tags: string[];
+  image_url?: string;
+}
+
+async function createCat(cat: CreateCatInput) {
+  if (isDemoMode || !supabase) {
+    console.log('[Demo Mode] 无法创建猫咪:', cat);
+    return { ...cat, id: `mock-${Date.now()}`, created_at: new Date().toISOString(), status: '可领养' };
+  }
+
+  const imageUrl = cat.image_url || `https://picsum.photos/seed/${cat.name}/600/600`;
+
+  const { data, error } = await supabase
+    .from('cats')
+    .insert([{
+      name: cat.name,
+      age: cat.age,
+      gender: cat.gender,
+      breed: cat.breed,
+      description: cat.description,
+      image_url: imageUrl,
+      tags: cat.tags,
+      status: '可领养'
+    }])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+async function updateCatStatus(id: string, status: string) {
+  if (isDemoMode || !supabase) {
+    console.log(`[Demo Mode] 更新猫咪 ${id} 状态为 ${status}`);
+    return;
+  }
+
+  const { error } = await supabase
+    .from('cats')
+    .update({ status })
+    .eq('id', id);
+
+  if (error) throw error;
+}

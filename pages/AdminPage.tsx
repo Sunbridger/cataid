@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { catService, adoptionService } from '../services/supabaseClient';
+import { catService, adoptionService } from '../services/apiService';
 import { Cat, CatStatus, AdoptionApplication, ApplicationStatus } from '../types';
-import { CAT_STATUSES, IS_DEMO_MODE } from '../constants';
-import { Loader2, Settings, AlertCircle, FileText, CheckCircle, XCircle } from 'lucide-react';
+import { CAT_STATUSES } from '../constants';
+import { Loader2, Settings, FileText, CheckCircle, XCircle } from 'lucide-react';
 
 const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'cats' | 'applications'>('applications'); // Default to applications for easier testing
-  
+
   // Cat Management State
   const [cats, setCats] = useState<Cat[]>([]);
   const [loadingCats, setLoadingCats] = useState(false);
@@ -65,22 +65,22 @@ const AdminPage: React.FC = () => {
 
     try {
       setProcessingAppId(app.id);
-      
+
       // Perform the update
       await adoptionService.reviewApplication(app.id, status, app.catId);
-      
+
       // Update Applications State
       setApplications(prev => prev.map(a => a.id === app.id ? { ...a, status } : a));
-      
+
       // If approved/rejected, we might need to update the cat list in the background
       // so the "Cats Management" tab reflects the changes immediately.
       if (status === 'approved') {
         setCats(prev => prev.map(c => c.id === app.catId ? { ...c, status: '已领养' } : c));
       } else if (status === 'rejected') {
-         const cat = cats.find(c => c.id === app.catId);
-         if (cat && cat.status === '待定') {
-            setCats(prev => prev.map(c => c.id === app.catId ? { ...c, status: '可领养' } : c));
-         }
+        const cat = cats.find(c => c.id === app.catId);
+        if (cat && cat.status === '待定') {
+          setCats(prev => prev.map(c => c.id === app.catId ? { ...c, status: '可领养' } : c));
+        }
       }
 
     } catch (err) {
@@ -107,21 +107,19 @@ const AdminPage: React.FC = () => {
         <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
           <button
             onClick={() => setActiveTab('cats')}
-            className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${
-              activeTab === 'cats' 
-                ? 'bg-slate-800 text-white shadow-md' 
-                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-            }`}
+            className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'cats'
+              ? 'bg-slate-800 text-white shadow-md'
+              : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+              }`}
           >
             猫咪管理
           </button>
           <button
             onClick={() => setActiveTab('applications')}
-            className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${
-              activeTab === 'applications' 
-                ? 'bg-brand-600 text-white shadow-md' 
-                : 'text-slate-500 hover:text-brand-600 hover:bg-brand-50'
-            }`}
+            className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${activeTab === 'applications'
+              ? 'bg-brand-600 text-white shadow-md'
+              : 'text-slate-500 hover:text-brand-600 hover:bg-brand-50'
+              }`}
           >
             领养审核
             {applications.filter(a => a.status === 'pending').length > 0 && (
@@ -133,23 +131,13 @@ const AdminPage: React.FC = () => {
         </div>
       </div>
 
-      {IS_DEMO_MODE && (
-         <div className="mb-6 p-4 bg-amber-50 text-amber-800 rounded-xl border border-amber-200 flex items-start gap-3">
-           <AlertCircle className="shrink-0 mt-0.5" size={20} />
-           <div>
-             <p className="font-bold">演示模式运行中</p>
-             <p className="text-sm mt-1">您在此处所做的更改（包括审核）将仅反映在当前会话中。</p>
-           </div>
-         </div>
-      )}
-
       {activeTab === 'cats' ? (
         // Cats Table
         <div className="bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-bottom-2">
           {loadingCats ? (
-             <div className="flex justify-center items-center py-20">
-               <Loader2 className="animate-spin text-slate-400" size={32} />
-             </div>
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="animate-spin text-slate-400" size={32} />
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -165,9 +153,9 @@ const AdminPage: React.FC = () => {
                   {cats.map((cat) => (
                     <tr key={cat.id} className="hover:bg-slate-50 transition-colors">
                       <td className="p-4 w-24">
-                        <img 
-                          src={cat.image_url} 
-                          alt={cat.name} 
+                        <img
+                          src={cat.image_url}
+                          alt={cat.name}
                           className="w-16 h-16 rounded-lg object-cover bg-slate-200"
                         />
                       </td>
@@ -177,9 +165,9 @@ const AdminPage: React.FC = () => {
                       </td>
                       <td className="p-4">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
-                          ${cat.status === '可领养' ? 'bg-green-50 text-green-700 border-green-200' : 
-                            cat.status === '已领养' ? 'bg-slate-100 text-slate-700 border-slate-200' : 
-                            'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                          ${cat.status === '可领养' ? 'bg-green-50 text-green-700 border-green-200' :
+                            cat.status === '已领养' ? 'bg-slate-100 text-slate-700 border-slate-200' :
+                              'bg-amber-50 text-amber-700 border-amber-200'}`}>
                           {cat.status || '可领养'}
                         </span>
                       </td>
@@ -213,13 +201,13 @@ const AdminPage: React.FC = () => {
         // Applications Table
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
           {loadingApps ? (
-             <div className="flex justify-center items-center py-20">
-               <Loader2 className="animate-spin text-brand-400" size={32} />
-             </div>
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="animate-spin text-brand-400" size={32} />
+            </div>
           ) : applications.length === 0 ? (
             <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-slate-300">
-               <FileText className="mx-auto text-slate-300 mb-4" size={48} />
-               <p className="text-slate-500">暂时没有领养申请</p>
+              <FileText className="mx-auto text-slate-300 mb-4" size={48} />
+              <p className="text-slate-500">暂时没有领养申请</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
@@ -237,41 +225,41 @@ const AdminPage: React.FC = () => {
 
                   {/* Applicant Info */}
                   <div className="flex-1 space-y-3">
-                     <div className="flex items-center gap-3">
-                       <span className="font-bold text-slate-800 text-lg">{app.applicantName}</span>
-                       <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs font-mono">{app.contactInfo}</span>
-                     </div>
-                     <div className="bg-slate-50 p-3 rounded-xl text-sm text-slate-600 leading-relaxed border border-slate-100">
-                       <span className="font-semibold text-slate-400 block text-xs mb-1 uppercase">申请理由 / 经验</span>
-                       {app.reason}
-                     </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-slate-800 text-lg">{app.applicantName}</span>
+                      <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs font-mono">{app.contactInfo}</span>
+                    </div>
+                    <div className="bg-slate-50 p-3 rounded-xl text-sm text-slate-600 leading-relaxed border border-slate-100">
+                      <span className="font-semibold text-slate-400 block text-xs mb-1 uppercase">申请理由 / 经验</span>
+                      {app.reason}
+                    </div>
                   </div>
 
                   {/* Actions */}
                   <div className="lg:w-48 flex flex-col justify-center gap-2 border-t lg:border-t-0 lg:border-l border-slate-100 pt-4 lg:pt-0 lg:pl-6">
                     {app.status === 'pending' ? (
                       <>
-                        <button 
+                        <button
                           onClick={() => handleReviewApplication(app, 'approved')}
                           disabled={!!processingAppId}
                           className="w-full py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 shadow-sm"
                         >
-                          {processingAppId === app.id ? <Loader2 className="animate-spin" size={16}/> : <CheckCircle size={16} />}
+                          {processingAppId === app.id ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle size={16} />}
                           通过申请
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleReviewApplication(app, 'rejected')}
                           disabled={!!processingAppId}
                           className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
                         >
-                          {processingAppId === app.id ? <Loader2 className="animate-spin" size={16}/> : <XCircle size={16} />}
+                          {processingAppId === app.id ? <Loader2 className="animate-spin" size={16} /> : <XCircle size={16} />}
                           婉拒
                         </button>
                       </>
                     ) : (
                       <div className={`w-full py-3 rounded-xl flex items-center justify-center gap-2 font-bold border
                         ${app.status === 'approved' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-slate-50 border-slate-100 text-slate-500'}`}>
-                        {app.status === 'approved' ? <CheckCircle size={18}/> : <XCircle size={18}/>}
+                        {app.status === 'approved' ? <CheckCircle size={18} /> : <XCircle size={18} />}
                         {app.status === 'approved' ? '已通过' : '已驳回'}
                       </div>
                     )}

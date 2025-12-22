@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { catService } from '../services/supabaseClient';
+import { catService } from '../services/apiService';
 import { generateCatBio } from '../services/geminiService';
 import { Sparkles, Upload, ArrowRight, Loader2 } from 'lucide-react';
-import { CAT_CATEGORIES, GEMINI_API_KEY, IS_DEMO_MODE } from '../constants';
+import { CAT_CATEGORIES } from '../constants';
 
 const AddCatPage: React.FC = () => {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ const AddCatPage: React.FC = () => {
   const handleTagToggle = (tag: string) => {
     setFormData(prev => ({
       ...prev,
-      tags: prev.tags.includes(tag) 
+      tags: prev.tags.includes(tag)
         ? prev.tags.filter(t => t !== tag)
         : [...prev.tags, tag]
     }));
@@ -60,6 +60,7 @@ const AddCatPage: React.FC = () => {
 
     setLoading(true);
     try {
+      // 注意：图片上传功能需要服务端支持，这里暂时使用随机图片
       await catService.create({
         name: formData.name,
         age: parseInt(formData.age),
@@ -67,7 +68,8 @@ const AddCatPage: React.FC = () => {
         breed: formData.breed,
         description: formData.description,
         tags: formData.tags,
-        imageFile: formData.imageFile
+        // 如果有图片预览，可以后续扩展为 base64 上传
+        image_url: imagePreview || undefined
       });
       navigate('/');
     } catch (error) {
@@ -83,11 +85,6 @@ const AddCatPage: React.FC = () => {
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold text-slate-800">发布猫咪领养信息</h1>
         <p className="text-slate-500 mt-2">帮助毛孩子找到永远的家。</p>
-        {IS_DEMO_MODE && (
-           <div className="mt-4 p-3 bg-amber-50 text-amber-700 text-sm rounded-lg border border-amber-200 inline-block">
-             模式：演示模式 (数据不会保存到数据库)
-           </div>
-        )}
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded-3xl shadow-lg border border-slate-100 space-y-6">
@@ -103,9 +100,9 @@ const AddCatPage: React.FC = () => {
               )}
             </div>
             <div className="flex-1">
-              <input 
-                type="file" 
-                accept="image/*" 
+              <input
+                type="file"
+                accept="image/*"
                 onChange={handleFileChange}
                 className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 transition-colors"
               />
@@ -117,22 +114,22 @@ const AddCatPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1">
             <label className="block text-sm font-semibold text-slate-700">名字</label>
-            <input 
+            <input
               required
               name="name"
-              value={formData.name} 
+              value={formData.name}
               onChange={handleInputChange}
               className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
               placeholder="例如：咪咪"
             />
           </div>
-          
+
           <div className="space-y-1">
             <label className="block text-sm font-semibold text-slate-700">品种</label>
-            <input 
+            <input
               required
               name="breed"
-              value={formData.breed} 
+              value={formData.breed}
               onChange={handleInputChange}
               className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
               placeholder="例如：短毛猫"
@@ -141,13 +138,13 @@ const AddCatPage: React.FC = () => {
 
           <div className="space-y-1">
             <label className="block text-sm font-semibold text-slate-700">年龄 (岁)</label>
-            <input 
+            <input
               required
               type="number"
               name="age"
               min="0"
               max="25"
-              value={formData.age} 
+              value={formData.age}
               onChange={handleInputChange}
               className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
             />
@@ -155,7 +152,7 @@ const AddCatPage: React.FC = () => {
 
           <div className="space-y-1">
             <label className="block text-sm font-semibold text-slate-700">性别</label>
-            <select 
+            <select
               name="gender"
               value={formData.gender}
               onChange={handleInputChange}
@@ -176,11 +173,10 @@ const AddCatPage: React.FC = () => {
                 key={tag}
                 type="button"
                 onClick={() => handleTagToggle(tag)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                  formData.tags.includes(tag) 
-                    ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20' 
-                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${formData.tags.includes(tag)
+                  ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
+                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                  }`}
               >
                 {tag}
               </button>
@@ -191,20 +187,18 @@ const AddCatPage: React.FC = () => {
         {/* Description & AI Generator */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-             <label className="block text-sm font-semibold text-slate-700">简介</label>
-             {GEMINI_API_KEY && (
-               <button
-                type="button"
-                onClick={handleGenerateBio}
-                disabled={generatingBio}
-                className="text-xs flex items-center gap-1.5 text-brand-600 font-medium hover:text-brand-700 disabled:opacity-50"
-               >
-                 {generatingBio ? <Loader2 className="animate-spin" size={12}/> : <Sparkles size={12} />}
-                 {generatingBio ? '正在撰写...' : 'AI 自动生成'}
-               </button>
-             )}
+            <label className="block text-sm font-semibold text-slate-700">简介</label>
+            <button
+              type="button"
+              onClick={handleGenerateBio}
+              disabled={generatingBio}
+              className="text-xs flex items-center gap-1.5 text-brand-600 font-medium hover:text-brand-700 disabled:opacity-50"
+            >
+              {generatingBio ? <Loader2 className="animate-spin" size={12} /> : <Sparkles size={12} />}
+              {generatingBio ? '正在撰写...' : 'AI 自动生成'}
+            </button>
           </div>
-          <textarea 
+          <textarea
             required
             name="description"
             value={formData.description}

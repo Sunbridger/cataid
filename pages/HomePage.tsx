@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { catService } from '../services/supabaseClient';
+import { catService } from '../services/apiService';
 import { Cat } from '../types';
 import CatCard from '../components/CatCard';
 import { Loader2, Search } from 'lucide-react';
@@ -18,7 +18,7 @@ const HomePage: React.FC = () => {
     try {
       setLoading(true);
       const data = await catService.getAll();
-      
+
       // Sort: Available first, then Pending, then Adopted. Within status, sort by date (newest first)
       const statusPriority: Record<string, number> = {
         '可领养': 0,
@@ -29,11 +29,11 @@ const HomePage: React.FC = () => {
       const sortedData = data.sort((a, b) => {
         const statusA = a.status || '可领养';
         const statusB = b.status || '可领养';
-        
+
         if (statusPriority[statusA] !== statusPriority[statusB]) {
           return statusPriority[statusA] - statusPriority[statusB];
         }
-        
+
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
 
@@ -45,8 +45,8 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const filteredCats = cats.filter(cat => 
-    cat.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredCats = cats.filter(cat =>
+    cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cat.breed.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cat.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
   );
@@ -62,7 +62,7 @@ const HomePage: React.FC = () => {
           <p className="text-brand-100 text-lg md:text-xl">
             成千上万只可爱的猫咪正在等待一个温暖的家。今天就开始你的缘分之旅吧。
           </p>
-          
+
           <div className="relative max-w-md mx-auto mt-8">
             <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
               <Search size={20} />
@@ -76,7 +76,7 @@ const HomePage: React.FC = () => {
             />
           </div>
         </div>
-        
+
         {/* Decorative Circles */}
         <div className="absolute -top-24 -left-24 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-brand-600/50 rounded-full blur-3xl"></div>
@@ -103,7 +103,7 @@ const HomePage: React.FC = () => {
         ) : filteredCats.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
             <p className="text-slate-400 text-lg">没有找到符合条件的猫咪。</p>
-            <button 
+            <button
               onClick={() => setSearchTerm('')}
               className="mt-4 text-brand-600 font-medium hover:underline"
             >
