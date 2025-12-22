@@ -1,21 +1,35 @@
+/**
+ * AI 生成猫咪简介 API
+ * 路由：POST /api/generate-bio
+ */
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI } from "@google/genai";
 
-export default async function handler(req: Request) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // 设置 CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
   if (req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 });
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    const { name, breed, traits } = await req.json();
+    const { name, breed, traits } = req.body;
     const apiKey = process.env.API_KEY;
 
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: 'Server configuration error' }), { status: 500 });
+      return res.status(500).json({ error: '服务器配置错误：缺少 API_KEY' });
     }
 
     const ai = new GoogleGenAI({ apiKey });
-    
-    // Updated prompt for Chinese output
+
+    // 生成简介
     const prompt = `
       请为一只名叫 ${name} 的猫写一段简短、吸引人且可爱的领养简介（最多80字）。
       品种：${breed}。
@@ -24,16 +38,14 @@ export default async function handler(req: Request) {
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash-001',
       contents: prompt,
     });
 
-    return new Response(JSON.stringify({ bio: response.text?.trim() }), {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(200).json({ bio: response.text?.trim() });
 
   } catch (error) {
     console.error("API Error:", error);
-    return new Response(JSON.stringify({ error: 'Failed to generate bio' }), { status: 500 });
+    return res.status(500).json({ error: '生成简介失败' });
   }
 }
