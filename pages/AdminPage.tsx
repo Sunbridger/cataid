@@ -119,13 +119,13 @@ const AdminPage: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
-        <div className="flex items-center gap-3">
-          <div className="bg-slate-800 text-white p-2 md:p-2.5 rounded-xl shadow-md">
-            <Settings size={24} className="md:w-7 md:h-7" />
+        <div className="flex items-center gap-4">
+          <div className="bg-gradient-to-br from-brand-500 to-brand-600 text-white p-3 rounded-2xl shadow-lg shadow-brand-500/20">
+            <Settings size={28} />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800">管理后台</h1>
-            <p className="text-sm md:text-base text-slate-500">管理猫咪信息和领养审核</p>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">管理后台</h1>
+            <p className="text-sm text-slate-500 font-medium">管理猫咪信息与审核领养申请</p>
           </div>
         </div>
 
