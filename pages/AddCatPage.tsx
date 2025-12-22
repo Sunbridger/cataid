@@ -45,16 +45,6 @@ const AddCatPage: React.FC = () => {
     }));
   };
 
-  // Helper to convert file to base64 for API
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
-  };
-
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
@@ -68,37 +58,42 @@ const AddCatPage: React.FC = () => {
       }));
 
       // Trigger AI Analysis if this is the first image upload (and we aren't already analyzing)
-      // This enhances UX by auto-filling breed/tags
+      // This enhances UX by auto-filling breed/tags.
+      // We upload the image first to get a URL for analysis.
       if (newFiles.length > 0 && !formData.breed && !analyzingImage) {
-        setAnalyzingImage(true);
-        try {
-          // Analyze the first newly uploaded image
-          const base64 = await fileToBase64(newFiles[0]);
-          const analysis = await analyzeCatImage(base64);
+        // Non-blocking async operation
+        const analyze = async () => {
+          setAnalyzingImage(true);
+          try {
+            // Immediately upload the first image to get a public URL
+            const imageUrl = await catService.uploadImage(newFiles[0]);
 
-          if (analysis) {
-            setFormData(prev => {
-              // Merge existing tags with new characteristics (avoiding duplicates)
-              const newTags = analysis.characteristics
-                ? Array.from(new Set([...prev.tags, ...analysis.characteristics.slice(0, 3)]))
-                : prev.tags;
+            if (imageUrl) {
+              const analysis = await analyzeCatImage(imageUrl);
 
-              return {
-                ...prev,
-                breed: analysis.breed || prev.breed,
-                // Only set tags if we found some relevant ones that match our predefined list or are useful
-                // For simplicity, we just add them. In a stricter app, we might filter by CAT_CATEGORIES.
-                tags: newTags
-              };
-            });
-            success(`AI 识别成功：这是一个 ${analysis.breed || '可爱猫咪'}`);
+              if (analysis) {
+                setFormData(prev => {
+                  const newTags = analysis.characteristics
+                    ? Array.from(new Set([...prev.tags, ...analysis.characteristics.slice(0, 3)]))
+                    : prev.tags;
+
+                  return {
+                    ...prev,
+                    breed: analysis.breed || prev.breed,
+                    tags: newTags
+                  };
+                });
+                success(`AI 识别成功：这是一个 ${analysis.breed || '可爱猫咪'}`);
+              }
+            }
+          } catch (err) {
+            console.error("AI Analysis failed", err);
+          } finally {
+            setAnalyzingImage(false);
           }
-        } catch (err) {
-          console.error("AI Analysis failed", err);
-          // Silent fail or optional info toast
-        } finally {
-          setAnalyzingImage(false);
-        }
+        };
+
+        analyze();
       }
     }
   };

@@ -11,7 +11,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
   try {
-    const { imageBase64 } = req.body;
+    const { imageUrl } = req.body;
     const apiKey = process.env.MOONSHOT_API_KEY;
 
     if (!apiKey) return res.status(500).json({ error: 'Server config error: Missing API Key' });
@@ -39,7 +39,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               {
                 type: 'image_url',
                 image_url: {
-                  url: imageBase64 // Base64 Data URL
+                  url: imageUrl // Public URL
                 }
               }
             ]

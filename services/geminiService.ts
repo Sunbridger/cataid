@@ -1,12 +1,12 @@
 // This service now calls our Vercel Serverless Functions in /api
 // These endpoints act as proxies to the actual AI provider (Moonshot/Kimi).
 
-export const analyzeCatImage = async (imageBase64: string): Promise<{ breed?: string; color?: string; characteristics?: string[] } | null> => {
+export const analyzeCatImage = async (imageUrl: string): Promise<{ breed?: string; color?: string; characteristics?: string[] } | null> => {
   try {
     const response = await fetch('/api/analyze-image', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imageBase64 }),
+      body: JSON.stringify({ imageUrl }),
     });
 
     if (!response.ok) throw new Error('Analysis failed');
