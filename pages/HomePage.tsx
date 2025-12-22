@@ -91,7 +91,7 @@ const HomePage: React.FC = () => {
       onTouchEnd={handleTouchEnd}
     >
       {/* Pull to Refresh Indicator */}
-      <div
+      {/* <div
         className="fixed top-16 left-0 right-0 z-50 flex justify-center pointer-events-none transition-all duration-300"
         style={{
           transform: `translateY(${refreshing ? 10 : Math.min(pullDistance - 80, 0)}px)`,
@@ -101,7 +101,7 @@ const HomePage: React.FC = () => {
         <div className="bg-white/80 backdrop-blur rounded-full p-2 shadow-md">
           <Loader2 className={`text-brand-500 ${refreshing ? 'animate-spin' : ''}`} style={{ transform: `rotate(${pullDistance * 2}deg)` }} size={24} />
         </div>
-      </div>
+      </div> */}
 
       {/* Hero Section */}
       <section className="bg-brand-500 rounded-2xl md:rounded-3xl p-4 md:p-8 text-center text-white relative overflow-hidden shadow-lg transition-transform duration-200"
