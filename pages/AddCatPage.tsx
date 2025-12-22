@@ -60,7 +60,7 @@ const AddCatPage: React.FC = () => {
 
     setLoading(true);
     try {
-      // 注意：图片上传功能需要服务端支持，这里暂时使用随机图片
+      // 使用 catService.create 自动处理图片上传
       await catService.create({
         name: formData.name,
         age: parseInt(formData.age),
@@ -68,8 +68,7 @@ const AddCatPage: React.FC = () => {
         breed: formData.breed,
         description: formData.description,
         tags: formData.tags,
-        // 如果有图片预览，可以后续扩展为 base64 上传
-        image_url: imagePreview || undefined
+        imageFile: formData.imageFile // 传入图片文件，API 会自动上传
       });
       navigate('/');
     } catch (error) {

@@ -58,13 +58,54 @@ export const catApi = {
   },
 
   /**
-   * 创建猫咪（不含图片文件上传）
+   * 上传图片到服务端
    */
-  create: async (cat: Omit<NewCatInput, 'imageFile'> & { image_url?: string }): Promise<Cat | null> => {
+  uploadImage: async (file: File): Promise<string | null> => {
     try {
+      // 将文件转换为 Base64
+      const base64 = await fileToBase64(file);
+
+      const result = await request<{ url: string }>('/upload', {
+        method: 'POST',
+        body: JSON.stringify({
+          file: base64,
+          fileName: file.name,
+          contentType: file.type
+        }),
+      });
+      return result.url;
+    } catch (error) {
+      console.error('上传图片失败:', error);
+      return null;
+    }
+  },
+
+  /**
+   * 创建猫咪（支持图片上传）
+   */
+  create: async (cat: Omit<NewCatInput, 'imageFile'> & { image_url?: string; imageFile?: File | null }): Promise<Cat | null> => {
+    try {
+      let imageUrl = cat.image_url;
+
+      // 如果有图片文件，先上传
+      if (cat.imageFile) {
+        const uploadedUrl = await catApi.uploadImage(cat.imageFile);
+        if (uploadedUrl) {
+          imageUrl = uploadedUrl;
+        }
+      }
+
       const result = await request<{ data: Cat }>('/cats', {
         method: 'POST',
-        body: JSON.stringify(cat),
+        body: JSON.stringify({
+          name: cat.name,
+          age: cat.age,
+          gender: cat.gender,
+          breed: cat.breed,
+          description: cat.description,
+          tags: cat.tags,
+          image_url: imageUrl
+        }),
       });
       return result.data;
     } catch (error) {
@@ -84,6 +125,18 @@ export const catApi = {
     });
   },
 };
+
+/**
+ * 将文件转换为 Base64 字符串
+ */
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+}
 
 /**
  * 领养申请相关 API
