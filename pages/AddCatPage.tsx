@@ -54,9 +54,17 @@ const AddCatPage: React.FC = () => {
     setGeneratingBio(false);
   };
 
+  // 引用 hidden file input
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.age || !formData.breed) return;
+
+    // 二次确认
+    if (!window.confirm('确定要发布这条领养信息吗？\n请确保信息真实有效，关爱每一条小生命。')) {
+      return;
+    }
 
     setLoading(true);
     try {
@@ -90,24 +98,32 @@ const AddCatPage: React.FC = () => {
         {/* Image Upload */}
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-slate-700">猫咪照片</label>
-          <div className="flex items-center gap-6">
-            <div className={`w-32 h-32 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden relative ${!imagePreview ? 'hover:border-brand-300' : ''}`}>
-              {imagePreview ? (
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className={`w-36 h-36 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden relative cursor-pointer hover:bg-slate-100 transition-all group ${!imagePreview ? 'hover:border-brand-300' : 'border-solid'}`}
+          >
+            {imagePreview ? (
+              <>
                 <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-              ) : (
-                <Upload className="text-slate-400" size={24} />
-              )}
-            </div>
-            <div className="flex-1">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 transition-colors"
-              />
-              <p className="text-xs text-slate-400 mt-2">推荐：正方形 JPG 或 PNG 图片，最大 2MB。</p>
-            </div>
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-white text-xs font-medium">更换图片</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <Upload className="text-slate-400 mb-2 group-hover:text-brand-400 transition-colors" size={24} />
+                <span className="text-xs text-slate-400 group-hover:text-brand-500 transition-colors">点击上传</span>
+              </>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
           </div>
+          <p className="text-xs text-slate-400">推荐：正方形 JPG 或 PNG 图片，最大 2MB。</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

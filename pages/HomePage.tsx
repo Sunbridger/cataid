@@ -54,32 +54,45 @@ const HomePage: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Hero Section */}
-      <section className="bg-brand-500 rounded-2xl md:rounded-3xl p-6 md:p-12 text-center text-white relative overflow-hidden shadow-lg">
-        <div className="relative z-10 max-w-2xl mx-auto space-y-3 md:space-y-4">
-          <h1 className="text-2xl md:text-5xl font-bold tracking-tight mb-1 md:mb-2">
+      {/* Hero Section */}
+      <section className="bg-brand-500 rounded-2xl md:rounded-3xl p-5 md:p-10 text-center text-white relative overflow-hidden shadow-lg">
+        <div className="relative z-10 max-w-2xl mx-auto space-y-3">
+          <h1 className="text-xl md:text-4xl font-bold tracking-tight">
             寻找你的喵星人伙伴
           </h1>
-          <p className="text-brand-100 text-sm md:text-xl px-4 md:px-0">
-            成千上万只可爱的猫咪正在等待一个温暖的家。今天就开始你的缘分之旅吧。
+          <p className="text-brand-100 text-xs md:text-lg px-2 text-opacity-90">
+            成千上万只可爱的猫咪正在等待一个温暖的家。
           </p>
 
-          <div className="relative max-w-md mx-auto mt-6 md:mt-8">
+          <div className="relative max-w-md mx-auto mt-4 md:mt-6">
             <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
-              <Search size={18} className="md:w-5 md:h-5" />
+              <Search size={16} className="md:w-5 md:h-5" />
             </div>
             <input
               type="text"
-              placeholder="搜索品种、名字或性格..."
-              className="w-full py-2.5 md:py-3.5 pl-9 md:pl-10 pr-4 rounded-full text-sm md:text-base text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-500/30 shadow-xl"
+              placeholder="搜索品种、名字..."
+              className="w-full py-2 md:py-3 pl-9 md:pl-10 pr-4 rounded-full text-sm md:text-base text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-500/30 shadow-lg"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+
+          <div className="flex flex-wrap justify-center gap-2 mt-3 md:mt-4 opacity-90">
+            {['活泼好动', '高冷安静', '幼猫', '需特殊照顾'].map(tag => (
+              <button
+                key={tag}
+                onClick={() => setSearchTerm(tag)}
+                className="px-2 md:px-3 py-1 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full text-[10px] md:text-xs transition-all border border-white/10 text-white"
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Decorative Circles */}
-        <div className="absolute -top-24 -left-24 w-48 h-48 md:w-64 md:h-64 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-24 -right-24 w-60 h-60 md:w-80 md:h-80 bg-brand-600/50 rounded-full blur-3xl"></div>
+        <div className="absolute -top-32 -left-32 w-56 h-56 bg-white/10 rounded-full blur-3xl opacity-60"></div>
+        <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-brand-600/50 rounded-full blur-3xl opacity-60"></div>
       </section>
 
       {/* Content Area */}

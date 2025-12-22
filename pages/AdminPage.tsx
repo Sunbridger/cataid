@@ -133,68 +133,123 @@ const AdminPage: React.FC = () => {
 
       {activeTab === 'cats' ? (
         // Cats Table
-        <div className="bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-bottom-2">
+        // Cats Management
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
           {loadingCats ? (
-            <div className="flex justify-center items-center py-20">
+            <div className="flex justify-center items-center py-20 bg-white rounded-3xl shadow-lg border border-slate-100">
               <Loader2 className="animate-spin text-slate-400" size={32} />
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm uppercase tracking-wider">
-                    <th className="p-4 font-semibold">猫咪</th>
-                    <th className="p-4 font-semibold">基本信息</th>
-                    <th className="p-4 font-semibold">当前状态</th>
-                    <th className="p-4 font-semibold">操作</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {cats.map((cat) => (
-                    <tr key={cat.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-4 w-24">
-                        <img
-                          src={cat.image_url}
-                          alt={cat.name}
-                          className="w-16 h-16 rounded-lg object-cover bg-slate-200"
-                        />
-                      </td>
-                      <td className="p-4">
-                        <div className="font-bold text-slate-800">{cat.name}</div>
-                        <div className="text-sm text-slate-500">{cat.breed} • {new Date(cat.created_at).toLocaleDateString('zh-CN')}</div>
-                      </td>
-                      <td className="p-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm uppercase tracking-wider">
+                        <th className="p-4 font-semibold">猫咪</th>
+                        <th className="p-4 font-semibold">基本信息</th>
+                        <th className="p-4 font-semibold">当前状态</th>
+                        <th className="p-4 font-semibold">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {cats.map((cat) => (
+                        <tr key={cat.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="p-4 w-24">
+                            <img
+                              src={cat.image_url}
+                              alt={cat.name}
+                              className="w-16 h-16 rounded-lg object-cover bg-slate-200"
+                            />
+                          </td>
+                          <td className="p-4">
+                            <div className="font-bold text-slate-800">{cat.name}</div>
+                            <div className="text-sm text-slate-500">{cat.breed} • {new Date(cat.created_at).toLocaleDateString('zh-CN')}</div>
+                          </td>
+                          <td className="p-4">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
                           ${cat.status === '可领养' ? 'bg-green-50 text-green-700 border-green-200' :
-                            cat.status === '已领养' ? 'bg-slate-100 text-slate-700 border-slate-200' :
-                              'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                          {cat.status || '可领养'}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <div className="relative max-w-[140px]">
+                                cat.status === '已领养' ? 'bg-slate-100 text-slate-700 border-slate-200' :
+                                  'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                              {cat.status || '可领养'}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <div className="relative max-w-[140px]">
+                              <select
+                                value={cat.status || '可领养'}
+                                onChange={(e) => handleStatusChange(cat.id, e.target.value as CatStatus)}
+                                disabled={updatingId === cat.id}
+                                className="appearance-none w-full bg-white border border-slate-300 text-slate-700 py-1.5 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 disabled:opacity-50 cursor-pointer"
+                              >
+                                {CAT_STATUSES.map(status => (
+                                  <option key={status} value={status}>{status}</option>
+                                ))}
+                              </select>
+                              {updatingId === cat.id && (
+                                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                                  <Loader2 className="animate-spin text-brand-500" size={14} />
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-4">
+                {cats.map((cat) => (
+                  <div key={cat.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex gap-4">
+                    <img
+                      src={cat.image_url}
+                      alt={cat.name}
+                      className="w-20 h-20 rounded-xl object-cover bg-slate-100 flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0 flex flex-col justify-between">
+                      <div>
+                        <div className="flex justify-between items-start">
+                          <h3 className="font-bold text-slate-800 text-lg truncate">{cat.name}</h3>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold border
+                            ${cat.status === '可领养' ? 'bg-green-50 text-green-700 border-green-200' :
+                              cat.status === '已领养' ? 'bg-slate-100 text-slate-500 border-slate-200' :
+                                'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                            {cat.status || '可领养'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-slate-500 mt-1">{cat.breed} • {new Date(cat.created_at).toLocaleDateString('zh-CN')}</p>
+                      </div>
+
+                      <div className="mt-2">
+                        <div className="relative w-full">
                           <select
                             value={cat.status || '可领养'}
                             onChange={(e) => handleStatusChange(cat.id, e.target.value as CatStatus)}
                             disabled={updatingId === cat.id}
-                            className="appearance-none w-full bg-white border border-slate-300 text-slate-700 py-1.5 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 disabled:opacity-50 cursor-pointer"
+                            className="appearance-none w-full bg-slate-50 border border-slate-200 text-slate-700 py-2 pl-3 pr-8 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 disabled:opacity-50"
                           >
                             {CAT_STATUSES.map(status => (
                               <option key={status} value={status}>{status}</option>
                             ))}
                           </select>
-                          {updatingId === cat.id && (
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-                              <Loader2 className="animate-spin text-brand-500" size={14} />
-                            </div>
-                          )}
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                            {updatingId === cat.id ? (
+                              <Loader2 className="animate-spin" size={16} />
+                            ) : (
+                              <Settings size={16} />
+                            )}
+                          </div>
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       ) : (
