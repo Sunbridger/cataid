@@ -93,21 +93,21 @@ const AdminPage: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
         <div className="flex items-center gap-3">
-          <div className="bg-slate-800 text-white p-2.5 rounded-xl shadow-md">
-            <Settings size={28} />
+          <div className="bg-slate-800 text-white p-2 md:p-2.5 rounded-xl shadow-md">
+            <Settings size={24} className="md:w-7 md:h-7" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-slate-800">管理后台</h1>
-            <p className="text-slate-500">管理猫咪信息和领养审核</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-800">管理后台</h1>
+            <p className="text-sm md:text-base text-slate-500">管理猫咪信息和领养审核</p>
           </div>
         </div>
 
-        <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+        <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
           <button
             onClick={() => setActiveTab('cats')}
-            className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'cats'
+            className={`flex-1 md:flex-none whitespace-nowrap px-4 md:px-6 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'cats'
               ? 'bg-slate-800 text-white shadow-md'
               : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
               }`}
@@ -116,7 +116,7 @@ const AdminPage: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('applications')}
-            className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${activeTab === 'applications'
+            className={`flex-1 md:flex-none whitespace-nowrap px-4 md:px-6 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 ${activeTab === 'applications'
               ? 'bg-brand-600 text-white shadow-md'
               : 'text-slate-500 hover:text-brand-600 hover:bg-brand-50'
               }`}

@@ -208,14 +208,14 @@ const CatDetailsPage: React.FC = () => {
         </div>
 
         {/* Info Side */}
-        <div className="md:w-1/2 p-8 md:p-10 flex flex-col">
+        <div className="md:w-1/2 p-6 md:p-10 flex flex-col">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h1 className="text-4xl font-bold text-slate-900 mb-1">{cat.name}</h1>
-              <p className="text-slate-500 font-medium text-lg">{cat.age} 岁 • {cat.gender === 'Male' ? '公' : '母'}</p>
+              <h1 className="text-2xl md:text-4xl font-bold text-slate-900 mb-1">{cat.name}</h1>
+              <p className="text-slate-500 font-medium text-base md:text-lg">{cat.age} 岁 • {cat.gender === 'Male' ? '公' : '母'}</p>
             </div>
-            <button className="p-3 bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition-colors">
-              <Heart size={24} fill="currentColor" />
+            <button className="p-2 md:p-3 bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition-colors">
+              <Heart size={20} className="md:w-6 md:h-6" fill="currentColor" />
             </button>
           </div>
 

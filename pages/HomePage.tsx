@@ -54,23 +54,23 @@ const HomePage: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Hero Section */}
-      <section className="bg-brand-500 rounded-3xl p-8 md:p-12 text-center text-white relative overflow-hidden shadow-lg">
-        <div className="relative z-10 max-w-2xl mx-auto space-y-4">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-2">
+      <section className="bg-brand-500 rounded-2xl md:rounded-3xl p-6 md:p-12 text-center text-white relative overflow-hidden shadow-lg">
+        <div className="relative z-10 max-w-2xl mx-auto space-y-3 md:space-y-4">
+          <h1 className="text-2xl md:text-5xl font-bold tracking-tight mb-1 md:mb-2">
             寻找你的喵星人伙伴
           </h1>
-          <p className="text-brand-100 text-lg md:text-xl">
+          <p className="text-brand-100 text-sm md:text-xl px-4 md:px-0">
             成千上万只可爱的猫咪正在等待一个温暖的家。今天就开始你的缘分之旅吧。
           </p>
 
-          <div className="relative max-w-md mx-auto mt-8">
+          <div className="relative max-w-md mx-auto mt-6 md:mt-8">
             <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
-              <Search size={20} />
+              <Search size={18} className="md:w-5 md:h-5" />
             </div>
             <input
               type="text"
               placeholder="搜索品种、名字或性格..."
-              className="w-full py-3.5 pl-10 pr-4 rounded-full text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-500/30 shadow-xl"
+              className="w-full py-2.5 md:py-3.5 pl-9 md:pl-10 pr-4 rounded-full text-sm md:text-base text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-500/30 shadow-xl"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -78,16 +78,16 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* Decorative Circles */}
-        <div className="absolute -top-24 -left-24 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-brand-600/50 rounded-full blur-3xl"></div>
+        <div className="absolute -top-24 -left-24 w-48 h-48 md:w-64 md:h-64 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-24 -right-24 w-60 h-60 md:w-80 md:h-80 bg-brand-600/50 rounded-full blur-3xl"></div>
       </section>
 
       {/* Content Area */}
       <section>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-slate-800">待领养猫咪</h2>
-          <span className="text-slate-500 text-sm font-medium bg-white px-3 py-1 rounded-full border border-slate-200">
-            找到 {filteredCats.length} 只猫咪
+        <div className="flex justify-between items-center mb-4 md:mb-6">
+          <h2 className="text-xl md:text-2xl font-bold text-slate-800">待领养猫咪</h2>
+          <span className="text-slate-500 text-xs md:text-sm font-medium bg-white px-2 py-0.5 md:px-3 md:py-1 rounded-full border border-slate-200">
+            {filteredCats.length} 只
           </span>
         </div>
 
@@ -111,7 +111,7 @@ const HomePage: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             {filteredCats.map(cat => (
               <CatCard key={cat.id} cat={cat} />
             ))}
