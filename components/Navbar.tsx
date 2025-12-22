@@ -51,7 +51,7 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Bottom Navbar */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 pb-safe pt-2 z-50">
-        <div className="flex justify-around items-end h-14 pb-2">
+        <div className="flex justify-around items-center h-14">
           <Link
             to="/"
             className={`flex flex-col items-center gap-1 w-16 transition-colors ${location.pathname === '/' ? 'text-slate-900' : 'text-slate-400'}`}

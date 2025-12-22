@@ -5,12 +5,14 @@ import { generateCatBio } from '../services/geminiService';
 import { Sparkles, Upload, ArrowRight, Loader2 } from 'lucide-react';
 import { CAT_CATEGORIES } from '../constants';
 import { useToast } from '../context/ToastContext';
+import ConfirmModal from '../components/ConfirmModal';
 
 const AddCatPage: React.FC = () => {
   const navigate = useNavigate();
   const { success, error, info } = useToast();
   const [loading, setLoading] = useState(false);
   const [generatingBio, setGeneratingBio] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
 
   const [formData, setFormData] = useState({
@@ -87,15 +89,14 @@ const AddCatPage: React.FC = () => {
   // 引用 hidden file input
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.age || !formData.breed) return;
+    setShowConfirm(true);
+  };
 
-    // 二次确认
-    if (!window.confirm('确定要发布这条领养信息吗？\n请确保信息真实有效，关爱每一条小生命。')) {
-      return;
-    }
-
+  const handleConfirmSubmit = async () => {
+    setShowConfirm(false);
     setLoading(true);
     try {
       // 使用 catService.create 自动处理图片上传
@@ -392,7 +393,36 @@ const AddCatPage: React.FC = () => {
           )}
         </button>
       </form>
-    </div >
+
+      {/* Full Screen Loading Overlay */}
+      {loading && (
+        <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in duration-200">
+          <div className="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4 border border-slate-100">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-brand-100 border-t-brand-500 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-8 h-8 bg-brand-50 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-slate-800 mb-1">正在上传</h3>
+              <p className="text-slate-500 text-sm">正在处理猫咪照片和信息，请稍候...</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        title="确认发布"
+        message="确定要发布这条领养信息吗？请确保所有信息真实有效，每一条信息都代表着对一个小生命的责任。"
+        onConfirm={handleConfirmSubmit}
+        onCancel={() => setShowConfirm(false)}
+        confirmText="确认发布"
+        cancelText="我再想想"
+        type="info"
+      />
+    </div>
   );
 };
 
