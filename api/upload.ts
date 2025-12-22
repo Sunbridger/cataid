@@ -58,7 +58,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // 上传到 Supabase Storage
     const { error: uploadError } = await supabase.storage
-      .from('images')
+      .from('catImages')
       .upload(filePath, buffer, {
         contentType: contentType || 'image/jpeg',
         upsert: false
@@ -71,7 +71,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // 获取公开 URL
     const { data: urlData } = supabase.storage
-      .from('images')
+      .from('catImages')
       .getPublicUrl(filePath);
 
     return res.status(200).json({
