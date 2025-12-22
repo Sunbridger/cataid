@@ -183,7 +183,7 @@ const AdminPage: React.FC = () => {
                         <tr key={cat.id} className="hover:bg-slate-50 transition-colors">
                           <td className="p-4 w-24">
                             <img
-                              src={cat.image_url}
+                              src={cat.image_url.split(',')[0]}
                               alt={cat.name}
                               className="w-16 h-16 rounded-lg object-cover bg-slate-200"
                             />
@@ -243,7 +243,7 @@ const AdminPage: React.FC = () => {
                 {cats.map((cat) => (
                   <div key={cat.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex gap-4">
                     <img
-                      src={cat.image_url}
+                      src={cat.image_url.split(',')[0]}
                       alt={cat.name}
                       className="w-20 h-20 rounded-xl object-cover bg-slate-100 flex-shrink-0"
                     />

@@ -43,11 +43,7 @@ const CatCard: React.FC<CatCardProps> = ({ cat }) => {
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-3 pt-12 md:p-4 md:pt-16">
-          <div className="flex gap-1.5 mb-1.5 flex-wrap">
-            {cat.is_vaccinated && <span className="text-[10px] px-1.5 py-0.5 bg-green-500/80 backdrop-blur-[2px] text-white rounded font-medium">疫苗</span>}
-            {cat.is_sterilized && <span className="text-[10px] px-1.5 py-0.5 bg-blue-500/80 backdrop-blur-[2px] text-white rounded font-medium">绝育</span>}
-            {cat.is_dewormed && <span className="text-[10px] px-1.5 py-0.5 bg-teal-500/80 backdrop-blur-[2px] text-white rounded font-medium">驱虫</span>}
-          </div>
+
           <h3 className="text-white text-lg md:text-xl font-bold truncate drop-shadow-sm">{cat.name}</h3>
           <p className="text-gray-100 text-xs md:text-sm font-medium truncate opacity-90">{cat.breed} • {cat.age} 岁</p>
         </div>
@@ -55,6 +51,10 @@ const CatCard: React.FC<CatCardProps> = ({ cat }) => {
 
       <div className="p-3 md:p-4">
         <div className="flex flex-wrap gap-1.5 md:gap-2 mb-2 md:mb-3">
+          {cat.is_vaccinated && <span className="text-[10px] md:text-xs px-1.5 py-0.5 md:px-2 md:py-1 bg-green-50 text-green-700 rounded-md font-medium">疫苗</span>}
+          {cat.is_sterilized && <span className="text-[10px] md:text-xs px-1.5 py-0.5 md:px-2 md:py-1 bg-blue-50 text-blue-700 rounded-md font-medium">绝育</span>}
+          {cat.is_dewormed && <span className="text-[10px] md:text-xs px-1.5 py-0.5 md:px-2 md:py-1 bg-teal-50 text-teal-700 rounded-md font-medium">驱虫</span>}
+
           {cat.tags.slice(0, 3).map(tag => (
             <span key={tag} className="text-[10px] md:text-xs px-1.5 py-0.5 md:px-2 md:py-1 bg-brand-50 text-brand-600 rounded-md font-medium truncate max-w-full">
               {tag}

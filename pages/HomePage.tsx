@@ -94,7 +94,7 @@ const HomePage: React.FC = () => {
       <div
         className="fixed top-16 left-0 right-0 z-50 flex justify-center pointer-events-none transition-all duration-300"
         style={{
-          transform: `translateY(${refreshing ? 10 : Math.min(pullDistance - 40, 0)}px)`,
+          transform: `translateY(${refreshing ? 10 : Math.min(pullDistance - 80, 0)}px)`,
           opacity: pullDistance > 0 || refreshing ? 1 : 0
         }}
       >
