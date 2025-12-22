@@ -24,20 +24,32 @@ const CatCard: React.FC<CatCardProps> = ({ cat }) => {
           loading="lazy"
         />
 
-        {/* Status Badge */}
-        {status !== '可领养' && (
-          <div className={`absolute top-2 left-2 md:top-3 md:left-3 px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold shadow-sm uppercase tracking-wide z-10
+        {/* Badges Container */}
+        <div className="absolute top-2 left-2 md:top-3 md:left-3 flex flex-col gap-1.5 z-10 items-start">
+          {status !== '可领养' && (
+            <div className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold shadow-sm uppercase tracking-wide
              ${status === '已领养' ? 'bg-slate-800 text-white' : 'bg-amber-100 text-amber-800'}`}>
-            {status}
+              {status}
+            </div>
+          )}
+          <div className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold shadow-sm uppercase tracking-wide text-white
+             ${cat.is_stray ? 'bg-orange-500' : 'bg-brand-500'}`}>
+            {cat.is_stray ? '流浪' : '家养'}
           </div>
-        )}
+        </div>
 
         <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-white/90 backdrop-blur-sm p-1.5 md:p-2 rounded-full shadow-sm text-brand-500">
           <Heart size={16} className="md:w-[18px] md:h-[18px]" fill="currentColor" />
         </div>
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 pt-10 md:p-4 md:pt-12">
-          <h3 className="text-white text-lg md:text-xl font-bold truncate">{cat.name}</h3>
-          <p className="text-white/90 text-xs md:text-sm font-medium truncate">{cat.breed} • {cat.age} 岁</p>
+
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-3 pt-12 md:p-4 md:pt-16">
+          <div className="flex gap-1.5 mb-1.5 flex-wrap">
+            {cat.is_vaccinated && <span className="text-[10px] px-1.5 py-0.5 bg-green-500/80 backdrop-blur-[2px] text-white rounded font-medium">疫苗</span>}
+            {cat.is_sterilized && <span className="text-[10px] px-1.5 py-0.5 bg-blue-500/80 backdrop-blur-[2px] text-white rounded font-medium">绝育</span>}
+            {cat.is_dewormed && <span className="text-[10px] px-1.5 py-0.5 bg-teal-500/80 backdrop-blur-[2px] text-white rounded font-medium">驱虫</span>}
+          </div>
+          <h3 className="text-white text-lg md:text-xl font-bold truncate drop-shadow-sm">{cat.name}</h3>
+          <p className="text-gray-100 text-xs md:text-sm font-medium truncate opacity-90">{cat.breed} • {cat.age} 岁</p>
         </div>
       </div>
 

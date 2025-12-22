@@ -13,7 +13,7 @@ const App: React.FC = () => {
       <ToastProvider>
         <div className="min-h-screen flex flex-col font-sans text-slate-800 bg-brand-50/30">
           <Navbar />
-          <main className="flex-grow container mx-auto px-4 py-6 md:py-8 max-w-6xl pb-24 md:pb-8">
+          <main className="flex-grow container mx-auto px-4 py-6 md:py-8 max-w-6xl md:pb-8">
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/add" element={<AddCatPage />} />
