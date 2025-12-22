@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { catService } from '../services/apiService';
-import { generateCatBio } from '../services/geminiService';
-import { Sparkles, Upload, ArrowRight, Loader2 } from 'lucide-react';
+import { generateCatBio, analyzeCatImage } from '../services/geminiService';
+import { Sparkles, Upload, ArrowRight, Loader2, Camera, Info } from 'lucide-react';
 import { CAT_CATEGORIES } from '../constants';
 import { useToast } from '../context/ToastContext';
 import ConfirmModal from '../components/ConfirmModal';
@@ -12,6 +12,7 @@ const AddCatPage: React.FC = () => {
   const { success, error, info } = useToast();
   const [loading, setLoading] = useState(false);
   const [generatingBio, setGeneratingBio] = useState(false);
+  const [analyzingImage, setAnalyzingImage] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
 
@@ -44,11 +45,20 @@ const AddCatPage: React.FC = () => {
     }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Helper to convert file to base64 for API
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
       const totalFiles = [...formData.imageFiles, ...newFiles].slice(0, 9);
-
       const newPreviews = totalFiles.map(file => URL.createObjectURL(file));
 
       setFormData(prev => ({
@@ -56,6 +66,40 @@ const AddCatPage: React.FC = () => {
         imageFiles: totalFiles,
         imagePreviews: newPreviews
       }));
+
+      // Trigger AI Analysis if this is the first image upload (and we aren't already analyzing)
+      // This enhances UX by auto-filling breed/tags
+      if (newFiles.length > 0 && !formData.breed && !analyzingImage) {
+        setAnalyzingImage(true);
+        try {
+          // Analyze the first newly uploaded image
+          const base64 = await fileToBase64(newFiles[0]);
+          const analysis = await analyzeCatImage(base64);
+
+          if (analysis) {
+            setFormData(prev => {
+              // Merge existing tags with new characteristics (avoiding duplicates)
+              const newTags = analysis.characteristics
+                ? Array.from(new Set([...prev.tags, ...analysis.characteristics.slice(0, 3)]))
+                : prev.tags;
+
+              return {
+                ...prev,
+                breed: analysis.breed || prev.breed,
+                // Only set tags if we found some relevant ones that match our predefined list or are useful
+                // For simplicity, we just add them. In a stricter app, we might filter by CAT_CATEGORIES.
+                tags: newTags
+              };
+            });
+            success(`AI 识别成功：这是一个 ${analysis.breed || '可爱猫咪'}`);
+          }
+        } catch (err) {
+          console.error("AI Analysis failed", err);
+          // Silent fail or optional info toast
+        } finally {
+          setAnalyzingImage(false);
+        }
+      }
     }
   };
 
@@ -141,30 +185,50 @@ const AddCatPage: React.FC = () => {
           </div>
 
           {/* Image Upload */}
-          <div className="space-y-3">
-            <label className="block text-sm font-semibold text-slate-700">猫咪照片 (最多9张) <span className="text-brand-500">*</span></label>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <label className="block text-sm font-bold text-slate-700 flex items-center gap-2">
+                <Camera size={18} className="text-brand-500" />
+                猫咪照片
+                <span className="text-slate-400 font-normal text-xs">(最多9张)</span>
+              </label>
+              {analyzingImage && (
+                <div className="flex items-center gap-2 text-xs text-brand-600 font-medium bg-brand-50 px-3 py-1 rounded-full animate-pulse">
+                  <Sparkles size={12} />
+                  AI 正在识别品种...
+                </div>
+              )}
+            </div>
 
-            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
+            <div className="grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5">
               {formData.imagePreviews.map((preview, index) => (
-                <div key={index} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group">
-                  <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover" />
+                <div key={index} className="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 shadow-sm group">
+                  <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                    className="absolute top-1.5 right-1.5 bg-white/90 text-slate-700 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 hover:text-red-500 shadow-sm transform hover:scale-110"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
                   </button>
+                  {index === 0 && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-brand-500/80 text-white text-[10px] font-bold py-1 text-center backdrop-blur-sm">
+                      封面
+                    </div>
+                  )}
                 </div>
               ))}
 
               {formData.imageFiles.length < 9 && (
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="aspect-square rounded-xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:bg-white hover:border-brand-300 transition-all text-slate-400 hover:text-brand-500"
+                  className="aspect-square rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:bg-white hover:border-brand-400 hover:shadow-md transition-all group overflow-hidden"
                 >
-                  <Upload size={20} className="mb-1" />
-                  <span className="text-[10px] font-bold">上传照片</span>
+                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mb-2 group-hover:scale-110 transition-transform text-brand-500">
+                    <Upload size={20} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-400 group-hover:text-brand-500">上传照片</span>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -176,7 +240,6 @@ const AddCatPage: React.FC = () => {
                 </div>
               )}
             </div>
-            <p className="text-xs text-slate-400">支持 JPG/PNG，第一张将作为封面图</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">

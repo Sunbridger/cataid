@@ -77,11 +77,20 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const filteredCats = cats.filter(cat =>
-    cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cat.breed.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cat.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredCats = cats.filter(cat => {
+    // Handle special boolean filters from the quick tags
+    if (searchTerm === '家养') return !cat.is_stray;
+    if (searchTerm === '已接种') return cat.is_vaccinated;
+    if (searchTerm === '已驱虫') return cat.is_dewormed;
+    if (searchTerm === '已绝育') return cat.is_sterilized;
+
+    // Default search behavior
+    return (
+      cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cat.breed.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cat.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  });
 
   return (
     <div
@@ -129,11 +138,11 @@ const HomePage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap justify-center gap-1.5 mt-2 md:mt-3 opacity-90">
-            {['粘人精', '活泼好动', '幼猫', '高冷安静', '话唠'].map(tag => (
+            {['家养', '已接种', '已驱虫', '已绝育'].map(tag => (
               <button
                 key={tag}
-                onClick={() => setSearchTerm(tag)}
-                className="px-2 md:px-3 py-0.5 md:py-1 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full text-[10px] md:text-xs transition-all border border-white/10 text-white"
+                onClick={() => setSearchTerm(searchTerm === tag ? '' : tag)}
+                className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs transition-all border ${searchTerm === tag ? 'bg-white text-brand-600 border-white font-bold' : 'bg-white/10 hover:bg-white/20 backdrop-blur-sm border-white/10 text-white'}`}
               >
                 {tag}
               </button>
