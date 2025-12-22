@@ -9,6 +9,10 @@ export const API_BASE_URL = '';
 export const CAT_CATEGORIES = [
   '活泼好动',
   '高冷安静',
+  '粘人精',
+  '独立自主',
+  '话唠',
+  '干饭喵',
   '老年猫',
   '幼猫',
   '需特殊照顾',
