@@ -42,37 +42,20 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <ToastContext.Provider value={{ showToast, success, error, info }}>
       {children}
-      <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9999] flex flex-col gap-3 pointer-events-none items-center transition-all">
         {toasts.map(toast => (
           <div
             key={toast.id}
-            className={`pointer-events-auto min-w-[300px] max-w-sm w-full bg-white rounded-xl shadow-xl border p-4 flex items-start gap-3 animate-in slide-in-from-top-full fade-in duration-300 ${toast.type === 'success' ? 'border-green-100 bg-green-50' :
-                toast.type === 'error' ? 'border-red-100 bg-red-50' :
-                  'border-blue-100 bg-blue-50'
-              }`}
+            className="pointer-events-auto bg-slate-800/90 backdrop-blur-md text-white px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-3 min-w-[fit-content] max-w-[80vw] animate-in fade-in zoom-in-95 duration-200"
           >
-            <div className={`mt-0.5 ${toast.type === 'success' ? 'text-green-500' :
-              toast.type === 'error' ? 'text-red-500' :
-                'text-blue-500'
-              }`}>
-              {toast.type === 'success' && <CheckCircle2 size={20} />}
-              {toast.type === 'error' && <AlertCircle size={20} />}
-              {toast.type === 'info' && <Info size={20} />}
+            <div className="flex-shrink-0">
+              {toast.type === 'success' && <CheckCircle2 size={18} className="text-green-400" />}
+              {toast.type === 'error' && <AlertCircle size={18} className="text-red-400" />}
+              {toast.type === 'info' && <Info size={18} className="text-blue-400" />}
             </div>
-            <div className="flex-1">
-              <p className={`text-sm font-medium ${toast.type === 'success' ? 'text-green-800' :
-                toast.type === 'error' ? 'text-red-800' :
-                  'text-blue-800'
-                }`}>
-                {toast.message}
-              </p>
-            </div>
-            <button
-              onClick={() => removeToast(toast.id)}
-              className="text-slate-400 hover:text-slate-600 transition-colors"
-            >
-              <X size={16} />
-            </button>
+            <p className="text-sm font-medium tracking-wide">
+              {toast.message}
+            </p>
           </div>
         ))}
       </div>

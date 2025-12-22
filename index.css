@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Prevent bounce scroll on mobile Safari */
+body {
+  overscroll-behavior-y: none;
+}
+
+/* Ensure bottom nav handles safe area correctly */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}

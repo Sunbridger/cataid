@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { catService, adoptionService } from '../services/apiService';
 import { chatAboutCat } from '../services/geminiService';
 import { Cat, AdoptionApplication } from '../types';
-import { Loader2, ArrowLeft, Heart, MessageCircle, Send, Sparkles, CheckCircle2, XCircle, Clock, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, ArrowLeft, Heart, MessageCircle, Send, Sparkles, CheckCircle2, XCircle, Clock, X } from 'lucide-react';
+import CatImageGallery from '../components/CatImageGallery';
 
 import { useToast } from '../context/ToastContext';
 
@@ -12,7 +13,7 @@ const CatDetailsPage: React.FC = () => {
   const { success, error } = useToast();
   const [cat, setCat] = useState<Cat | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
 
   // Chat state
   const [chatOpen, setChatOpen] = useState(false);
@@ -199,89 +200,33 @@ const CatDetailsPage: React.FC = () => {
         {/* Image Side */}
         {/* Image Side */}
         <div className="md:w-1/2 bg-slate-100 relative h-96 md:h-auto group">
-          {(() => {
-            const images = cat.image_url.split(',');
-            const hasMultipleImages = images.length > 1;
-
-            return (
-              <>
-                <div className="relative w-full h-full overflow-hidden">
-                  <div
-                    className="flex transition-transform duration-500 ease-out h-full"
-                    style={{ transform: `translateX(-${activeImageIndex * 100}%)` }}
-                  >
-                    {images.map((img, idx) => (
-                      <img
-                        key={idx}
-                        src={img}
-                        alt={`${cat.name} ${idx + 1}`}
-                        className={`w-full h-full object-cover flex-shrink-0 ${isAdopted ? 'grayscale-[0.8]' : ''}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {hasMultipleImages && (
-                  <>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setActiveImageIndex(curr => curr === 0 ? images.length - 1 : curr - 1);
-                      }}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-slate-800 p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all z-10"
-                    >
-                      <ChevronLeft size={24} />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setActiveImageIndex(curr => curr === images.length - 1 ? 0 : curr + 1);
-                      }}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-slate-800 p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all z-10"
-                    >
-                      <ChevronRight size={24} />
-                    </button>
-
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-                      {images.map((_, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setActiveImageIndex(idx)}
-                          className={`w-2 h-2 rounded-full transition-all ${idx === activeImageIndex ? 'bg-white w-4' : 'bg-white/50 hover:bg-white/80'
-                            }`}
-                        />
-                      ))}
-                    </div>
-                  </>
-                )}
-              </>
-            );
-          })()}
-
-          {isAdopted && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[2px] z-20 pointer-events-none">
-              <div className="bg-white/90 px-6 py-3 rounded-2xl transform -rotate-12 shadow-2xl border-4 border-slate-800">
-                <span className="text-3xl font-black text-slate-800 uppercase tracking-widest">已领养</span>
-              </div>
-            </div>
-          )}
-          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm uppercase tracking-wide z-20">
-            {cat.breed}
-          </div>
-
-          <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold shadow-sm uppercase tracking-wide z-20
-             ${status === '可领养' ? 'bg-green-100 text-green-700' :
-              status === '待定' ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-600'}`}>
-            {status}
-          </div>
+          <CatImageGallery
+            images={cat.image_url.split(',')}
+            name={cat.name}
+            isAdopted={isAdopted}
+          />
         </div>
 
         {/* Info Side */}
-        <div className="md:w-1/2 p-6 md:p-10 flex flex-col">
+        < div className="md:w-1/2 p-6 md:p-10 flex flex-col" >
           <div className="flex justify-between items-start mb-4">
             <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className={`px-2 py-0.5 rounded text-xs font-bold text-white ${cat.is_stray ? 'bg-orange-400' : 'bg-brand-500'}`}>
+                  {cat.is_stray ? '流浪' : '家养'}
+                </span>
+                <span className={`px-2 py-0.5 rounded text-xs font-bold ${status === '可领养' ? 'bg-green-100 text-green-700' :
+                  status === '待定' ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-600'
+                  }`}>
+                  {status}
+                </span>
+              </div>
               <h1 className="text-2xl md:text-4xl font-bold text-slate-900 mb-1">{cat.name}</h1>
-              <p className="text-slate-500 font-medium text-base md:text-lg">{cat.age} 岁 • {cat.gender === 'Male' ? '公' : '母'}</p>
+              <div className="flex items-center gap-3 text-slate-500 font-medium text-sm md:text-base mt-2">
+                <span className="bg-slate-100 px-2 py-1 rounded">{cat.age} 岁</span>
+                <span className="bg-slate-100 px-2 py-1 rounded">{cat.gender === 'Male' ? '男孩' : '女孩'}</span>
+                <span className="bg-slate-100 px-2 py-1 rounded">{cat.breed}</span>
+              </div>
             </div>
             <button className="p-2 md:p-3 bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition-colors">
               <Heart size={20} className="md:w-6 md:h-6" fill="currentColor" />
@@ -296,8 +241,20 @@ const CatDetailsPage: React.FC = () => {
             ))}
           </div>
 
-          <div className="prose prose-slate mb-8 text-slate-600 leading-relaxed">
+          <div className="prose prose-slate mb-6 text-slate-600 leading-relaxed">
             <p>{cat.description}</p>
+          </div>
+
+          <div className="flex flex-wrap gap-3 mb-8">
+            <div className={`px-3 py-1.5 rounded-lg text-sm font-medium ${cat.is_vaccinated ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-400'}`}>
+              {cat.is_vaccinated ? '已接种' : '未接种'}
+            </div>
+            <div className={`px-3 py-1.5 rounded-lg text-sm font-medium ${cat.is_dewormed ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-400'}`}>
+              {cat.is_dewormed ? '已驱虫' : '未驱虫'}
+            </div>
+            <div className={`px-3 py-1.5 rounded-lg text-sm font-medium ${cat.is_sterilized ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-400'}`}>
+              {cat.is_sterilized ? '已绝育' : '未绝育'}
+            </div>
           </div>
 
           <div className="mt-auto space-y-4">

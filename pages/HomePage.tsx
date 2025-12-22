@@ -14,6 +14,38 @@ const HomePage: React.FC = () => {
     fetchCats();
   }, []);
 
+  // Pull to refresh state
+  const [touchStart, setTouchStart] = useState(0);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const PULL_THRESHOLD = 80;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (window.scrollY === 0) {
+      setTouchStart(e.targetTouches[0].clientY);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const touchY = e.targetTouches[0].clientY;
+    const distance = touchY - touchStart;
+
+    if (touchStart > 0 && window.scrollY === 0 && distance > 0) {
+      // Add resistance
+      setPullDistance(distance * 0.4);
+    }
+  };
+
+  const handleTouchEnd = async () => {
+    if (pullDistance > PULL_THRESHOLD) {
+      setRefreshing(true);
+      await fetchCats();
+      setRefreshing(false);
+    }
+    setTouchStart(0);
+    setPullDistance(0);
+  };
+
   const fetchCats = async () => {
     try {
       setLoading(true);
@@ -52,9 +84,29 @@ const HomePage: React.FC = () => {
   );
 
   return (
-    <div className="space-y-8">
+    <div
+      className="space-y-8"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Pull to Refresh Indicator */}
+      <div
+        className="fixed top-16 left-0 right-0 z-50 flex justify-center pointer-events-none transition-all duration-300"
+        style={{
+          transform: `translateY(${refreshing ? 10 : Math.min(pullDistance - 40, 0)}px)`,
+          opacity: pullDistance > 0 || refreshing ? 1 : 0
+        }}
+      >
+        <div className="bg-white/80 backdrop-blur rounded-full p-2 shadow-md">
+          <Loader2 className={`text-brand-500 ${refreshing ? 'animate-spin' : ''}`} style={{ transform: `rotate(${pullDistance * 2}deg)` }} size={24} />
+        </div>
+      </div>
+
       {/* Hero Section */}
-      <section className="bg-brand-500 rounded-2xl md:rounded-3xl p-4 md:p-8 text-center text-white relative overflow-hidden shadow-lg">
+      <section className="bg-brand-500 rounded-2xl md:rounded-3xl p-4 md:p-8 text-center text-white relative overflow-hidden shadow-lg transition-transform duration-200"
+        style={{ transform: `translateY(${pullDistance}px)` }}
+      >
         <div className="relative z-10 max-w-xl mx-auto space-y-2 md:space-y-3">
           <h1 className="text-lg md:text-3xl font-bold tracking-tight">
             寻找你的喵星人伙伴

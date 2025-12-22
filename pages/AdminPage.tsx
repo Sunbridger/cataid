@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { catService, adoptionService } from '../services/apiService';
 import { Cat, CatStatus, AdoptionApplication, ApplicationStatus } from '../types';
 import { CAT_STATUSES } from '../constants';
-import { Loader2, Settings, FileText, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, Settings, FileText, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 
 import { useToast } from '../context/ToastContext';
 
@@ -14,6 +14,7 @@ const AdminPage: React.FC = () => {
   const [cats, setCats] = useState<Cat[]>([]);
   const [loadingCats, setLoadingCats] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Applications State
   const [applications, setApplications] = useState<AdoptionApplication[]>([]);
@@ -60,6 +61,24 @@ const AdminPage: React.FC = () => {
       error("更新状态失败");
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const handleDeleteCat = async (id: string) => {
+    if (!window.confirm('确定要删除这只猫咪及其所有信息吗？此操作不可恢复。')) {
+      return;
+    }
+
+    try {
+      setDeletingId(id);
+      await catService.delete(id);
+      setCats(prev => prev.filter(cat => cat.id !== id));
+      success('删除成功');
+    } catch (err) {
+      console.error("Failed to delete cat", err);
+      error("删除失败，请重试");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -182,23 +201,35 @@ const AdminPage: React.FC = () => {
                             </span>
                           </td>
                           <td className="p-4">
-                            <div className="relative max-w-[140px]">
-                              <select
-                                value={cat.status || '可领养'}
-                                onChange={(e) => handleStatusChange(cat.id, e.target.value as CatStatus)}
-                                disabled={updatingId === cat.id}
-                                className="appearance-none w-full bg-white border border-slate-300 text-slate-700 py-1.5 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 disabled:opacity-50 cursor-pointer"
-                              >
-                                {CAT_STATUSES.map(status => (
-                                  <option key={status} value={status}>{status}</option>
-                                ))}
-                              </select>
-                              {updatingId === cat.id && (
-                                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-                                  <Loader2 className="animate-spin text-brand-500" size={14} />
+                            <td className="p-4">
+                              <div className="flex items-center gap-2">
+                                <div className="relative max-w-[140px]">
+                                  <select
+                                    value={cat.status || '可领养'}
+                                    onChange={(e) => handleStatusChange(cat.id, e.target.value as CatStatus)}
+                                    disabled={updatingId === cat.id}
+                                    className="appearance-none w-full bg-white border border-slate-300 text-slate-700 py-1.5 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 disabled:opacity-50 cursor-pointer"
+                                  >
+                                    {CAT_STATUSES.map(status => (
+                                      <option key={status} value={status}>{status}</option>
+                                    ))}
+                                  </select>
+                                  {updatingId === cat.id && (
+                                    <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                                      <Loader2 className="animate-spin text-brand-500" size={14} />
+                                    </div>
+                                  )}
                                 </div>
-                              )}
-                            </div>
+                                <button
+                                  onClick={() => handleDeleteCat(cat.id)}
+                                  disabled={deletingId === cat.id}
+                                  className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                                  title="删除"
+                                >
+                                  {deletingId === cat.id ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                                </button>
+                              </div>
+                            </td>
                           </td>
                         </tr>
                       ))}
@@ -231,24 +262,33 @@ const AdminPage: React.FC = () => {
                       </div>
 
                       <div className="mt-2">
-                        <div className="relative w-full">
-                          <select
-                            value={cat.status || '可领养'}
-                            onChange={(e) => handleStatusChange(cat.id, e.target.value as CatStatus)}
-                            disabled={updatingId === cat.id}
-                            className="appearance-none w-full bg-slate-50 border border-slate-200 text-slate-700 py-2 pl-3 pr-8 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 disabled:opacity-50"
-                          >
-                            {CAT_STATUSES.map(status => (
-                              <option key={status} value={status}>{status}</option>
-                            ))}
-                          </select>
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                            {updatingId === cat.id ? (
-                              <Loader2 className="animate-spin" size={16} />
-                            ) : (
-                              <Settings size={16} />
-                            )}
+                        <div className="flex items-center gap-2">
+                          <div className="relative w-full">
+                            <select
+                              value={cat.status || '可领养'}
+                              onChange={(e) => handleStatusChange(cat.id, e.target.value as CatStatus)}
+                              disabled={updatingId === cat.id}
+                              className="appearance-none w-full bg-slate-50 border border-slate-200 text-slate-700 py-2 pl-3 pr-8 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 disabled:opacity-50"
+                            >
+                              {CAT_STATUSES.map(status => (
+                                <option key={status} value={status}>{status}</option>
+                              ))}
+                            </select>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                              {updatingId === cat.id ? (
+                                <Loader2 className="animate-spin" size={16} />
+                              ) : (
+                                <Settings size={16} />
+                              )}
+                            </div>
                           </div>
+                          <button
+                            onClick={() => handleDeleteCat(cat.id)}
+                            disabled={deletingId === cat.id}
+                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 bg-slate-50 border border-slate-200"
+                          >
+                            {deletingId === cat.id ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                          </button>
                         </div>
                       </div>
                     </div>

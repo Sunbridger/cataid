@@ -21,7 +21,11 @@ const AddCatPage: React.FC = () => {
     tags: [] as string[],
     description: '',
     imageFiles: [] as File[],
-    imagePreviews: [] as string[]
+    imagePreviews: [] as string[],
+    is_sterilized: false,
+    is_dewormed: false,
+    is_vaccinated: false,
+    is_stray: false
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -102,7 +106,12 @@ const AddCatPage: React.FC = () => {
         breed: formData.breed,
         description: formData.description,
         tags: formData.tags,
-        imageFiles: formData.imageFiles // 传入图片文件数组，API 会自动上传
+
+        imageFiles: formData.imageFiles, // 传入图片文件数组，API 会自动上传
+        is_sterilized: formData.is_sterilized,
+        is_dewormed: formData.is_dewormed,
+        is_vaccinated: formData.is_vaccinated,
+        is_stray: formData.is_stray
       });
       success('发布成功！');
       navigate('/');
@@ -115,7 +124,7 @@ const AddCatPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto" >
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold text-slate-800">发布猫咪领养信息</h1>
         <p className="text-slate-500 mt-2">帮助毛孩子找到永远的家。</p>
@@ -192,6 +201,96 @@ const AddCatPage: React.FC = () => {
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all placeholder:text-slate-300"
                 placeholder="例如：中华田园猫"
               />
+            </div>
+
+            <div className="space-y-4 pt-2">
+              <label className="block text-sm font-medium text-slate-700">健康状况与来源</label>
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* is_stray */}
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs text-slate-500">来源</span>
+                  <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, is_stray: false }))}
+                      className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_stray ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      家养
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, is_stray: true }))}
+                      className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_stray ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      流浪
+                    </button>
+                  </div>
+                </div>
+
+                {/* is_sterilized */}
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs text-slate-500">是否绝育</span>
+                  <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, is_sterilized: true }))}
+                      className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_sterilized ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      已绝育
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, is_sterilized: false }))}
+                      className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_sterilized ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      未绝育
+                    </button>
+                  </div>
+                </div>
+
+                {/* is_dewormed */}
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs text-slate-500">是否驱虫</span>
+                  <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, is_dewormed: true }))}
+                      className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_dewormed ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      已驱虫
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, is_dewormed: false }))}
+                      className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_dewormed ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      未驱虫
+                    </button>
+                  </div>
+                </div>
+
+                {/* is_vaccinated */}
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs text-slate-500">是否接种疫苗</span>
+                  <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, is_vaccinated: true }))}
+                      className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_vaccinated ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      已接种
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, is_vaccinated: false }))}
+                      className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_vaccinated ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      未接种
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="space-y-1.5">
@@ -293,7 +392,7 @@ const AddCatPage: React.FC = () => {
           )}
         </button>
       </form>
-    </div>
+    </div >
   );
 };
 

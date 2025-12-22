@@ -109,7 +109,11 @@ export const catApi = {
           breed: cat.breed,
           description: cat.description,
           tags: cat.tags,
-          image_url: imageUrl
+          image_url: imageUrl,
+          is_sterilized: cat.is_sterilized,
+          is_dewormed: cat.is_dewormed,
+          is_vaccinated: cat.is_vaccinated,
+          is_stray: cat.is_stray
         }),
       });
       return result.data;
@@ -127,6 +131,15 @@ export const catApi = {
     await request(`/cats/${id}`, {
       method: 'PUT',
       body: JSON.stringify({ status }),
+    });
+  },
+
+  /**
+   * 删除猫咪
+   */
+  delete: async (id: string): Promise<void> => {
+    await request(`/cats/${id}`, {
+      method: 'DELETE',
     });
   },
 };

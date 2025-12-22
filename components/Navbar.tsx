@@ -62,12 +62,10 @@ const Navbar: React.FC = () => {
 
           <Link
             to="/add"
-            className="flex flex-col items-center justify-center w-16 relative -top-3"
+            className={`flex flex-col items-center gap-1 w-16 transition-colors ${location.pathname === '/add' ? 'text-slate-900' : 'text-slate-400'}`}
           >
-            <div className="w-12 h-12 bg-brand-500 rounded-2xl shadow-lg shadow-brand-500/30 flex items-center justify-center text-white transform hover:scale-105 transition-transform">
-              <PlusCircle size={28} />
-            </div>
-            <span className="text-[10px] font-bold text-slate-800 mt-1">发布</span>
+            <PlusCircle size={24} strokeWidth={location.pathname === '/add' ? 2.5 : 2} />
+            <span className={`text-[10px] ${location.pathname === '/add' ? 'font-bold' : 'font-medium'}`}>发布</span>
           </Link>
 
           <Link

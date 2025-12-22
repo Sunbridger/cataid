@@ -12,6 +12,10 @@ export interface Cat {
   tags: string[];
   status: CatStatus;
   created_at: string;
+  is_sterilized: boolean;
+  is_dewormed: boolean;
+  is_vaccinated: boolean;
+  is_stray: boolean;
 }
 
 export interface NewCatInput {
@@ -23,6 +27,10 @@ export interface NewCatInput {
   tags: string[];
   status?: CatStatus;
   imageFiles?: File[] | null;
+  is_sterilized: boolean;
+  is_dewormed: boolean;
+  is_vaccinated: boolean;
+  is_stray: boolean;
 }
 
 export interface AdoptionApplication {
