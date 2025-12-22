@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Cat, PlusCircle, Home, Settings } from 'lucide-react';
 
@@ -8,6 +8,36 @@ const Navbar: React.FC = () => {
   const isActive = (path: string) => location.pathname === path
     ? "text-brand-600 font-semibold bg-brand-50"
     : "text-slate-600 hover:text-brand-500 hover:bg-white";
+
+  // Detect if virtual keyboard is likely open (by checking if input is focused)
+  const [isInputFocused, setIsInputFocused] = useState(false);
+
+  useEffect(() => {
+    const handleFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (['INPUT', 'TEXTAREA'].includes(target.tagName)) {
+        setIsInputFocused(true);
+      }
+    };
+
+    const handleFocusOut = () => {
+      // Small delay to prevent flickering when switching focus between inputs
+      setTimeout(() => {
+        const activeElement = document.activeElement as HTMLElement;
+        if (!['INPUT', 'TEXTAREA'].includes(activeElement.tagName)) {
+          setIsInputFocused(false);
+        }
+      }, 50);
+    };
+
+    window.addEventListener('focusin', handleFocusIn);
+    window.addEventListener('focusout', handleFocusOut);
+
+    return () => {
+      window.removeEventListener('focusin', handleFocusIn);
+      window.removeEventListener('focusout', handleFocusOut);
+    };
+  }, []);
 
   return (
     <>
@@ -50,7 +80,7 @@ const Navbar: React.FC = () => {
       </nav>
 
       {/* Mobile Bottom Navbar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 pb-safe pt-2 z-50">
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 pb-safe pt-2 z-50 transition-transform duration-300 ${isInputFocused ? 'translate-y-full' : 'translate-y-0'}`}>
         <div className="flex justify-around items-center h-14">
           <Link
             to="/"
