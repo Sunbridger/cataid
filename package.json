@@ -2,6 +2,7 @@
   "name": "purrfect-match",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@google/genai": "1.34.0",
     "@supabase/supabase-js": "^2.39.0",
