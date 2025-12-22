@@ -1,6 +1,6 @@
 /**
- * 领养申请相关 API
- * 路由：GET/POST /api/applications
+ * 单个申请相关 API
+ * 路由：GET/PUT /api/applications/[id]
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
@@ -33,7 +33,7 @@ const supabase = !isDemoMode
 
 function setCorsHeaders(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
@@ -44,17 +44,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(204).end();
   }
 
+  const { id } = req.query;
+
+  if (!id || Array.isArray(id)) {
+    return res.status(400).json({ error: '无效的申请 ID' });
+  }
+
   try {
-    // GET /api/applications - 获取所有申请
+    // GET /api/applications/[id] - 获取单个申请
     if (req.method === 'GET') {
-      const data = await getAllApplications();
+      const data = await getApplicationById(id);
+      if (!data) {
+        return res.status(404).json({ error: '申请不存在' });
+      }
       return res.status(200).json({ data });
     }
 
-    // POST /api/applications - 提交申请
-    if (req.method === 'POST') {
-      const data = await submitApplication(req.body);
-      return res.status(201).json({ data });
+    // PUT /api/applications/[id] - 审核申请
+    if (req.method === 'PUT') {
+      const { status, catId } = req.body;
+      await reviewApplication(id, status, catId);
+      return res.status(200).json({ success: true });
     }
 
     return res.status(405).json({ error: '方法不允许' });
@@ -67,56 +77,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 }
 
-async function getAllApplications() {
+async function getApplicationById(id: string) {
   if (isDemoMode || !supabase) {
-    return [...MOCK_APPLICATIONS].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    return MOCK_APPLICATIONS.find(a => a.id === id) || null;
   }
 
   const { data, error } = await supabase
     .from('adoption_applications')
     .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
-}
-
-interface NewApplicationInput {
-  catId: string;
-  catName: string;
-  catImage: string;
-  applicantName: string;
-  contactInfo: string;
-  reason: string;
-}
-
-async function submitApplication(app: NewApplicationInput) {
-  if (isDemoMode || !supabase) {
-    const newApp = {
-      id: `app-${Date.now()}`,
-      ...app,
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    };
-    MOCK_APPLICATIONS.push(newApp);
-    return newApp;
-  }
-
-  const { data, error } = await supabase
-    .from('adoption_applications')
-    .insert([{ ...app, status: 'pending' }])
-    .select()
+    .eq('id', id)
     .single();
 
+  if (error) {
+    console.error('获取申请失败:', error);
+    return null;
+  }
+  return data;
+}
+
+async function reviewApplication(appId: string, status: string, catId: string) {
+  if (isDemoMode || !supabase) {
+    const app = MOCK_APPLICATIONS.find(a => a.id === appId);
+    if (app) app.status = status;
+    console.log(`[Demo Mode] 审核申请 ${appId} -> ${status}`);
+    return;
+  }
+
+  const { error } = await supabase
+    .from('adoption_applications')
+    .update({ status })
+    .eq('id', appId);
+
   if (error) throw error;
 
-  // 自动更新猫咪状态为待定
-  await supabase
-    .from('cats')
-    .update({ status: '待定' })
-    .eq('id', app.catId);
-
-  return data;
+  // 联动更新猫咪状态
+  if (status === 'approved') {
+    await supabase.from('cats').update({ status: '已领养' }).eq('id', catId);
+  } else if (status === 'rejected') {
+    await supabase.from('cats').update({ status: '可领养' }).eq('id', catId);
+  }
 }

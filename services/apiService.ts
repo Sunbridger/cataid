@@ -77,7 +77,8 @@ export const catApi = {
    * 更新猫咪状态
    */
   updateStatus: async (id: string, status: CatStatus): Promise<void> => {
-    await request(`/cats/${id}/status`, {
+    // PUT /api/cats/[id]
+    await request(`/cats/${id}`, {
       method: 'PUT',
       body: JSON.stringify({ status }),
     });
@@ -124,7 +125,8 @@ export const adoptionApi = {
    * 审核申请
    */
   reviewApplication: async (appId: string, status: ApplicationStatus, catId: string): Promise<void> => {
-    await request(`/applications/${appId}/review`, {
+    // PUT /api/applications/[id]
+    await request(`/applications/${appId}`, {
       method: 'PUT',
       body: JSON.stringify({ status, catId }),
     });

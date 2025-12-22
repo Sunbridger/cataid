@@ -1,7 +1,10 @@
 /**
  * 猫咪数据相关 API
  * 部署在 Vercel，使用 Service Role Key 访问 Supabase
+ *
+ * 路由：GET/POST /api/cats
  */
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
 // 从环境变量获取服务端密钥（仅在服务端可见）
@@ -61,64 +64,42 @@ const supabase = !isDemoMode
   })
   : null;
 
-export default async function handler(req: Request) {
-  const url = new URL(req.url);
-  const method = req.method;
-  const pathParts = url.pathname.split('/').filter(Boolean);
+// 设置 CORS 头
+function setCorsHeaders(res: VercelResponse) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
 
-  // CORS 头
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  };
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // 设置 CORS
+  setCorsHeaders(res);
 
   // 处理 OPTIONS 预检请求
-  if (method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers });
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
   }
 
   try {
     // GET /api/cats - 获取所有猫咪
-    if (method === 'GET' && pathParts.length === 2) {
+    if (req.method === 'GET') {
       const data = await getAllCats();
-      return new Response(JSON.stringify({ data }), { headers });
-    }
-
-    // GET /api/cats/:id - 获取单只猫咪
-    if (method === 'GET' && pathParts.length === 3) {
-      const id = pathParts[2];
-      const data = await getCatById(id);
-      if (!data) {
-        return new Response(JSON.stringify({ error: '猫咪不存在' }), { status: 404, headers });
-      }
-      return new Response(JSON.stringify({ data }), { headers });
+      return res.status(200).json({ data });
     }
 
     // POST /api/cats - 创建猫咪
-    if (method === 'POST') {
-      const body = await req.json();
-      const data = await createCat(body);
-      return new Response(JSON.stringify({ data }), { status: 201, headers });
+    if (req.method === 'POST') {
+      const data = await createCat(req.body);
+      return res.status(201).json({ data });
     }
 
-    // PUT /api/cats/:id/status - 更新猫咪状态
-    if (method === 'PUT' && pathParts.length === 4 && pathParts[3] === 'status') {
-      const id = pathParts[2];
-      const { status } = await req.json();
-      await updateCatStatus(id, status);
-      return new Response(JSON.stringify({ success: true }), { headers });
-    }
-
-    return new Response(JSON.stringify({ error: '未找到路由' }), { status: 404, headers });
+    return res.status(405).json({ error: '方法不允许' });
 
   } catch (error) {
     console.error('API Error:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : '服务器内部错误' }),
-      { status: 500, headers }
-    );
+    return res.status(500).json({
+      error: error instanceof Error ? error.message : '服务器内部错误'
+    });
   }
 }
 
@@ -134,21 +115,6 @@ async function getAllCats() {
     .from('cats')
     .select('*')
     .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
-}
-
-async function getCatById(id: string) {
-  if (isDemoMode || !supabase) {
-    return MOCK_CATS.find(c => c.id === id) || null;
-  }
-
-  const { data, error } = await supabase
-    .from('cats')
-    .select('*')
-    .eq('id', id)
-    .single();
 
   if (error) throw error;
   return data;
@@ -189,18 +155,4 @@ async function createCat(cat: CreateCatInput) {
 
   if (error) throw error;
   return data;
-}
-
-async function updateCatStatus(id: string, status: string) {
-  if (isDemoMode || !supabase) {
-    console.log(`[Demo Mode] 更新猫咪 ${id} 状态为 ${status}`);
-    return;
-  }
-
-  const { error } = await supabase
-    .from('cats')
-    .update({ status })
-    .eq('id', id);
-
-  if (error) throw error;
 }
