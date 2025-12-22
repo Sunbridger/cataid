@@ -1,9 +1,11 @@
 /**
- * AI 聊天 API
+ * AI 聊天 API - 使用 Kimi (Moonshot AI)
  * 路由：POST /api/chat
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { GoogleGenAI } from "@google/genai";
+
+// Moonshot API 配置
+const MOONSHOT_API_URL = "https://api.moonshot.cn/v1/chat/completions";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // 设置 CORS
@@ -21,23 +23,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const { catName, userQuestion } = req.body;
-    const apiKey = process.env.API_KEY;
+    const apiKey = process.env.MOONSHOT_API_KEY;
 
     if (!apiKey) {
-      return res.status(500).json({ error: '服务器配置错误：缺少 API_KEY' });
+      return res.status(500).json({ error: '服务器配置错误：缺少 MOONSHOT_API_KEY' });
     }
 
-    const ai = new GoogleGenAI({ apiKey });
-
-    // 生成回复
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-001',
-      contents: `你是一个热心的猫咪领养助手。用户正在询问关于一只名叫 ${catName} 的猫。
-        用户问题: ${userQuestion}
-        请用礼貌的中文回答，并鼓励用户领养。回答字数控制在50字以内。`
+    // 调用 Moonshot API
+    const response = await fetch(MOONSHOT_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'moonshot-v1-8k',
+        messages: [
+          {
+            role: 'system',
+            content: '你是一个热心的猫咪领养助手，回答要简短可爱，控制在50字以内。'
+          },
+          {
+            role: 'user',
+            content: `用户正在询问关于一只名叫 ${catName} 的猫。问题: ${userQuestion}。请用礼貌的中文回答，并鼓励用户领养。`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 150
+      })
     });
 
-    return res.status(200).json({ answer: response.text?.trim() });
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Moonshot API Error:', errorData);
+      throw new Error('AI 服务请求失败');
+    }
+
+    const data = await response.json();
+    const answer = data.choices?.[0]?.message?.content?.trim() || '喵~';
+
+    return res.status(200).json({ answer });
 
   } catch (error) {
     console.error("API Error:", error);
