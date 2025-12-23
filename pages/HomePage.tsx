@@ -115,9 +115,9 @@ const HomePage: React.FC = () => {
       {/* Pull to Refresh Indicator */}
       {/* Pull to Refresh Indicator */}
       <div
-        className="fixed top-16 left-0 right-0 z-50 flex justify-center pointer-events-none transition-all duration-300"
+        className="fixed top-16 left-0 right-0 z-50 flex justify-center pointer-events-none transition-transform duration-300"
         style={{
-          transform: `translateY(${refreshing ? 10 : Math.min(pullDistance - 50, 0)}px)`,
+          transform: `translateY(${refreshing ? 10 : Math.min(pullDistance - 60, -60)}px)`, // 默认隐藏在 -60px
           opacity: pullDistance > 0 || refreshing ? 1 : 0
         }}
       >
