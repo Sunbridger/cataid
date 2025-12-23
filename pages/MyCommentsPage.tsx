@@ -20,7 +20,7 @@ const MyCommentsPage: React.FC = () => {
   const loadMyComments = async () => {
     try {
       // 调用 API 获取用户评论
-      const response = await fetch(`/api/users/${user?.id}/comments`);
+      const response = await fetch(`/api/user-data?userId=${user?.id}&type=comments`);
       if (response.ok) {
         const result = await response.json();
         setComments(result.data || []);

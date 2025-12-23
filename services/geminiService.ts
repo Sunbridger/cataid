@@ -3,7 +3,7 @@
 
 export const analyzeCatImage = async (imageUrl: string): Promise<{ breed?: string; color?: string; characteristics?: string[]; age?: number; gender?: 'Male' | 'Female' } | null> => {
   try {
-    const response = await fetch('/api/analyze-image', {
+    const response = await fetch('/api/ai?type=analyze-image', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ imageUrl }),
@@ -25,7 +25,7 @@ export const generateCatBio = async (
   traits: string[]
 ): Promise<string> => {
   try {
-    const response = await fetch('/api/generate-bio', {
+    const response = await fetch('/api/ai?type=generate-bio', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, breed, traits }),
@@ -54,7 +54,7 @@ export const generateCommentReply = async (
   userComment: string
 ): Promise<string> => {
   try {
-    const response = await fetch('/api/comment-reply', {
+    const response = await fetch('/api/ai?type=reply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ catName, catBreed, userComment }),

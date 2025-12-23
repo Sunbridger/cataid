@@ -376,7 +376,7 @@ const ProfilePage: React.FC = () => {
           </div>
 
           <p className="text-sm text-slate-500 mt-1">
-            {user?.phone && <span className="mr-3">📱 {user.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')}</span>}
+            {user?.phone && <span className="mr-3">{user.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')}</span>}
             {user?.email && <span>📧 {user.email.replace(/(.{2}).*@/, '$1***@')}</span>}
             {!user?.phone && !user?.email && <span>ID: {user?.id?.slice(-8)}</span>}
           </p>
