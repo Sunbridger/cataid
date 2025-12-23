@@ -64,8 +64,12 @@ const CatCard: React.FC<CatCardProps> = ({ cat }) => {
         <p className="text-slate-500 text-xs md:text-sm line-clamp-2 leading-relaxed">
           {cat.description}
         </p>
-        <div className="mt-3 md:mt-4 pt-2 md:pt-3 border-t border-slate-100 flex justify-between items-center text-xs md:text-sm font-medium text-brand-600">
-          <span>{isAdopted ? '查看详情' : `看看 ${cat.name} \u2192`}</span>
+        <div className="mt-3 md:mt-4 pt-2 md:pt-3 border-t border-slate-100 flex justify-between items-center text-xs md:text-sm font-medium">
+          <span className="text-brand-600">{isAdopted ? '查看详情' : `看看 ${cat.name} \u2192`}</span>
+          <div className="flex items-center gap-1 text-slate-400">
+            <Heart size={14} className="text-red-400" fill="currentColor" />
+            <span>{cat.commentCount || 0}</span>
+          </div>
         </div>
       </div>
     </Link>

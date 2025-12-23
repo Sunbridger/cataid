@@ -110,16 +110,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 async function getAllCats() {
   if (isDemoMode || !supabase) {
     console.log('[Demo Mode] 返回模拟数据');
-    return MOCK_CATS;
+    // 演示模式下添加随机评论数
+    return MOCK_CATS.map(cat => ({
+      ...cat,
+      commentCount: Math.floor(Math.random() * 50)
+    }));
   }
 
-  const { data, error } = await supabase
+  // 获取所有猫咪
+  const { data: cats, error } = await supabase
     .from('cats')
     .select('*')
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data;
+
+  // 获取每只猫的评论数
+  const { data: commentCounts, error: countError } = await supabase
+    .from('comments')
+    .select('cat_id')
+    .not('cat_id', 'is', null);
+
+  if (countError) {
+    console.error('获取评论数失败:', countError);
+    return cats;
+  }
+
+  // 统计每只猫的评论数
+  const countMap = new Map<string, number>();
+  commentCounts?.forEach((c: { cat_id: string }) => {
+    countMap.set(c.cat_id, (countMap.get(c.cat_id) || 0) + 1);
+  });
+
+  // 合并评论数到猫咪数据
+  return cats?.map(cat => ({
+    ...cat,
+    commentCount: countMap.get(cat.id) || 0
+  })) || [];
 }
 
 interface CreateCatInput {

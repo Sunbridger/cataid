@@ -16,6 +16,7 @@ export interface Cat {
   is_dewormed: boolean;
   is_vaccinated: boolean;
   is_stray: boolean;
+  commentCount?: number;  // 评论数，用于首页展示
 }
 
 export interface NewCatInput {
