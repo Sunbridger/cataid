@@ -41,6 +41,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: '无法获取图片，请检查图片 URL' });
     }
 
+    console.log(base64Image, 'base64Image');
+
     // 调用 Moonshot Vision API
     const response = await fetch(MOONSHOT_API_URL, {
       method: 'POST',
@@ -49,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'moonshot-v1-vision-preview', // 使用官方 Vision 模型
+        model: 'moonshot-v1-8k-vision-preview', // 使用官方 Vision 模型（正确名称）
         messages: [
           {
             role: 'system',
