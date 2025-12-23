@@ -80,30 +80,36 @@ const Navbar: React.FC = () => {
       </nav>
 
       {/* Mobile Bottom Navbar */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 pb-safe pt-2 z-50 transition-transform duration-300 ${isInputFocused ? 'translate-y-full' : 'translate-y-0'}`}>
-        <div className="flex justify-around items-center h-14">
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-100 pb-safe pt-2 z-50 transition-transform duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] ${isInputFocused ? 'translate-y-full' : 'translate-y-0'}`}>
+        <div className="flex justify-around items-center h-16">
           <Link
             to="/"
-            className={`flex flex-col items-center gap-1 w-16 transition-colors ${location.pathname === '/' ? 'text-slate-900' : 'text-slate-400'}`}
+            className={`flex flex-col items-center justify-center w-20 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
           >
-            <Home size={24} strokeWidth={location.pathname === '/' ? 2.5 : 2} />
-            <span className={`text-[10px] ${location.pathname === '/' ? 'font-bold' : 'font-medium'}`}>首页</span>
+            <div className={`p-1.5 rounded-2xl transition-all duration-300 ${location.pathname === '/' ? 'bg-brand-50 scale-110 shadow-sm shadow-brand-100' : 'group-active:scale-95'}`}>
+              <Home size={24} strokeWidth={location.pathname === '/' ? 2.5 : 2} className={location.pathname === '/' ? 'fill-brand-500/10' : ''} />
+            </div>
+            <span className={`text-[10px] transition-all duration-300 ${location.pathname === '/' ? 'font-bold' : 'font-medium'}`}>首页</span>
           </Link>
 
           <Link
             to="/add"
-            className={`flex flex-col items-center gap-1 w-16 transition-colors ${location.pathname === '/add' ? 'text-slate-900' : 'text-slate-400'}`}
+            className={`flex flex-col items-center justify-center w-20 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/add' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
           >
-            <PlusCircle size={24} strokeWidth={location.pathname === '/add' ? 2.5 : 2} />
-            <span className={`text-[10px] ${location.pathname === '/add' ? 'font-bold' : 'font-medium'}`}>发布</span>
+            <div className={`p-1.5 rounded-2xl transition-all duration-300 ${location.pathname === '/add' ? 'bg-brand-50 scale-110 shadow-sm shadow-brand-100' : 'group-active:scale-95'}`}>
+              <PlusCircle size={24} strokeWidth={location.pathname === '/add' ? 2.5 : 2} className={location.pathname === '/add' ? 'fill-brand-500/10' : ''} />
+            </div>
+            <span className={`text-[10px] transition-all duration-300 ${location.pathname === '/add' ? 'font-bold' : 'font-medium'}`}>发布</span>
           </Link>
 
           <Link
             to="/admin"
-            className={`flex flex-col items-center gap-1 w-16 transition-colors ${location.pathname === '/admin' ? 'text-slate-900' : 'text-slate-400'}`}
+            className={`flex flex-col items-center justify-center w-20 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/admin' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
           >
-            <Settings size={24} strokeWidth={location.pathname === '/admin' ? 2.5 : 2} />
-            <span className={`text-[10px] ${location.pathname === '/admin' ? 'font-bold' : 'font-medium'}`}>管理</span>
+            <div className={`p-1.5 rounded-2xl transition-all duration-300 ${location.pathname === '/admin' ? 'bg-brand-50 scale-110 shadow-sm shadow-brand-100' : 'group-active:scale-95'}`}>
+              <Settings size={24} strokeWidth={location.pathname === '/admin' ? 2.5 : 2} className={location.pathname === '/admin' ? 'fill-brand-500/10' : ''} />
+            </div>
+            <span className={`text-[10px] transition-all duration-300 ${location.pathname === '/admin' ? 'font-bold' : 'font-medium'}`}>管理</span>
           </Link>
         </div>
       </nav>
