@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
+import { authService } from '../services/apiService';
 import { User, Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 type AuthMode = 'login' | 'register';
@@ -52,24 +53,47 @@ const ProfilePage: React.FC = () => {
 
     setAuthLoading(true);
 
-    // 模拟注册/登录（实际应该调用后端 API）
-    setTimeout(() => {
-      // 生成头像
-      const nickname = authForm.nickname.trim() || '用户' + Math.floor(Math.random() * 10000);
-      const colors = ['f97316', 'ec4899', '8b5cf6', '06b6d4', '10b981', '3b82f6'];
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}&background=${color}&color=fff&rounded=true&bold=true&size=128`;
+    try {
+      // 调用后端 API
+      if (authMode === 'register') {
+        const { user: newUser, error } = await authService.register({
+          phone: authMethod === 'phone' ? authForm.phone : undefined,
+          email: authMethod === 'email' ? authForm.email : undefined,
+          password: authForm.password,
+          nickname: authForm.nickname.trim(),
+        });
 
-      login({
-        id: 'user_' + Date.now(),
-        phone: authMethod === 'phone' ? authForm.phone : undefined,
-        email: authMethod === 'email' ? authForm.email : undefined,
-        nickname,
-        avatarUrl,
-      });
+        if (error) {
+          setAuthError(error);
+          setAuthLoading(false);
+          return;
+        }
 
-      setAuthLoading(false);
-    }, 800);
+        if (newUser) {
+          login(newUser);
+        }
+      } else {
+        const { user: existingUser, error } = await authService.login({
+          phone: authMethod === 'phone' ? authForm.phone : undefined,
+          email: authMethod === 'email' ? authForm.email : undefined,
+          password: authForm.password,
+        });
+
+        if (error) {
+          setAuthError(error);
+          setAuthLoading(false);
+          return;
+        }
+
+        if (existingUser) {
+          login(existingUser);
+        }
+      }
+    } catch (err) {
+      setAuthError('操作失败，请重试');
+    }
+
+    setAuthLoading(false);
   };
 
   // 处理游客登录

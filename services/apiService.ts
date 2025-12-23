@@ -5,7 +5,7 @@ import imageCompression from 'browser-image-compression';
  * 前端不再直接连接 Supabase，所有数据操作通过服务端 API 完成
  */
 
-import { Cat, NewCatInput, CatStatus, AdoptionApplication, NewApplicationInput, ApplicationStatus, Comment, NewCommentInput } from '../types';
+import { Cat, NewCatInput, CatStatus, AdoptionApplication, NewApplicationInput, ApplicationStatus, Comment, NewCommentInput, User } from '../types';
 
 // API 基础路径（在 Vercel 部署时为空，本地开发时可能需要配置）
 const API_BASE = process.env.NODE_ENV === 'development' ? '' : '';
@@ -309,3 +309,58 @@ export const commentApi = {
 
 // 导出评论服务
 export const commentService = commentApi;
+
+/**
+ * 用户认证 API
+ */
+export const authApi = {
+  /**
+   * 用户注册
+   */
+  register: async (data: {
+    phone?: string;
+    email?: string;
+    password: string;
+    nickname: string;
+  }): Promise<{ user: User | null; error: string | null }> => {
+    try {
+      const result = await request<{ data: User; message: string }>('/auth', {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'register',
+          ...data,
+        }),
+      });
+      return { user: result.data, error: null };
+    } catch (error) {
+      console.error('注册失败:', error);
+      return { user: null, error: error instanceof Error ? error.message : '注册失败' };
+    }
+  },
+
+  /**
+   * 用户登录
+   */
+  login: async (data: {
+    phone?: string;
+    email?: string;
+    password: string;
+  }): Promise<{ user: User | null; error: string | null }> => {
+    try {
+      const result = await request<{ data: User; message: string }>('/auth', {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'login',
+          ...data,
+        }),
+      });
+      return { user: result.data, error: null };
+    } catch (error) {
+      console.error('登录失败:', error);
+      return { user: null, error: error instanceof Error ? error.message : '登录失败' };
+    }
+  },
+};
+
+// 导出认证服务
+export const authService = authApi;
