@@ -42,8 +42,16 @@ const CatDetailsPage: React.FC = () => {
 
     setShowMenu(false);
 
-    // 1. Skip Native Share to directly open WeChat as requested
-    // if (navigator.share) { ... }
+    // 1. Try Native Share (Mobile)
+    // 这是实现“直接提示发送内容”的唯一 Web 标准途径
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text, url });
+        return;
+      } catch (err) {
+        // User aborted or error, fall through
+      }
+    }
 
     // 2. Fallback: Copy to Clipboard
     try {
