@@ -1,3 +1,5 @@
+import imageCompression from 'browser-image-compression';
+
 /**
  * API 服务 - 前端调用服务端 API
  * 前端不再直接连接 Supabase，所有数据操作通过服务端 API 完成
@@ -62,15 +64,18 @@ export const catApi = {
    */
   uploadImage: async (file: File): Promise<string | null> => {
     try {
+      // 压缩图片
+      const compressedFile = await compressImage(file);
+
       // 将文件转换为 Base64
-      const base64 = await fileToBase64(file);
+      const base64 = await fileToBase64(compressedFile);
 
       const result = await request<{ url: string }>('/upload', {
         method: 'POST',
         body: JSON.stringify({
           file: base64,
-          fileName: file.name,
-          contentType: file.type
+          fileName: compressedFile.name,
+          contentType: compressedFile.type
         }),
       });
       return result.url;
@@ -207,3 +212,33 @@ export const adoptionApi = {
 // 为了兼容性，导出与旧版相同的命名
 export const catService = catApi;
 export const adoptionService = adoptionApi;
+
+/**
+ * 压缩图片
+ */
+export async function compressImage(file: File): Promise<File> {
+  // 如果不是图片，直接返回原文件
+  if (!file.type.startsWith('image/')) {
+    return file;
+  }
+
+  const options = {
+    maxSizeMB: 0.8, // 最大文件大小 0.8MB
+    maxWidthOrHeight: 1280, // 最大宽高 1280px
+    useWebWorker: true, // 使用 Web Worker 避免阻塞主线程
+    fileType: 'image/jpeg' // 统一转换为 JPEG 格式以获得更好的压缩率
+  };
+
+  try {
+    console.log(`压缩前: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+    const compressedFile = await imageCompression(file, options);
+    console.log(`压缩后: ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+
+    // 确保返回的文件名有正确的扩展名
+    const newFileName = file.name.replace(/\.[^/.]+$/, "") + '.jpg';
+    return new File([compressedFile], newFileName, { type: 'image/jpeg' });
+  } catch (error) {
+    console.error('图片压缩失败:', error);
+    return file; // 压缩失败则返回原文件
+  }
+}
