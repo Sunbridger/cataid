@@ -128,6 +128,10 @@ interface CreateCatInput {
   description: string;
   tags: string[];
   image_url?: string;
+  is_sterilized?: boolean;
+  is_dewormed?: boolean;
+  is_vaccinated?: boolean;
+  is_stray?: boolean;
 }
 
 async function createCat(cat: CreateCatInput) {
@@ -148,7 +152,11 @@ async function createCat(cat: CreateCatInput) {
       description: cat.description,
       image_url: imageUrl,
       tags: cat.tags,
-      status: '可领养'
+      status: '可领养',
+      is_sterilized: cat.is_sterilized ?? false,
+      is_dewormed: cat.is_dewormed ?? false,
+      is_vaccinated: cat.is_vaccinated ?? false,
+      is_stray: cat.is_stray ?? false
     }])
     .select()
     .single();
