@@ -42,15 +42,8 @@ const CatDetailsPage: React.FC = () => {
 
     setShowMenu(false);
 
-    // 1. Try Native Share (Mobile)
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, text, url });
-        return;
-      } catch (err) {
-        // User aborted or error, fall through
-      }
-    }
+    // 1. Skip Native Share to directly open WeChat as requested
+    // if (navigator.share) { ... }
 
     // 2. Fallback: Copy to Clipboard
     try {
