@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { catService, adoptionService } from '../services/apiService';
-import { revalidateCats } from '../hooks/useCats';
 import { Cat, CatStatus, AdoptionApplication, ApplicationStatus } from '../types';
 import { CAT_STATUSES } from '../constants';
 import { Loader2, Settings, FileText, CheckCircle, XCircle, Trash2 } from 'lucide-react';
@@ -56,8 +55,7 @@ const AdminPage: React.FC = () => {
       setUpdatingId(id);
       await catService.updateStatus(id, newStatus);
       setCats(cats.map(cat => cat.id === id ? { ...cat, status: newStatus } : cat));
-      // 刷新缓存
-      revalidateCats();
+      setCats(cats.map(cat => cat.id === id ? { ...cat, status: newStatus } : cat));
       success('状态更新成功');
     } catch (err) {
       console.error("Failed to update status", err);
@@ -76,8 +74,7 @@ const AdminPage: React.FC = () => {
       setDeletingId(id);
       await catService.delete(id);
       setCats(prev => prev.filter(cat => cat.id !== id));
-      // 刷新缓存
-      revalidateCats();
+      setCats(prev => prev.filter(cat => cat.id !== id));
       success('删除成功');
     } catch (err) {
       console.error("Failed to delete cat", err);

@@ -1,12 +1,18 @@
-import React, { useState, useMemo } from 'react';
-import { useCats } from '../hooks/useCats';
+import React, { useEffect, useState, useMemo } from 'react';
+import { catService } from '../services/apiService';
 import { Cat } from '../types';
 import CatCard from '../components/CatCard';
 import { Loader2, Search } from 'lucide-react';
 
 const HomePage: React.FC = () => {
-  const { cats: rawCats, isLoading: loading, isError, refresh } = useCats();
+  const [cats, setCats] = useState<Cat[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    fetchCats();
+  }, []);
 
   // Pull to refresh state
   const [touchStart, setTouchStart] = useState(0);
@@ -33,22 +39,34 @@ const HomePage: React.FC = () => {
   const handleTouchEnd = async () => {
     if (pullDistance > PULL_THRESHOLD) {
       setRefreshing(true);
-      await refresh();
+      await fetchCats();
       setRefreshing(false);
     }
     setTouchStart(0);
     setPullDistance(0);
   };
 
+  const fetchCats = async () => {
+    try {
+      setLoading(true);
+      const data = await catService.getAll();
+      setCats(data);
+    } catch (err) {
+      setError('加载喵星人失败，请稍后再试。');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Sort cats: Available first, then Pending, then Adopted
-  const cats = useMemo(() => {
+  const sortedCats = useMemo(() => {
     const statusPriority: Record<string, number> = {
       '可领养': 0,
       '待定': 1,
       '已领养': 2
     };
 
-    return [...rawCats].sort((a, b) => {
+    return [...cats].sort((a, b) => {
       const statusA = a.status || '可领养';
       const statusB = b.status || '可领养';
 
@@ -58,9 +76,9 @@ const HomePage: React.FC = () => {
 
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
-  }, [rawCats]);
+  }, [cats]);
 
-  const filteredCats = cats.filter(cat => {
+  const filteredCats = sortedCats.filter(cat => {
     // Handle special boolean filters from the quick tags
     if (searchTerm === '家养') return !cat.is_stray;
     if (searchTerm === '已接种') return cat.is_vaccinated;
@@ -152,9 +170,9 @@ const HomePage: React.FC = () => {
             <Loader2 className="animate-spin mb-4" size={48} />
             <p className="text-slate-500">正在召唤喵星人...</p>
           </div>
-        ) : isError ? (
+        ) : error ? (
           <div className="text-center py-12 bg-red-50 rounded-xl border border-red-100 text-red-600">
-            加载失败，请稍后再试。
+            {error}
           </div>
         ) : filteredCats.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
