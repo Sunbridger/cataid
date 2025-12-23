@@ -58,7 +58,7 @@ const supabase = !isDemoMode
 
 function setCorsHeaders(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
@@ -91,6 +91,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'PUT') {
       const { status } = req.body;
       await updateCatStatus(id, status);
+      return res.status(200).json({ success: true });
+    }
+
+    // DELETE /api/cats/[id] - 删除猫咪
+    if (req.method === 'DELETE') {
+      await deleteCat(id);
       return res.status(200).json({ success: true });
     }
 
@@ -128,6 +134,24 @@ async function updateCatStatus(id: string, status: string) {
   const { error } = await supabase
     .from('cats')
     .update({ status })
+    .eq('id', id);
+
+  if (error) throw error;
+}
+
+async function deleteCat(id: string) {
+  if (isDemoMode || !supabase) {
+    console.log(`[Demo Mode] 删除猫咪 ${id}`);
+    const index = MOCK_CATS.findIndex(c => c.id === id);
+    if (index > -1) {
+      MOCK_CATS.splice(index, 1);
+    }
+    return;
+  }
+
+  const { error } = await supabase
+    .from('cats')
+    .delete()
     .eq('id', id);
 
   if (error) throw error;

@@ -55,7 +55,8 @@ const AdminPage: React.FC = () => {
       setUpdatingId(id);
       await catService.updateStatus(id, newStatus);
       setCats(cats.map(cat => cat.id === id ? { ...cat, status: newStatus } : cat));
-      setCats(cats.map(cat => cat.id === id ? { ...cat, status: newStatus } : cat));
+      localStorage.setItem('cat_data_update_ts', Date.now().toString());
+      window.dispatchEvent(new Event('cat-data-updated'));
       success('状态更新成功');
     } catch (err) {
       console.error("Failed to update status", err);
@@ -74,7 +75,8 @@ const AdminPage: React.FC = () => {
       setDeletingId(id);
       await catService.delete(id);
       setCats(prev => prev.filter(cat => cat.id !== id));
-      setCats(prev => prev.filter(cat => cat.id !== id));
+      localStorage.setItem('cat_data_update_ts', Date.now().toString());
+      window.dispatchEvent(new Event('cat-data-updated'));
       success('删除成功');
     } catch (err) {
       console.error("Failed to delete cat", err);
