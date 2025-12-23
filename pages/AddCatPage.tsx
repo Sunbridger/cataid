@@ -240,7 +240,6 @@ const AddCatPage: React.FC = () => {
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
-                    multiple
                     onChange={handleFileChange}
                     className="hidden"
                   />
