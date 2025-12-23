@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { catService, adoptionService } from '../services/apiService';
+import { adoptionService } from '../services/apiService';
+import { useCat } from '../hooks/useCats';
 import { chatAboutCat } from '../services/geminiService';
 import { Cat, AdoptionApplication } from '../types';
 import { Loader2, ArrowLeft, Heart, MessageCircle, Send, Sparkles, CheckCircle2, XCircle, Clock, X } from 'lucide-react';
@@ -11,8 +12,9 @@ import { useToast } from '../context/ToastContext';
 const CatDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { success, error } = useToast();
-  const [cat, setCat] = useState<Cat | null>(null);
-  const [loading, setLoading] = useState(true);
+
+  // 使用 SWR Hook 获取猫咪数据
+  const { cat, isLoading: loading, refresh: refreshCat } = useCat(id);
 
 
   // Chat state
@@ -33,21 +35,9 @@ const CatDetailsPage: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      loadCat(id);
       checkMyApplication(id);
     }
   }, [id]);
-
-  const loadCat = async (catId: string) => {
-    try {
-      const data = await catService.getById(catId);
-      if (data) setCat(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const checkMyApplication = async (catId: string) => {
     // 1. Get local record to find if we applied
@@ -114,7 +104,7 @@ const CatDetailsPage: React.FC = () => {
       setIsAdoptModalOpen(false);
 
       // Refresh cat data to show status change if needed
-      loadCat(cat.id);
+      refreshCat();
       success('申请已提交，请耐心等待审核！');
 
     } catch (err) {

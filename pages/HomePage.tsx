@@ -1,18 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { catService } from '../services/apiService';
+import React, { useState, useMemo } from 'react';
+import { useCats } from '../hooks/useCats';
 import { Cat } from '../types';
 import CatCard from '../components/CatCard';
 import { Loader2, Search } from 'lucide-react';
 
 const HomePage: React.FC = () => {
-  const [cats, setCats] = useState<Cat[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { cats: rawCats, isLoading: loading, isError, refresh } = useCats();
   const [searchTerm, setSearchTerm] = useState('');
-
-  useEffect(() => {
-    fetchCats();
-  }, []);
 
   // Pull to refresh state
   const [touchStart, setTouchStart] = useState(0);
@@ -39,43 +33,32 @@ const HomePage: React.FC = () => {
   const handleTouchEnd = async () => {
     if (pullDistance > PULL_THRESHOLD) {
       setRefreshing(true);
-      await fetchCats();
+      await refresh();
       setRefreshing(false);
     }
     setTouchStart(0);
     setPullDistance(0);
   };
 
-  const fetchCats = async () => {
-    try {
-      setLoading(true);
-      const data = await catService.getAll();
+  // Sort cats: Available first, then Pending, then Adopted
+  const cats = useMemo(() => {
+    const statusPriority: Record<string, number> = {
+      '可领养': 0,
+      '待定': 1,
+      '已领养': 2
+    };
 
-      // Sort: Available first, then Pending, then Adopted. Within status, sort by date (newest first)
-      const statusPriority: Record<string, number> = {
-        '可领养': 0,
-        '待定': 1,
-        '已领养': 2
-      };
+    return [...rawCats].sort((a, b) => {
+      const statusA = a.status || '可领养';
+      const statusB = b.status || '可领养';
 
-      const sortedData = data.sort((a, b) => {
-        const statusA = a.status || '可领养';
-        const statusB = b.status || '可领养';
+      if (statusPriority[statusA] !== statusPriority[statusB]) {
+        return statusPriority[statusA] - statusPriority[statusB];
+      }
 
-        if (statusPriority[statusA] !== statusPriority[statusB]) {
-          return statusPriority[statusA] - statusPriority[statusB];
-        }
-
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      });
-
-      setCats(sortedData);
-    } catch (err) {
-      setError('加载喵星人失败，请稍后再试。');
-    } finally {
-      setLoading(false);
-    }
-  };
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [rawCats]);
 
   const filteredCats = cats.filter(cat => {
     // Handle special boolean filters from the quick tags
@@ -169,9 +152,9 @@ const HomePage: React.FC = () => {
             <Loader2 className="animate-spin mb-4" size={48} />
             <p className="text-slate-500">正在召唤喵星人...</p>
           </div>
-        ) : error ? (
+        ) : isError ? (
           <div className="text-center py-12 bg-red-50 rounded-xl border border-red-100 text-red-600">
-            {error}
+            加载失败，请稍后再试。
           </div>
         ) : filteredCats.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">

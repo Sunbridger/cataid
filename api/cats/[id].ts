@@ -82,6 +82,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!data) {
         return res.status(404).json({ error: '猫咪不存在' });
       }
+      // CDN 缓存 30 秒，过期后 60 秒内可返回旧数据同时后台刷新
+      res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
       return res.status(200).json({ data });
     }
 
