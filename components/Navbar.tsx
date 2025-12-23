@@ -1,16 +1,22 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Cat, PlusCircle, Home, Settings, User } from 'lucide-react';
+import { useUser } from '../context/UserContext';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
+  const { user, isLoggedIn } = useUser();
+
+  // 是否为管理员
+  const isAdmin = isLoggedIn && user?.role === 'admin';
 
   const isActive = (path: string) => location.pathname === path
     ? "text-brand-600 font-semibold bg-brand-50"
     : "text-slate-600 hover:text-brand-500 hover:bg-white";
 
   // 定义需要显示底部导航栏的路由
-  const mainRoutes = ['/', '/add', '/admin', '/profile'];
+  const mainRoutes = ['/', '/add', '/profile'];
+  if (isAdmin) mainRoutes.push('/admin');
   const shouldShowNavbar = mainRoutes.includes(location.pathname);
 
   return (
@@ -42,13 +48,15 @@ const Navbar: React.FC = () => {
               <span>发布领养</span>
             </Link>
 
-            <Link
-              to="/admin"
-              className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 ${isActive('/admin')}`}
-            >
-              <Settings size={18} />
-              <span>管理后台</span>
-            </Link>
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 ${isActive('/admin')}`}
+              >
+                <Settings size={18} />
+                <span>管理后台</span>
+              </Link>
+            )}
 
             <Link
               to="/profile"
@@ -66,7 +74,7 @@ const Navbar: React.FC = () => {
         <div className="flex justify-around items-center h-16">
           <Link
             to="/"
-            className={`flex flex-col items-center justify-center w-16 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
+            className={`flex flex-col items-center justify-center w-20 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
           >
             <div className={`p-1.5 rounded-2xl transition-all duration-300 ${location.pathname === '/' ? 'bg-brand-50 scale-110 shadow-sm shadow-brand-100' : 'group-active:scale-95'}`}>
               <Home size={22} strokeWidth={location.pathname === '/' ? 2.5 : 2} className={location.pathname === '/' ? 'fill-brand-500/10' : ''} />
@@ -76,7 +84,7 @@ const Navbar: React.FC = () => {
 
           <Link
             to="/add"
-            className={`flex flex-col items-center justify-center w-16 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/add' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
+            className={`flex flex-col items-center justify-center w-20 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/add' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
           >
             <div className={`p-1.5 rounded-2xl transition-all duration-300 ${location.pathname === '/add' ? 'bg-brand-50 scale-110 shadow-sm shadow-brand-100' : 'group-active:scale-95'}`}>
               <PlusCircle size={22} strokeWidth={location.pathname === '/add' ? 2.5 : 2} className={location.pathname === '/add' ? 'fill-brand-500/10' : ''} />
@@ -84,19 +92,21 @@ const Navbar: React.FC = () => {
             <span className={`text-[10px] transition-all duration-300 ${location.pathname === '/add' ? 'font-bold' : 'font-medium'}`}>发布</span>
           </Link>
 
-          <Link
-            to="/admin"
-            className={`flex flex-col items-center justify-center w-16 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/admin' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
-          >
-            <div className={`p-1.5 rounded-2xl transition-all duration-300 ${location.pathname === '/admin' ? 'bg-brand-50 scale-110 shadow-sm shadow-brand-100' : 'group-active:scale-95'}`}>
-              <Settings size={22} strokeWidth={location.pathname === '/admin' ? 2.5 : 2} className={location.pathname === '/admin' ? 'fill-brand-500/10' : ''} />
-            </div>
-            <span className={`text-[10px] transition-all duration-300 ${location.pathname === '/admin' ? 'font-bold' : 'font-medium'}`}>管理</span>
-          </Link>
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className={`flex flex-col items-center justify-center w-20 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/admin' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
+            >
+              <div className={`p-1.5 rounded-2xl transition-all duration-300 ${location.pathname === '/admin' ? 'bg-brand-50 scale-110 shadow-sm shadow-brand-100' : 'group-active:scale-95'}`}>
+                <Settings size={22} strokeWidth={location.pathname === '/admin' ? 2.5 : 2} className={location.pathname === '/admin' ? 'fill-brand-500/10' : ''} />
+              </div>
+              <span className={`text-[10px] transition-all duration-300 ${location.pathname === '/admin' ? 'font-bold' : 'font-medium'}`}>管理</span>
+            </Link>
+          )}
 
           <Link
             to="/profile"
-            className={`flex flex-col items-center justify-center w-16 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/profile' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
+            className={`flex flex-col items-center justify-center w-20 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/profile' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
           >
             <div className={`p-1.5 rounded-2xl transition-all duration-300 ${location.pathname === '/profile' ? 'bg-brand-50 scale-110 shadow-sm shadow-brand-100' : 'group-active:scale-95'}`}>
               <User size={22} strokeWidth={location.pathname === '/profile' ? 2.5 : 2} className={location.pathname === '/profile' ? 'fill-brand-500/10' : ''} />

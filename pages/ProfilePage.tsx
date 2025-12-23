@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { authService } from '../services/apiService';
 import { User, Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle } from 'lucide-react';
@@ -400,9 +401,9 @@ const ProfilePage: React.FC = () => {
 
       {/* 功能菜单 */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        <MenuItem icon={<Heart size={20} />} title="我的收藏" color="text-red-500" />
-        <MenuItem icon={<MessageCircle size={20} />} title="我的评论" color="text-blue-500" />
-        <MenuItem icon={<FileText size={20} />} title="领养申请" color="text-green-500" />
+        <MenuItem icon={<Heart size={20} />} title="我的收藏" color="text-red-500" to="/my/favorites" />
+        <MenuItem icon={<MessageCircle size={20} />} title="我的评论" color="text-blue-500" to="/my/comments" />
+        <MenuItem icon={<FileText size={20} />} title="领养申请" color="text-green-500" to="/my/applications" />
       </div>
 
       {/* 退出登录 */}
@@ -422,18 +423,38 @@ const MenuItem: React.FC<{
   icon: React.ReactNode;
   title: string;
   color?: string;
+  to?: string;
   onClick?: () => void;
-}> = ({ icon, title, color = 'text-slate-600', onClick }) => (
-  <button
-    onClick={onClick}
-    className="w-full px-4 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-b-0"
-  >
-    <div className="flex items-center gap-3">
-      <span className={color}>{icon}</span>
-      <span className="font-medium text-slate-700">{title}</span>
-    </div>
-    <ChevronRight size={18} className="text-slate-400" />
-  </button>
-);
+}> = ({ icon, title, color = 'text-slate-600', to, onClick }) => {
+  const content = (
+    <>
+      <div className="flex items-center gap-3">
+        <span className={color}>{icon}</span>
+        <span className="font-medium text-slate-700">{title}</span>
+      </div>
+      <ChevronRight size={18} className="text-slate-400" />
+    </>
+  );
+
+  if (to) {
+    return (
+      <Link
+        to={to}
+        className="w-full px-4 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-b-0"
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      className="w-full px-4 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-b-0"
+    >
+      {content}
+    </button>
+  );
+};
 
 export default ProfilePage;

@@ -6,6 +6,9 @@ import AddCatPage from './pages/AddCatPage';
 import CatDetailsPage from './pages/CatDetailsPage';
 import AdminPage from './pages/AdminPage';
 import ProfilePage from './pages/ProfilePage';
+import MyFavoritesPage from './pages/MyFavoritesPage';
+import MyCommentsPage from './pages/MyCommentsPage';
+import MyApplicationsPage from './pages/MyApplicationsPage';
 import { ToastProvider } from './context/ToastContext';
 import { UserProvider } from './context/UserContext';
 
@@ -25,6 +28,10 @@ const Layout: React.FC = () => {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/cat/:id" element={<CatDetailsPage />} />
+          {/* 我的模块子页面 */}
+          <Route path="/my/favorites" element={<MyFavoritesPage />} />
+          <Route path="/my/comments" element={<MyCommentsPage />} />
+          <Route path="/my/applications" element={<MyApplicationsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
