@@ -12,6 +12,16 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     fetchCats();
+
+    // Listen for global data updates (e.g. from background upload in AddCatPage)
+    const handleDataUpdate = () => {
+      fetchCats();
+    };
+
+    window.addEventListener('cat-data-updated', handleDataUpdate);
+    return () => {
+      window.removeEventListener('cat-data-updated', handleDataUpdate);
+    };
   }, []);
 
   // Pull to refresh state

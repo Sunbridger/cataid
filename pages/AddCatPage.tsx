@@ -10,7 +10,8 @@ import ConfirmModal from '../components/ConfirmModal';
 const AddCatPage: React.FC = () => {
   const navigate = useNavigate();
   const { success, error, info } = useToast();
-  const [loading, setLoading] = useState(false);
+
+  // const [loading, setLoading] = useState(false); // 移除全屏 loading state
   const [generatingBio, setGeneratingBio] = useState(false);
   const [analyzingImage, setAnalyzingImage] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -138,32 +139,40 @@ const AddCatPage: React.FC = () => {
 
   const handleConfirmSubmit = async () => {
     setShowConfirm(false);
-    setLoading(true);
-    try {
-      // 使用 catService.create 自动处理图片上传
-      await catService.create({
-        name: formData.name,
-        age: parseInt(formData.age),
-        gender: formData.gender,
-        breed: formData.breed,
-        description: formData.description,
-        tags: formData.tags,
 
-        imageFiles: formData.imageFiles, // 传入图片文件数组，API 会自动上传
-        is_sterilized: formData.is_sterilized,
-        is_dewormed: formData.is_dewormed,
-        is_vaccinated: formData.is_vaccinated,
-        is_stray: formData.is_stray
+    // 1. 立即反馈并跳转，减少用户等待
+    info('正在后台发布，完成后将通知您...');
+    navigate('/');
+
+    // 2. 后台执行发布任务（Fire and forget in UI, but handled in background）
+    // 注意：利用闭包捕获当前的 formData
+    const submitData = {
+      name: formData.name,
+      age: parseInt(formData.age),
+      gender: formData.gender,
+      breed: formData.breed,
+      description: formData.description,
+      tags: formData.tags,
+      imageFiles: formData.imageFiles,
+      is_sterilized: formData.is_sterilized,
+      is_dewormed: formData.is_dewormed,
+      is_vaccinated: formData.is_vaccinated,
+      is_stray: formData.is_stray
+    };
+
+    catService.create(submitData)
+      .then(() => {
+        // 3. 成功回调
+        success(`${submitData.name} 发布成功！`);
+        // 更新时间戳，确保下次请求绕过缓存
+        localStorage.setItem('cat_data_update_ts', Date.now().toString());
+        // 派发全局事件通知首页刷新
+        window.dispatchEvent(new Event('cat-data-updated'));
+      })
+      .catch((err) => {
+        console.error("Background upload failed:", err);
+        error(`发布失败: ${err.message || '请重试'}`);
       });
-      success('发布成功！');
-      success('发布成功！');
-      navigate('/');
-    } catch (err) {
-      console.error(err);
-      error('发布失败，请查看控制台详情。');
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -198,7 +207,7 @@ const AddCatPage: React.FC = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5">
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
               {formData.imagePreviews.map((preview, index) => (
                 <div key={index} className="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 shadow-sm group">
                   <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
@@ -438,40 +447,14 @@ const AddCatPage: React.FC = () => {
 
         <button
           type="submit"
-          disabled={loading}
-          className="w-full py-4 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none mt-4"
+          className="w-full py-4 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 mt-4"
         >
-          {loading ? (
-            <>
-              <Loader2 className="animate-spin" size={20} />
-              发布中...
-            </>
-          ) : (
-            <>
-              发布领养信息
-              <ArrowRight size={20} />
-            </>
-          )}
+          发布领养信息
+          <ArrowRight size={20} />
         </button>
       </form>
 
-      {/* Full Screen Loading Overlay */}
-      {loading && (
-        <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center animate-in fade-in duration-200">
-          <div className="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4 border border-slate-100">
-            <div className="relative">
-              <div className="w-16 h-16 border-4 border-brand-100 border-t-brand-500 rounded-full animate-spin"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-8 h-8 bg-brand-50 rounded-full animate-pulse"></div>
-              </div>
-            </div>
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-slate-800 mb-1">正在上传</h3>
-              <p className="text-slate-500 text-sm">正在处理猫咪照片和信息，请稍候...</p>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       <ConfirmModal
         isOpen={showConfirm}
@@ -483,7 +466,7 @@ const AddCatPage: React.FC = () => {
         cancelText="我再想想"
         type="info"
       />
-    </div>
+    </div >
   );
 };
 
