@@ -9,6 +9,10 @@ const Navbar: React.FC = () => {
     ? "text-brand-600 font-semibold bg-brand-50"
     : "text-slate-600 hover:text-brand-500 hover:bg-white";
 
+  // Define routes where the bottom navbar should be visible
+  const mainRoutes = ['/', '/add', '/admin'];
+  const shouldShowNavbar = mainRoutes.includes(location.pathname);
+
   // Detect if virtual keyboard is likely open (by checking if input is focused)
   const [isInputFocused, setIsInputFocused] = useState(false);
 
@@ -80,7 +84,7 @@ const Navbar: React.FC = () => {
       </nav>
 
       {/* Mobile Bottom Navbar */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-100 pb-safe pt-2 z-50 transition-transform duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] ${isInputFocused ? 'translate-y-full' : 'translate-y-0'}`}>
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-100 pb-safe pt-2 z-50 transition-transform duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] ${isInputFocused || !shouldShowNavbar ? 'translate-y-full' : 'translate-y-0'}`}>
         <div className="flex justify-around items-center h-16">
           <Link
             to="/"

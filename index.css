@@ -5,6 +5,7 @@
 /* Prevent bounce scroll on mobile Safari */
 body {
   overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: auto;
 }
 
 /* Ensure bottom nav handles safe area correctly */
