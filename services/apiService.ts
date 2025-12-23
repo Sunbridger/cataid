@@ -41,20 +41,24 @@ export const catApi = {
   /**
    * 获取所有猫咪
    */
-  getAll: async (): Promise<Cat[]> => {
+  getAll: async (forceRefresh = false): Promise<Cat[]> => {
     let url = '/cats';
-    // 检查最近是否有更新，如果有且在缓存窗口期内（CDN 缓存 60s），则添加时间戳强制绕过缓存
-    try {
-      const lastUpdate = localStorage.getItem('cat_data_update_ts');
-      if (lastUpdate) {
-        const diff = Date.now() - parseInt(lastUpdate, 10);
-        // 设置 5 秒窗口期
-        if (diff > 0 && diff < 5000) {
-          url += `?t=${lastUpdate}`;
+    // 强制刷新或检查最近是否有更新
+    if (forceRefresh) {
+      url += `?t=${Date.now()}`;
+    } else {
+      try {
+        const lastUpdate = localStorage.getItem('cat_data_update_ts');
+        if (lastUpdate) {
+          const diff = Date.now() - parseInt(lastUpdate, 10);
+          // 设置 5 秒窗口期
+          if (diff > 0 && diff < 5000) {
+            url += `?t=${lastUpdate}`;
+          }
         }
+      } catch (e) {
+        // 忽略 localStorage 错误
       }
-    } catch (e) {
-      // 忽略 localStorage 错误
     }
 
     const result = await request<{ data: Cat[] }>(url);

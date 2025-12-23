@@ -49,17 +49,19 @@ const HomePage: React.FC = () => {
   const handleTouchEnd = async () => {
     if (pullDistance > PULL_THRESHOLD) {
       setRefreshing(true);
-      await fetchCats();
+      // 强制刷新，传入 true
+      await fetchCats(true);
       setRefreshing(false);
     }
     setTouchStart(0);
     setPullDistance(0);
   };
 
-  const fetchCats = async () => {
+  const fetchCats = async (force = false) => {
     try {
-      setLoading(true);
-      const data = await catService.getAll();
+      // 如果不是强制刷新（即首次加载），才显示全屏 loading
+      if (!force) setLoading(true);
+      const data = await catService.getAll(force);
       setCats(data);
     } catch (err) {
       setError('加载喵星人失败，请稍后再试。');
@@ -111,17 +113,19 @@ const HomePage: React.FC = () => {
       onTouchEnd={handleTouchEnd}
     >
       {/* Pull to Refresh Indicator */}
-      {/* <div
+      {/* Pull to Refresh Indicator */}
+      <div
         className="fixed top-16 left-0 right-0 z-50 flex justify-center pointer-events-none transition-all duration-300"
         style={{
-          transform: `translateY(${refreshing ? 10 : Math.min(pullDistance - 80, 0)}px)`,
+          transform: `translateY(${refreshing ? 10 : Math.min(pullDistance - 50, 0)}px)`,
           opacity: pullDistance > 0 || refreshing ? 1 : 0
         }}
       >
-        <div className="bg-white/80 backdrop-blur rounded-full p-2 shadow-md">
-          <Loader2 className={`text-brand-500 ${refreshing ? 'animate-spin' : ''}`} style={{ transform: `rotate(${pullDistance * 2}deg)` }} size={24} />
+        <div className="bg-white/90 backdrop-blur rounded-full p-2 shadow-md border border-slate-100 flex items-center gap-2">
+          <Loader2 className={`text-brand-500 ${refreshing ? 'animate-spin' : ''}`} style={{ transform: `rotate(${pullDistance * 2}deg)` }} size={20} />
+          {refreshing && <span className="text-xs text-slate-500 font-medium pr-1">刷新中...</span>}
         </div>
-      </div> */}
+      </div>
 
       {/* Hero Section */}
       <section className="bg-brand-500 rounded-2xl md:rounded-3xl p-4 md:p-8 text-center text-white relative overflow-hidden shadow-lg transition-transform duration-200"
