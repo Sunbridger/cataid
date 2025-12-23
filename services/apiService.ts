@@ -48,8 +48,8 @@ export const catApi = {
       const lastUpdate = localStorage.getItem('cat_data_update_ts');
       if (lastUpdate) {
         const diff = Date.now() - parseInt(lastUpdate, 10);
-        // 设置 65 秒窗口期 (CDN s-maxage=60)
-        if (diff > 0 && diff < 65000) {
+        // 设置 5 秒窗口期
+        if (diff > 0 && diff < 5000) {
           url += `?t=${lastUpdate}`;
         }
       }
