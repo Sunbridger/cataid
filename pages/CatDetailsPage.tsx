@@ -234,6 +234,10 @@ const CatDetailsPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap gap-2 mb-6">
+            {cat.is_vaccinated && <span className="px-2 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-semibold">已接种</span>}
+            {cat.is_sterilized && <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm font-semibold">已绝育</span>}
+            {cat.is_dewormed && <span className="px-2 py-1 bg-teal-50 text-teal-700 rounded-lg text-sm font-semibold">已驱虫</span>}
+
             {cat.tags.map(tag => (
               <span key={tag} className="px-3 py-1 bg-brand-50 text-brand-700 rounded-lg text-sm font-semibold">
                 {tag}
@@ -245,17 +249,7 @@ const CatDetailsPage: React.FC = () => {
             <p>{cat.description}</p>
           </div>
 
-          <div className="flex flex-wrap gap-3 mb-8">
-            <div className={`px-3 py-1.5 rounded-lg text-sm font-medium ${cat.is_vaccinated ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-400'}`}>
-              {cat.is_vaccinated ? '已接种' : '未接种'}
-            </div>
-            <div className={`px-3 py-1.5 rounded-lg text-sm font-medium ${cat.is_dewormed ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-400'}`}>
-              {cat.is_dewormed ? '已驱虫' : '未驱虫'}
-            </div>
-            <div className={`px-3 py-1.5 rounded-lg text-sm font-medium ${cat.is_sterilized ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-400'}`}>
-              {cat.is_sterilized ? '已绝育' : '未绝育'}
-            </div>
-          </div>
+
 
           <div className="mt-auto space-y-4">
             {renderApplicationStatus()}
