@@ -55,7 +55,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       注意：
-      1. characteristics 请从以下选项中选择最符合的3个：粘人精、活泼好动、幼猫、高冷安静、话唠、需要伺候、老年猫、独立自主、亲人、胆小。
+      1. characteristics 请从以下选项中选择最符合的3个：活泼好动、高冷安静、粘人精、独立自主、话唠、干饭喵、老年猫、幼猫、需特殊照顾、不离不弃组合。
       2. 如果图片中不是猫咪，请返回 { "is_cat": false }。
       3. 不要返回 Markdown 格式（如 \`\`\`json），只要纯 JSON 字符串。
     `;
