@@ -128,24 +128,29 @@ async function getAllCats() {
   // 获取每只猫的评论数
   const { data: commentCounts, error: countError } = await supabase
     .from('comments')
-    .select('cat_id')
-    .not('cat_id', 'is', null);
+    .select('cat_id');
 
   if (countError) {
     console.error('获取评论数失败:', countError);
-    return cats;
+    return cats?.map(cat => ({ ...cat, commentCount: 0 })) || [];
   }
 
   // 统计每只猫的评论数
   const countMap = new Map<string, number>();
-  commentCounts?.forEach((c: { cat_id: string }) => {
-    countMap.set(c.cat_id, (countMap.get(c.cat_id) || 0) + 1);
-  });
+  if (commentCounts && commentCounts.length > 0) {
+    commentCounts.forEach((c: { cat_id: string | null }) => {
+      if (c.cat_id) {
+        const catIdStr = String(c.cat_id);
+        countMap.set(catIdStr, (countMap.get(catIdStr) || 0) + 1);
+      }
+    });
+    console.log('[Debug] 评论数统计:', Object.fromEntries(countMap));
+  }
 
   // 合并评论数到猫咪数据
   return cats?.map(cat => ({
     ...cat,
-    commentCount: countMap.get(cat.id) || 0
+    commentCount: countMap.get(String(cat.id)) || 0
   })) || [];
 }
 
