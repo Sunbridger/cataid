@@ -84,7 +84,7 @@ const Navbar: React.FC = () => {
       </nav>
 
       {/* Mobile Bottom Navbar */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-100 pb-safe pt-2 z-50 transition-transform duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] ${isInputFocused || !shouldShowNavbar ? 'translate-y-full' : 'translate-y-0'}`}>
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-100 pb-safe pt-2 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] ${(isInputFocused || !shouldShowNavbar) ? 'hidden' : ''}`}>
         <div className="flex justify-around items-center h-16">
           <Link
             to="/"
