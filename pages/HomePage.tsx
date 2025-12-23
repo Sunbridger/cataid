@@ -128,9 +128,7 @@ const HomePage: React.FC = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="bg-brand-500 rounded-2xl md:rounded-3xl p-4 md:p-8 text-center text-white relative overflow-hidden shadow-lg transition-transform duration-200"
-        style={{ transform: `translateY(${pullDistance}px)` }}
-      >
+      <section className="bg-brand-500 rounded-2xl md:rounded-3xl p-4 md:p-8 text-center text-white relative overflow-hidden shadow-lg transition-transform duration-200">
         <div className="relative z-10 max-w-xl mx-auto space-y-2 md:space-y-3">
           <h1 className="text-lg md:text-3xl font-bold tracking-tight">
             寻找你的喵星人伙伴
