@@ -41,15 +41,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       resource_type: 'image',
     });
 
-    // 优化后的 URL (自动格式和质量)
-    const optimizedUrl = cloudinary.url(uploadResult.public_id, {
-      fetch_format: 'auto',
-      quality: 'auto'
-    });
-
     return res.status(200).json({
-      url: optimizedUrl, // 返回优化后的 URL
-      originalUrl: uploadResult.secure_url,
+      url: uploadResult.secure_url,
       publicId: uploadResult.public_id
     });
 
