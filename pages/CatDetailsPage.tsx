@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { catService, adoptionService } from '../services/apiService';
 import { chatAboutCat } from '../services/geminiService';
 import { Cat, AdoptionApplication } from '../types';
-import { Loader2, ArrowLeft, Heart, MessageCircle, Send, Sparkles, CheckCircle2, XCircle, Clock, X } from 'lucide-react';
+import { Loader2, ArrowLeft, Heart, MessageCircle, Send, Sparkles, CheckCircle2, XCircle, Clock, X, MoreHorizontal, Share } from 'lucide-react';
 import CatImageGallery from '../components/CatImageGallery';
 
 import { useToast } from '../context/ToastContext';
@@ -32,6 +32,42 @@ const CatDetailsPage: React.FC = () => {
     contact: '',
     reason: ''
   });
+
+  const [showMenu, setShowMenu] = useState(false);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const title = `${cat?.name} 正在寻找一个家 | 猫猫领养平台`;
+    const text = `不论是流浪还是被遗弃，每一只猫咪都值得被温柔以待。来看看 ${cat?.name} 吧！`;
+
+    setShowMenu(false);
+
+    // 1. Try Native Share (Mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text, url });
+        return;
+      } catch (err) {
+        // User aborted or error, fall through
+      }
+    }
+
+    // 2. Fallback: Copy to Clipboard
+    try {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      success('链接已复制！去微信分享给朋友吧。');
+
+      // 3. Try to open WeChat (Deep Link)
+      // Only if on mobile and not seemingly in a desktop browser
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        setTimeout(() => {
+          window.location.href = 'weixin://';
+        }, 500);
+      }
+    } catch (err) {
+      error('复制失败，请手动复制浏览器链接分享。');
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -186,11 +222,37 @@ const CatDetailsPage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto relative pt-10 md:pt-0">
       {/* Mobile App-like Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md shadow-sm z-30 flex items-center px-4 border-b border-slate-100">
-        <Link to="/" className="p-2 -ml-2 text-slate-800 active:bg-slate-100 rounded-full transition-colors">
-          <ArrowLeft size={24} />
-        </Link>
-        <span className="font-bold text-lg ml-2 truncate">{cat.name} 的档案</span>
+      <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md shadow-sm z-30 flex items-center justify-between px-4 border-b border-slate-100">
+        <div className="flex items-center gap-2 overflow-hidden">
+          <Link to="/" className="p-2 -ml-2 text-slate-800 active:bg-slate-100 rounded-full transition-colors flex-shrink-0">
+            <ArrowLeft size={24} />
+          </Link>
+          <span className="font-bold text-lg truncate">{cat.name} 的档案</span>
+        </div>
+
+        <div className="relative flex-shrink-0">
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2 -mr-2 text-slate-600 active:bg-slate-100 rounded-full transition-colors"
+          >
+            <MoreHorizontal size={24} />
+          </button>
+
+          {showMenu && (
+            <>
+              <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setShowMenu(false)} />
+              <div className="absolute right-0 top-full mt-2 w-36 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                <button
+                  onClick={handleShare}
+                  className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 active:bg-slate-100 flex items-center gap-3"
+                >
+                  <Share size={18} className="text-brand-500" />
+                  分享详情
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Desktop Back Button */}
