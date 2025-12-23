@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { adoptionService } from '../services/apiService';
-import { useCat } from '../hooks/useCats';
+import { useCat, revalidateCats } from '../hooks/useCats';
 import { chatAboutCat } from '../services/geminiService';
 import { Cat, AdoptionApplication } from '../types';
 import { Loader2, ArrowLeft, Heart, MessageCircle, Send, Sparkles, CheckCircle2, XCircle, Clock, X } from 'lucide-react';
@@ -105,6 +105,8 @@ const CatDetailsPage: React.FC = () => {
 
       // Refresh cat data to show status change if needed
       refreshCat();
+      // 刷新猫咪列表缓存
+      revalidateCats();
       success('申请已提交，请耐心等待审核！');
 
     } catch (err) {

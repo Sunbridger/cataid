@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { catService } from '../services/apiService';
 import { generateCatBio, analyzeCatImage } from '../services/geminiService';
+import { revalidateCats } from '../hooks/useCats';
 import { Sparkles, Upload, ArrowRight, Loader2, Camera, Info } from 'lucide-react';
 import { CAT_CATEGORIES } from '../constants';
 import { useToast } from '../context/ToastContext';
@@ -156,6 +157,8 @@ const AddCatPage: React.FC = () => {
         is_stray: formData.is_stray
       });
       success('发布成功！');
+      // 强制刷新猫咪列表缓存
+      await revalidateCats();
       navigate('/');
     } catch (err) {
       console.error(err);
