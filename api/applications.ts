@@ -41,6 +41,7 @@ function setCorsHeaders(res: VercelResponse) {
 function toSnakeCase(app: NewApplicationInput) {
   return {
     cat_id: app.catId,
+    user_id: app.userId || null,
     cat_name: app.catName,
     cat_image: app.catImage,
     applicant_name: app.applicantName,
@@ -56,6 +57,7 @@ function toCamelCase(data: any) {
   const convert = (item: any) => ({
     id: item.id,
     catId: item.cat_id,
+    userId: item.user_id,
     catName: item.cat_name,
     catImage: item.cat_image,
     applicantName: item.applicant_name,
@@ -116,6 +118,7 @@ async function getAllApplications() {
 
 interface NewApplicationInput {
   catId: string;
+  userId?: string;
   catName: string;
   catImage: string;
   applicantName: string;

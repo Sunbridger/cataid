@@ -52,6 +52,7 @@ function setCorsHeaders(res: VercelResponse) {
 function toSnakeCase(comment: NewCommentInput) {
   return {
     cat_id: comment.catId,
+    user_id: comment.userId || null,
     parent_id: comment.parentId || null,
     nickname: comment.nickname,
     avatar_url: comment.avatarUrl || null,
@@ -67,6 +68,7 @@ function toCamelCase(data: any) {
   const convert = (item: any) => ({
     id: item.id,
     catId: item.cat_id,
+    userId: item.user_id,
     parentId: item.parent_id,
     nickname: item.nickname,
     avatarUrl: item.avatar_url,
@@ -132,6 +134,7 @@ async function getCommentsByCatId(catId: string) {
 
 interface NewCommentInput {
   catId: string;
+  userId?: string | null;
   parentId?: string | null;
   nickname: string;
   avatarUrl?: string | null;

@@ -219,6 +219,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
 
     const commentInput: NewCommentInput = {
       catId: cat.id,
+      userId: user.id,
       parentId: replyTo?.parentId || null,
       nickname: user.nickname,
       avatarUrl: user.avatarUrl,

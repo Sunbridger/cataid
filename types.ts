@@ -3,6 +3,7 @@ export type ApplicationStatus = 'pending' | 'approved' | 'rejected';
 
 export interface Cat {
   id: string;
+  userId?: string;           // 发布者用户ID
   name: string;
   age: number;
   gender: 'Male' | 'Female';
@@ -20,6 +21,7 @@ export interface Cat {
 }
 
 export interface NewCatInput {
+  userId?: string;           // 发布者用户ID
   name: string;
   age: number;
   gender: 'Male' | 'Female';
@@ -37,6 +39,7 @@ export interface NewCatInput {
 export interface AdoptionApplication {
   id: string;
   catId: string;
+  userId?: string;        // 申请者用户ID
   catName: string; // Denormalized for easier display
   catImage: string;
   applicantName: string;
@@ -48,6 +51,7 @@ export interface AdoptionApplication {
 
 export interface NewApplicationInput {
   catId: string;
+  userId?: string;        // 申请者用户ID
   catName: string;
   catImage: string;
   applicantName: string;
@@ -64,6 +68,7 @@ export interface SupabaseBucketPath {
 export interface Comment {
   id: string;
   catId: string;
+  userId?: string | null;       // 评论者用户ID
   parentId: string | null;      // 父评论ID，顶级评论为null
   nickname: string;              // 评论者昵称
   avatarUrl: string | null;      // 评论者头像
@@ -76,6 +81,7 @@ export interface Comment {
 
 export interface NewCommentInput {
   catId: string;
+  userId?: string | null;       // 评论者用户ID
   parentId?: string | null;
   nickname: string;
   avatarUrl?: string | null;

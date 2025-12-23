@@ -150,6 +150,7 @@ async function getAllCats() {
 }
 
 interface CreateCatInput {
+  user_id?: string;
   name: string;
   age: number;
   gender: string;
@@ -174,6 +175,7 @@ async function createCat(cat: CreateCatInput) {
   const { data, error } = await supabase
     .from('cats')
     .insert([{
+      user_id: cat.user_id || null,
       name: cat.name,
       age: cat.age,
       gender: cat.gender,
@@ -193,3 +195,4 @@ async function createCat(cat: CreateCatInput) {
   if (error) throw error;
   return data;
 }
+

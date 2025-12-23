@@ -3,10 +3,12 @@
 -- ===========================================
 -- 在 Supabase Dashboard -> SQL Editor 中执行此脚本
 -- https://supabase.com/dashboard/project/YOUR_PROJECT_ID/sql
+-- 注意：请先执行 users.sql 创建用户表
 
 -- 1. 创建猫咪表
 CREATE TABLE IF NOT EXISTS cats (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,    -- 发布者用户ID
   name VARCHAR(100) NOT NULL,
   age INTEGER NOT NULL,
   gender VARCHAR(10) NOT NULL CHECK (gender IN ('Male', 'Female')),
@@ -26,6 +28,7 @@ CREATE TABLE IF NOT EXISTS cats (
 CREATE TABLE IF NOT EXISTS adoption_applications (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   cat_id UUID REFERENCES cats(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,    -- 申请者用户ID
   cat_name VARCHAR(100) NOT NULL,
   cat_image TEXT,
   applicant_name VARCHAR(100) NOT NULL,
@@ -39,6 +42,7 @@ CREATE TABLE IF NOT EXISTS adoption_applications (
 CREATE TABLE IF NOT EXISTS comments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   cat_id UUID REFERENCES cats(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,    -- 评论者用户ID
   parent_id UUID REFERENCES comments(id) ON DELETE CASCADE,  -- 回复的父评论ID，顶级评论为NULL
   nickname VARCHAR(50) NOT NULL,                              -- 评论者昵称
   avatar_url VARCHAR(255),                                    -- 评论者头像URL
@@ -51,13 +55,16 @@ CREATE TABLE IF NOT EXISTS comments (
 -- 4. 创建索引以提高查询性能
 CREATE INDEX IF NOT EXISTS idx_cats_status ON cats(status);
 CREATE INDEX IF NOT EXISTS idx_cats_created_at ON cats(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_cats_user_id ON cats(user_id);
 CREATE INDEX IF NOT EXISTS idx_applications_status ON adoption_applications(status);
 CREATE INDEX IF NOT EXISTS idx_applications_cat_id ON adoption_applications(cat_id);
+CREATE INDEX IF NOT EXISTS idx_applications_user_id ON adoption_applications(user_id);
 CREATE INDEX IF NOT EXISTS idx_comments_cat_id ON comments(cat_id);
 CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments(parent_id);
+CREATE INDEX IF NOT EXISTS idx_comments_user_id ON comments(user_id);
 CREATE INDEX IF NOT EXISTS idx_comments_created_at ON comments(created_at DESC);
 
--- 5. 插入一些示例数据
+-- 5. 插入一些示例数据（不关联用户）
 INSERT INTO cats (name, age, gender, breed, description, image_url, tags, status, is_stray, is_sterilized, is_dewormed, is_vaccinated) VALUES
   ('小橘', 2, 'Female', '橘猫', '小橘是一只精力充沛的小老虎，喜欢追逐激光笔，也喜欢在阳光下打盹。她话很多，会经常跟你喵喵叫，分享她的一天。', 'https://picsum.photos/id/237/600/600', ARRAY['活泼好动', '话唠'], '可领养', true, true, true, true),
   ('黑夜', 5, 'Male', '孟买猫', '黑夜里的神秘影子……等等，其实只是一只想要温暖大腿的粘人黑猫。一开始可能有点害羞，但一旦信任你，呼噜声就像柴油引擎一样响。', 'https://picsum.photos/id/40/600/600', ARRAY['高冷安静', '粘人'], '可领养', false, true, true, true),
