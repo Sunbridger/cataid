@@ -14,7 +14,7 @@ const Layout: React.FC = () => {
   const showBottomNav = ['/', '/add', '/admin'].includes(location.pathname);
 
   return (
-    <div className="min-h-screen flex flex-col font-sans text-slate-800 bg-brand-50/30">
+    <div className="min-h-screen flex flex-col font-sans text-slate-800 bg-slate-50">
       <Navbar />
       <main className={`flex-grow container mx-auto px-4 pt-6 md:py-8 max-w-6xl ${showBottomNav ? 'pb-24 md:pb-8' : 'pb-4 md:pb-8'}`}>
         <Routes>
