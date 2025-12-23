@@ -1,20 +1,16 @@
 /**
- * 图片上传 API - 使用 Supabase Storage
+ * 图片上传 API - 使用 Cloudinary
  * 路由：POST /api/upload
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
+import { v2 as cloudinary } from 'cloudinary';
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-const isDemoMode = !supabaseUrl || !supabaseServiceKey;
-
-const supabase = !isDemoMode
-  ? createClient(supabaseUrl!, supabaseServiceKey!, {
-    auth: { autoRefreshToken: false, persistSession: false }
-  })
-  : null;
+// 配置 Cloudinary
+cloudinary.config({
+  cloud_name: 'dunsnio0v',
+  api_key: '119875759313936',
+  api_secret: 'JVyKynp_m6roTsP-ilrjO9j_3kg'
+});
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // 设置 CORS
@@ -33,56 +29,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const { file, fileName, contentType } = req.body;
 
-    if (!file || !fileName) {
+    if (!file) {
       return res.status(400).json({ error: '缺少文件数据' });
     }
 
-    // 演示模式：返回占位图片
-    if (isDemoMode || !supabase) {
-      console.log('[Demo Mode] 图片上传:', fileName);
-      return res.status(200).json({
-        url: `https://picsum.photos/seed/${fileName}/600/600`,
-        message: '演示模式：使用占位图片'
-      });
-    }
+    // Cloudinary 支持直接上传 Base64 字符串
+    // 我们将上传到 'cats' 文件夹中
+    const uploadResult = await cloudinary.uploader.upload(file, {
+      folder: 'cats',
+      public_id: fileName ? fileName.split('.')[0].replace(/[^a-zA-Z0-9]/g, '_') + '_' + Date.now() : undefined, // 简单的文件名净化
+      resource_type: 'image',
+    });
 
-    // 解码 Base64 图片
-    const base64Data = file.replace(/^data:image\/\w+;base64,/, '');
-    const buffer = Buffer.from(base64Data, 'base64');
-
-    // 生成唯一文件名
-    const timestamp = Date.now();
-    const randomStr = Math.random().toString(36).substring(7);
-    const ext = fileName.split('.').pop() || 'jpg';
-    const filePath = `cats/${timestamp}-${randomStr}.${ext}`;
-
-    // 上传到 Supabase Storage
-    const { error: uploadError } = await supabase.storage
-      .from('catImages')
-      .upload(filePath, buffer, {
-        contentType: contentType || 'image/jpeg',
-        upsert: false
-      });
-
-    if (uploadError) {
-      console.error('上传失败:', uploadError);
-      throw new Error(`上传失败: ${uploadError.message}`);
-    }
-
-    // 获取公开 URL
-    const { data: urlData } = supabase.storage
-      .from('catImages')
-      .getPublicUrl(filePath);
+    // 优化后的 URL (自动格式和质量)
+    const optimizedUrl = cloudinary.url(uploadResult.public_id, {
+      fetch_format: 'auto',
+      quality: 'auto'
+    });
 
     return res.status(200).json({
-      url: urlData.publicUrl,
-      path: filePath
+      url: optimizedUrl, // 返回优化后的 URL
+      originalUrl: uploadResult.secure_url,
+      publicId: uploadResult.public_id
     });
 
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('Cloudinary Upload Error:', error);
     return res.status(500).json({
-      error: error instanceof Error ? error.message : '上传失败'
+      error: error instanceof Error ? error.message : '图片上传失败'
     });
   }
 }
