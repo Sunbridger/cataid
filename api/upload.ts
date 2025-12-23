@@ -37,7 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 我们将上传到 'cats' 文件夹中
     const uploadResult = await cloudinary.uploader.upload(file, {
       folder: 'cats',
-      public_id: fileName ? fileName.split('.')[0].replace(/[^a-zA-Z0-9]/g, '_') + '_' + Date.now() : undefined, // 简单的文件名净化
+      public_id: `cat_${Date.now()}_${Math.random().toString(36).substring(7)}`,
       resource_type: 'image',
     });
 
