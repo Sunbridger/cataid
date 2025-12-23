@@ -14,11 +14,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { imageUrl } = req.body;
     const apiKey = process.env.MOONSHOT_API_KEY;
 
-    if (!apiKey) return res.status(500).json({ error: 'Server config error: Missing API Key' });
+    if (!apiKey) {
+      console.error('Missing MOONSHOT_API_KEY');
+      return res.status(500).json({ error: 'Server config error: Missing API Key' });
+    }
 
-    // Note: As of typical knowledge, Moonshot might strictly be text-only.
-    // If this fails, we might need to swap to a different provider or mock it for the demo if the user insists on Kimi.
-    // However, adhering to the standard OpenAI Vision format:
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'Missing imageUrl parameter' });
+    }
+
+    // 下载图片并转换为 base64（Moonshot Vision API 要求 base64 格式）
+    let base64Image: string;
+    try {
+      const imageResponse = await fetch(imageUrl);
+      if (!imageResponse.ok) {
+        throw new Error(`Failed to fetch image: ${imageResponse.status}`);
+      }
+      const imageBuffer = await imageResponse.arrayBuffer();
+      const base64 = Buffer.from(imageBuffer).toString('base64');
+
+      // 检测图片类型
+      const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+      base64Image = `data:${contentType};base64,${base64}`;
+    } catch (fetchError) {
+      console.error('Image fetch error:', fetchError);
+      return res.status(400).json({ error: '无法获取图片，请检查图片 URL' });
+    }
+
+    // 调用 Moonshot Vision API
     const response = await fetch(MOONSHOT_API_URL, {
       method: 'POST',
       headers: {
@@ -26,51 +49,77 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'moonshot-v1-8k', // Or a vision-compatible model if one exists, e.g. moonshot-v1-vision?
+        model: 'moonshot-v1-vision-preview', // 使用官方 Vision 模型
         messages: [
           {
             role: 'system',
-            content: '你是一个猫咪品种识别专家。请根据图片判断猫咪的品种，并推测其大致年龄段（幼猫/成猫）和毛色特点。'
+            content: '你是一个专业的猫咪品种识别专家。请仔细观察图片中的猫咪，识别其品种、毛色和性格特征。'
           },
           {
             role: 'user',
             content: [
-              { type: 'text', text: '请识别这只猫咪的品种、毛色和大致状态。返回JSON格式: { "breed": "品种", "color": "毛色", "characteristics": ["特点1", "特点2"] }' },
               {
                 type: 'image_url',
                 image_url: {
-                  url: imageUrl // Public URL
+                  url: base64Image // Moonshot 要求 base64 格式
                 }
+              },
+              {
+                type: 'text',
+                text: '请识别这只猫咪的品种、毛色和可能的性格特征。请以 JSON 格式返回结果，格式如下：\n{\n  "breed": "品种名称（如：中华田园猫、英国短毛猫等）",\n  "color": "毛色描述",\n  "characteristics": ["性格特点1", "性格特点2", "性格特点3"]\n}\n\n注意：\n1. breed 请使用常见的中文品种名称\n2. characteristics 请从以下选项中选择最符合的3个：粘人精、活泼好动、幼猫、高冷安静、话唠、需要伺候、老年猫、独立自主\n3. 只返回 JSON，不要其他文字'
               }
             ]
           }
         ],
-        temperature: 0.5,
-        max_tokens: 300,
-        response_format: { type: "json_object" } // If supported
+        temperature: 0.3, // 降低温度以获得更稳定的结果
+        max_tokens: 500,
+        response_format: { type: "json_object" }
       })
     });
 
-    // Fallback/Mock logic if usage of Kimi for Vision is actually impossible in this context but user requested it:
-    // We'll try to parse. If it fails (likely due to model limitations), we catch it.
-
     if (!response.ok) {
-      // Ideally we would inspect the error. For now, throw.
-      const err = await response.json();
-      console.error("Moonshot Vision Error:", err);
-      throw new Error("AI 识别服务暂时不可用 (不支持视觉输入)");
+      const errorData = await response.json().catch(() => ({}));
+      console.error("Moonshot Vision API Error:", errorData);
+
+      // 如果是 API 限制或模型不可用，返回友好提示
+      if (response.status === 429) {
+        return res.status(429).json({ error: 'AI 识别服务请求过于频繁，请稍后再试' });
+      }
+
+      throw new Error(`Moonshot API error: ${response.status}`);
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "{}";
+    const content = data.choices?.[0]?.message?.content;
 
-    return res.status(200).json({ result: JSON.parse(content) });
+    if (!content) {
+      throw new Error('Empty response from Moonshot API');
+    }
+
+    // 解析 JSON 响应
+    let result;
+    try {
+      result = JSON.parse(content);
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', content);
+      // 尝试提取 JSON
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        result = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error('Invalid JSON response from AI');
+      }
+    }
+
+    return res.status(200).json({ result });
 
   } catch (error) {
-    console.error("Analyze Error:", error);
-    // Return a mock response for demonstration if the API fails (graceful degradation)
-    // allowing the user to see the UI flow even if the specific API call blocked.
-    // In a real app, we'd handle this more strictly.
-    return res.status(500).json({ error: '识别失败，请手动输入' });
+    console.error("Analyze Image Error:", error);
+
+    // 返回降级响应，让用户知道需要手动输入
+    return res.status(500).json({
+      error: 'AI 识别暂时不可用，请手动填写猫咪信息',
+      result: null
+    });
   }
 }
