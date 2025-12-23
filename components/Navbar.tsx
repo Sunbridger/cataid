@@ -13,35 +13,7 @@ const Navbar: React.FC = () => {
   const mainRoutes = ['/', '/add', '/admin'];
   const shouldShowNavbar = mainRoutes.includes(location.pathname);
 
-  // Detect if virtual keyboard is likely open (by checking if input is focused)
-  const [isInputFocused, setIsInputFocused] = useState(false);
 
-  useEffect(() => {
-    const handleFocusIn = (e: FocusEvent) => {
-      const target = e.target as HTMLElement;
-      if (['INPUT', 'TEXTAREA'].includes(target.tagName)) {
-        setIsInputFocused(true);
-      }
-    };
-
-    const handleFocusOut = () => {
-      // Small delay to prevent flickering when switching focus between inputs
-      setTimeout(() => {
-        const activeElement = document.activeElement as HTMLElement;
-        if (!['INPUT', 'TEXTAREA'].includes(activeElement.tagName)) {
-          setIsInputFocused(false);
-        }
-      }, 50);
-    };
-
-    window.addEventListener('focusin', handleFocusIn);
-    window.addEventListener('focusout', handleFocusOut);
-
-    return () => {
-      window.removeEventListener('focusin', handleFocusIn);
-      window.removeEventListener('focusout', handleFocusOut);
-    };
-  }, []);
 
   return (
     <>
@@ -84,7 +56,7 @@ const Navbar: React.FC = () => {
       </nav>
 
       {/* Mobile Bottom Navbar */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-100 pb-safe pt-2 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] ${(isInputFocused || !shouldShowNavbar) ? 'hidden' : ''}`}>
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-100 pb-safe pt-2 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] ${!shouldShowNavbar ? 'hidden' : ''}`}>
         <div className="flex justify-around items-center h-16">
           <Link
             to="/"
