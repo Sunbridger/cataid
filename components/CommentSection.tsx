@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { Comment, NewCommentInput, Cat } from '../types';
 import { commentService } from '../services/apiService';
 import { generateCommentReply } from '../services/geminiService';
-import { Heart, Send, Loader2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, Send, Loader2, Sparkles, ChevronDown, ChevronUp, Lock } from 'lucide-react';
+import { useUser } from '../context/UserContext';
 
 interface CommentSectionProps {
   cat: Cat;
@@ -137,15 +139,17 @@ const CommentItem: React.FC<{
 };
 
 const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
+  const { user, isLoggedIn, isGuest } = useUser();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [inputValue, setInputValue] = useState('');
-  const [nickname, setNickname] = useState('');
-  const [showNicknameInput, setShowNicknameInput] = useState(false);
   const [replyTo, setReplyTo] = useState<{ parentId: string; nickname: string } | null>(null);
   const [likedComments, setLikedComments] = useState<Set<string>>(new Set());
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // 是否可以发表评论（登录且非游客）
+  const canComment = isLoggedIn && !isGuest;
 
   // 加载评论
   useEffect(() => {
@@ -153,11 +157,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
     // 从 localStorage 读取已点赞的评论
     const liked = JSON.parse(localStorage.getItem(`liked_comments_${cat.id}`) || '[]');
     setLikedComments(new Set(liked));
-    // 从 localStorage 读取昵称
-    const savedNickname = localStorage.getItem('comment_nickname');
-    if (savedNickname) {
-      setNickname(savedNickname);
-    }
   }, [cat.id]);
 
   const loadComments = async (silent = false) => {
@@ -195,6 +194,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
   };
 
   const handleReply = (parentId: string, parentNickname: string) => {
+    if (!canComment) return;
     setReplyTo({ parentId, nickname: parentNickname });
     setInputValue(`@${parentNickname} `);
     inputRef.current?.focus();
@@ -213,20 +213,15 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
   };
 
   const handleSubmit = async () => {
-    if (!inputValue.trim()) return;
-
-    // 检查昵称
-    if (!nickname.trim()) {
-      setShowNicknameInput(true);
-      return;
-    }
+    if (!inputValue.trim() || !canComment || !user) return;
 
     setSubmitting(true);
 
     const commentInput: NewCommentInput = {
       catId: cat.id,
       parentId: replyTo?.parentId || null,
-      nickname: nickname.trim(),
+      nickname: user.nickname,
+      avatarUrl: user.avatarUrl,
       content: inputValue.trim(),
     };
 
@@ -280,15 +275,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
     }
   };
 
-  const saveNickname = () => {
-    if (nickname.trim()) {
-      localStorage.setItem('comment_nickname', nickname.trim());
-      setShowNicknameInput(false);
-      // 重新触发提交
-      handleSubmit();
-    }
-  };
-
   const totalComments = comments.reduce(
     (sum, c) => sum + 1 + (c.replies?.length || 0),
     0
@@ -304,87 +290,81 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
       {/* 输入区域 - 顶部显示 */}
       <div className="flex items-start gap-3 mb-6 pb-4 border-b border-slate-100">
         <img
-          src={nickname ? getRandomAvatar(nickname) : 'https://ui-avatars.com/api/?name=?&background=e2e8f0&color=94a3b8&rounded=true&size=128'}
+          src={user?.avatarUrl || 'https://ui-avatars.com/api/?name=?&background=e2e8f0&color=94a3b8&rounded=true&size=128'}
           alt="我"
           className="w-9 h-9 rounded-full bg-slate-200 flex-shrink-0"
         />
         <div className="flex-1">
-          {/* 昵称输入弹窗 */}
-          {showNicknameInput && (
-            <div className="mb-3 p-3 bg-slate-50 rounded-xl border border-slate-200 animate-in fade-in slide-in-from-top-2 duration-200">
-              <p className="text-sm text-slate-600 mb-2">第一次评论？给自己起个昵称吧~</p>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  placeholder="输入昵称..."
-                  maxLength={20}
-                  className="flex-1 px-3 py-2 rounded-lg bg-white border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-sm"
-                  autoFocus
+          {/* 未登录或游客提示 */}
+          {!canComment && (
+            <Link
+              to="/profile"
+              className="flex items-center gap-2 px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 transition-colors"
+            >
+              <Lock size={16} />
+              <span className="text-sm">
+                {!isLoggedIn ? '登录后参与评论' : '绑定手机号或邮箱后才能评论'}
+              </span>
+            </Link>
+          )}
+
+          {/* 已登录用户输入区域 */}
+          {canComment && (
+            <>
+              {/* 回复提示 */}
+              {replyTo && (
+                <div className="mb-2 flex items-center justify-between text-sm">
+                  <span className="text-slate-500">
+                    回复 <span className="text-brand-600 font-medium">@{replyTo.nickname}</span>
+                  </span>
+                  <button
+                    onClick={() => {
+                      setReplyTo(null);
+                      setInputValue('');
+                    }}
+                    className="text-slate-400 hover:text-slate-600"
+                  >
+                    取消
+                  </button>
+                </div>
+              )}
+
+              {/* 输入框 */}
+              <div className="flex items-end gap-2">
+                <textarea
+                  ref={inputRef}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder={`${user?.nickname}，说点什么吧...`}
+                  rows={1}
+                  className="flex-1 px-4 py-2.5 rounded-full bg-slate-100 border-0 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-white resize-none text-sm leading-relaxed"
+                  style={{ minHeight: '40px', maxHeight: '120px' }}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = 'auto';
+                    target.style.height = Math.min(target.scrollHeight, 120) + 'px';
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSubmit();
+                    }
+                  }}
                 />
                 <button
-                  onClick={saveNickname}
-                  className="px-4 py-2 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600 transition-colors"
+                  onClick={handleSubmit}
+                  disabled={submitting || !inputValue.trim()}
+                  className="p-2.5 bg-brand-500 text-white rounded-full hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
                 >
-                  确定
+                  {submitting ? (
+                    <Loader2 className="animate-spin" size={18} />
+                  ) : (
+                    <Send size={18} />
+                  )}
                 </button>
               </div>
-            </div>
+            </>
           )}
-
-          {/* 回复提示 */}
-          {replyTo && (
-            <div className="mb-2 flex items-center justify-between text-sm">
-              <span className="text-slate-500">
-                回复 <span className="text-brand-600 font-medium">@{replyTo.nickname}</span>
-              </span>
-              <button
-                onClick={() => {
-                  setReplyTo(null);
-                  setInputValue('');
-                }}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                取消
-              </button>
-            </div>
-          )}
-
-          {/* 输入框 */}
-          <div className="flex items-end gap-2">
-            <textarea
-              ref={inputRef}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="说点什么吧..."
-              rows={1}
-              className="flex-1 px-4 py-2.5 rounded-full bg-slate-100 border-0 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-white resize-none text-sm leading-relaxed"
-              style={{ minHeight: '40px', maxHeight: '120px' }}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = 'auto';
-                target.style.height = Math.min(target.scrollHeight, 120) + 'px';
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit();
-                }
-              }}
-            />
-            <button
-              onClick={handleSubmit}
-              disabled={submitting || !inputValue.trim()}
-              className="p-2.5 bg-brand-500 text-white rounded-full hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
-            >
-              {submitting ? (
-                <Loader2 className="animate-spin" size={18} />
-              ) : (
-                <Send size={18} />
-              )}
-            </button>
-          </div>
         </div>
       </div>
 

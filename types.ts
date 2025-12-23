@@ -81,3 +81,40 @@ export interface NewCommentInput {
   avatarUrl?: string | null;
   content: string;
 }
+
+// 用户相关类型
+export type UserRole = 'user' | 'admin' | 'volunteer';
+export type UserStatus = 'active' | 'banned' | 'deleted';
+
+export interface User {
+  id: string;
+  phone?: string | null;
+  email?: string | null;
+  deviceId?: string | null;
+  nickname: string;
+  avatarUrl?: string | null;
+  bio?: string | null;
+  gender?: 'male' | 'female' | 'other' | 'unknown';
+  status: UserStatus;
+  role: UserRole;
+  favoriteCount: number;
+  commentCount: number;
+  adoptionCount: number;
+  createdAt: string;
+  lastLoginAt: string;
+}
+
+export interface LoginInput {
+  phone?: string;
+  email?: string;
+  password?: string;
+  deviceId?: string;  // 游客登录
+}
+
+export interface RegisterInput {
+  phone?: string;
+  email?: string;
+  password?: string;
+  nickname: string;
+  avatarUrl?: string;
+}

@@ -2,15 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { catService, adoptionService } from '../services/apiService';
 import { Cat, AdoptionApplication } from '../types';
-import { Loader2, ArrowLeft, Heart, CheckCircle2, XCircle, Clock, X, MoreHorizontal, Share } from 'lucide-react';
+import { Loader2, ArrowLeft, Heart, CheckCircle2, XCircle, Clock, X, MoreHorizontal, Share, Lock } from 'lucide-react';
 import CatImageGallery from '../components/CatImageGallery';
 import CommentSection from '../components/CommentSection';
 
 import { useToast } from '../context/ToastContext';
+import { useUser } from '../context/UserContext';
 
 const CatDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { success, error } = useToast();
+  const { user, isLoggedIn, isGuest } = useUser();
+
+  // 是否可以申请领养（登录且非游客）
+  const canApply = isLoggedIn && !isGuest;
 
   // 使用 SWR Hook 获取猫咪数据
   const [cat, setCat] = useState<Cat | null>(null);
@@ -295,14 +300,24 @@ const CatDetailsPage: React.FC = () => {
             {renderApplicationStatus()}
 
             {(!myApplication && !isAdopted) && (
-              <button
-                className={`w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-lg shadow-brand-500/20 transition-all flex justify-center items-center gap-2
-                 ${status !== '可领养' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                onClick={() => setIsAdoptModalOpen(true)}
-                disabled={status !== '可领养'}
-              >
-                {status === '待定' ? '已有其他人正在申请' : `领养 ${cat.name}`}
-              </button>
+              canApply ? (
+                <button
+                  className={`w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-lg shadow-brand-500/20 transition-all flex justify-center items-center gap-2
+                   ${status !== '可领养' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => setIsAdoptModalOpen(true)}
+                  disabled={status !== '可领养'}
+                >
+                  {status === '待定' ? '已有其他人正在申请' : `领养 ${cat.name}`}
+                </button>
+              ) : (
+                <Link
+                  to="/profile"
+                  className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-xl flex justify-center items-center gap-2 transition-colors"
+                >
+                  <Lock size={18} />
+                  {!isLoggedIn ? '登录后申请领养' : '绑定手机号后申请领养'}
+                </Link>
+              )
             )}
 
             {(!myApplication && isAdopted) && (

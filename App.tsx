@@ -5,13 +5,15 @@ import HomePage from './pages/HomePage';
 import AddCatPage from './pages/AddCatPage';
 import CatDetailsPage from './pages/CatDetailsPage';
 import AdminPage from './pages/AdminPage';
+import ProfilePage from './pages/ProfilePage';
 import { ToastProvider } from './context/ToastContext';
+import { UserProvider } from './context/UserContext';
 
 // 布局组件：根据当前路由动态调整底部内边距
 const Layout: React.FC = () => {
   const location = useLocation();
   // 有底部导航栏的页面
-  const showBottomNav = ['/', '/add', '/admin'].includes(location.pathname);
+  const showBottomNav = ['/', '/add', '/admin', '/profile'].includes(location.pathname);
 
   return (
     <div className="min-h-screen flex flex-col font-sans text-slate-800 bg-slate-50">
@@ -21,6 +23,7 @@ const Layout: React.FC = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/add" element={<AddCatPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/cat/:id" element={<CatDetailsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -32,9 +35,11 @@ const Layout: React.FC = () => {
 const App: React.FC = () => {
   return (
     <HashRouter>
-      <ToastProvider>
-        <Layout />
-      </ToastProvider>
+      <UserProvider>
+        <ToastProvider>
+          <Layout />
+        </ToastProvider>
+      </UserProvider>
     </HashRouter>
   );
 };

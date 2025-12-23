@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Cat, PlusCircle, Home, Settings } from 'lucide-react';
+import { Cat, PlusCircle, Home, Settings, User } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
@@ -9,11 +9,9 @@ const Navbar: React.FC = () => {
     ? "text-brand-600 font-semibold bg-brand-50"
     : "text-slate-600 hover:text-brand-500 hover:bg-white";
 
-  // Define routes where the bottom navbar should be visible
-  const mainRoutes = ['/', '/add', '/admin'];
+  // 定义需要显示底部导航栏的路由
+  const mainRoutes = ['/', '/add', '/admin', '/profile'];
   const shouldShowNavbar = mainRoutes.includes(location.pathname);
-
-
 
   return (
     <>
@@ -51,6 +49,14 @@ const Navbar: React.FC = () => {
               <Settings size={18} />
               <span>管理后台</span>
             </Link>
+
+            <Link
+              to="/profile"
+              className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 ${isActive('/profile')}`}
+            >
+              <User size={18} />
+              <span>我的</span>
+            </Link>
           </div>
         </div>
       </nav>
@@ -60,32 +66,42 @@ const Navbar: React.FC = () => {
         <div className="flex justify-around items-center h-16">
           <Link
             to="/"
-            className={`flex flex-col items-center justify-center w-20 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
+            className={`flex flex-col items-center justify-center w-16 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
           >
             <div className={`p-1.5 rounded-2xl transition-all duration-300 ${location.pathname === '/' ? 'bg-brand-50 scale-110 shadow-sm shadow-brand-100' : 'group-active:scale-95'}`}>
-              <Home size={24} strokeWidth={location.pathname === '/' ? 2.5 : 2} className={location.pathname === '/' ? 'fill-brand-500/10' : ''} />
+              <Home size={22} strokeWidth={location.pathname === '/' ? 2.5 : 2} className={location.pathname === '/' ? 'fill-brand-500/10' : ''} />
             </div>
             <span className={`text-[10px] transition-all duration-300 ${location.pathname === '/' ? 'font-bold' : 'font-medium'}`}>首页</span>
           </Link>
 
           <Link
             to="/add"
-            className={`flex flex-col items-center justify-center w-20 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/add' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
+            className={`flex flex-col items-center justify-center w-16 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/add' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
           >
             <div className={`p-1.5 rounded-2xl transition-all duration-300 ${location.pathname === '/add' ? 'bg-brand-50 scale-110 shadow-sm shadow-brand-100' : 'group-active:scale-95'}`}>
-              <PlusCircle size={24} strokeWidth={location.pathname === '/add' ? 2.5 : 2} className={location.pathname === '/add' ? 'fill-brand-500/10' : ''} />
+              <PlusCircle size={22} strokeWidth={location.pathname === '/add' ? 2.5 : 2} className={location.pathname === '/add' ? 'fill-brand-500/10' : ''} />
             </div>
             <span className={`text-[10px] transition-all duration-300 ${location.pathname === '/add' ? 'font-bold' : 'font-medium'}`}>发布</span>
           </Link>
 
           <Link
             to="/admin"
-            className={`flex flex-col items-center justify-center w-20 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/admin' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
+            className={`flex flex-col items-center justify-center w-16 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/admin' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
           >
             <div className={`p-1.5 rounded-2xl transition-all duration-300 ${location.pathname === '/admin' ? 'bg-brand-50 scale-110 shadow-sm shadow-brand-100' : 'group-active:scale-95'}`}>
-              <Settings size={24} strokeWidth={location.pathname === '/admin' ? 2.5 : 2} className={location.pathname === '/admin' ? 'fill-brand-500/10' : ''} />
+              <Settings size={22} strokeWidth={location.pathname === '/admin' ? 2.5 : 2} className={location.pathname === '/admin' ? 'fill-brand-500/10' : ''} />
             </div>
             <span className={`text-[10px] transition-all duration-300 ${location.pathname === '/admin' ? 'font-bold' : 'font-medium'}`}>管理</span>
+          </Link>
+
+          <Link
+            to="/profile"
+            className={`flex flex-col items-center justify-center w-16 h-full gap-0.5 transition-all duration-300 group ${location.pathname === '/profile' ? 'text-brand-600' : 'text-slate-400 hover:text-slate-500'}`}
+          >
+            <div className={`p-1.5 rounded-2xl transition-all duration-300 ${location.pathname === '/profile' ? 'bg-brand-50 scale-110 shadow-sm shadow-brand-100' : 'group-active:scale-95'}`}>
+              <User size={22} strokeWidth={location.pathname === '/profile' ? 2.5 : 2} className={location.pathname === '/profile' ? 'fill-brand-500/10' : ''} />
+            </div>
+            <span className={`text-[10px] transition-all duration-300 ${location.pathname === '/profile' ? 'font-bold' : 'font-medium'}`}>我的</span>
           </Link>
         </div>
       </nav>
