@@ -22,7 +22,7 @@ const App: React.FC = () => {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
-          <footer className="bg-white border-t border-brand-100 py-6 mt-12">
+          <footer className="bg-white border-t border-brand-100 py-6">
             <div className="container mx-auto px-4 text-center text-slate-500 text-sm">
               <p>© 2025 猫猫领养平台</p>
             </div>
