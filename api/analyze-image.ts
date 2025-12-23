@@ -51,13 +51,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         "breed": "推测品种(如: 英国短毛猫，如果是混血请注明)",
         "color": "主要毛色(如: 蓝白、橘色)",
         "characteristics": ["特征1", "特征2", "特征3"],
+        "age": "推测年龄数字(单位: 岁，如 0.5, 1, 3)",
+        "gender": "推测性别('Male' 或 'Female'，如果难以判断可基于直觉猜测)",
         "is_cat": true
       }
 
       注意：
       1. characteristics 请从以下选项中选择最符合的3个：活泼好动、高冷安静、粘人精、独立自主、话唠、干饭喵、老年猫、幼猫、需特殊照顾、不离不弃组合。
-      2. 如果图片中不是猫咪，请返回 { "is_cat": false }。
-      3. 不要返回 Markdown 格式（如 \`\`\`json），只要纯 JSON 字符串。
+      2. 如果推测是幼猫，age 请填 0.1 到 1 之间的数字；如果是成猫，请填 1 以上的整数。
+      3. gender 请必须返回 'Male' 或 'Female' 之一，即使不确定也请给出一个猜测值。
+      4. 如果图片中不是猫咪，请返回 { "is_cat": false }。
+      5. 不要返回 Markdown 格式（如 \`\`\`json），只要纯 JSON 字符串。
     `;
 
     const imagePart = {

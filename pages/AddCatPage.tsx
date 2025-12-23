@@ -80,7 +80,9 @@ const AddCatPage: React.FC = () => {
                   return {
                     ...prev,
                     breed: analysis.breed || prev.breed,
-                    tags: newTags
+                    tags: newTags,
+                    age: analysis.age ? String(analysis.age) : prev.age,
+                    gender: analysis.gender || prev.gender
                   };
                 });
                 success(`AI 识别成功：这是一个 ${analysis.breed || '可爱猫咪'}`);
