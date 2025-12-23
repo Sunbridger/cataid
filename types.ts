@@ -58,3 +58,25 @@ export interface SupabaseBucketPath {
   path: string;
   fullPath: string;
 }
+
+// 评论相关类型
+export interface Comment {
+  id: string;
+  catId: string;
+  parentId: string | null;      // 父评论ID，顶级评论为null
+  nickname: string;              // 评论者昵称
+  avatarUrl: string | null;      // 评论者头像
+  content: string;               // 评论内容
+  isAiReply: boolean;            // 是否为AI回复
+  likeCount: number;             // 点赞数
+  createdAt: string;             // 创建时间
+  replies?: Comment[];           // 子评论列表（前端组装）
+}
+
+export interface NewCommentInput {
+  catId: string;
+  parentId?: string | null;
+  nickname: string;
+  avatarUrl?: string | null;
+  content: string;
+}

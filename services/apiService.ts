@@ -5,7 +5,7 @@ import imageCompression from 'browser-image-compression';
  * 前端不再直接连接 Supabase，所有数据操作通过服务端 API 完成
  */
 
-import { Cat, NewCatInput, CatStatus, AdoptionApplication, NewApplicationInput, ApplicationStatus } from '../types';
+import { Cat, NewCatInput, CatStatus, AdoptionApplication, NewApplicationInput, ApplicationStatus, Comment, NewCommentInput } from '../types';
 
 // API 基础路径（在 Vercel 部署时为空，本地开发时可能需要配置）
 const API_BASE = process.env.NODE_ENV === 'development' ? '' : '';
@@ -257,3 +257,55 @@ export async function compressImage(file: File): Promise<File> {
     return file; // 压缩失败则返回原文件
   }
 }
+
+/**
+ * 评论相关 API
+ */
+export const commentApi = {
+  /**
+   * 获取猫咪的所有评论
+   */
+  getCommentsByCatId: async (catId: string): Promise<Comment[]> => {
+    try {
+      const result = await request<{ data: Comment[] }>(`/comments?catId=${catId}`);
+      return result.data;
+    } catch (error) {
+      console.error('获取评论失败:', error);
+      return [];
+    }
+  },
+
+  /**
+   * 提交评论
+   */
+  submitComment: async (comment: NewCommentInput): Promise<Comment | null> => {
+    try {
+      const result = await request<{ data: Comment }>('/comments', {
+        method: 'POST',
+        body: JSON.stringify(comment),
+      });
+      return result.data;
+    } catch (error) {
+      console.error('提交评论失败:', error);
+      return null;
+    }
+  },
+
+  /**
+   * 点赞评论
+   */
+  likeComment: async (commentId: string): Promise<boolean> => {
+    try {
+      await request(`/comments/${commentId}/like`, {
+        method: 'POST',
+      });
+      return true;
+    } catch (error) {
+      console.error('点赞失败:', error);
+      return false;
+    }
+  },
+};
+
+// 导出评论服务
+export const commentService = commentApi;

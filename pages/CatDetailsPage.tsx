@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { catService, adoptionService } from '../services/apiService';
-import { chatAboutCat } from '../services/geminiService';
 import { Cat, AdoptionApplication } from '../types';
-import { Loader2, ArrowLeft, Heart, MessageCircle, Send, Sparkles, CheckCircle2, XCircle, Clock, X, MoreHorizontal, Share } from 'lucide-react';
+import { Loader2, ArrowLeft, Heart, CheckCircle2, XCircle, Clock, X, MoreHorizontal, Share } from 'lucide-react';
 import CatImageGallery from '../components/CatImageGallery';
+import CommentSection from '../components/CommentSection';
 
 import { useToast } from '../context/ToastContext';
 
@@ -15,13 +15,6 @@ const CatDetailsPage: React.FC = () => {
   // 使用 SWR Hook 获取猫咪数据
   const [cat, setCat] = useState<Cat | null>(null);
   const [loading, setLoading] = useState(true);
-
-
-  // Chat state
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatInput, setChatInput] = useState('');
-  const [chatHistory, setChatHistory] = useState<{ role: 'user' | 'ai', text: string }[]>([]);
-  const [chatLoading, setChatLoading] = useState(false);
 
   // Adoption State
   const [isAdoptModalOpen, setIsAdoptModalOpen] = useState(false);
@@ -43,7 +36,7 @@ const CatDetailsPage: React.FC = () => {
     setShowMenu(false);
 
     // 1. Try Native Share (Mobile)
-    // 这是实现“直接提示发送内容”的唯一 Web 标准途径
+    // 这是实现"直接提示发送内容"的唯一 Web 标准途径
     if (navigator.share) {
       try {
         await navigator.share({ title, text, url });
@@ -113,21 +106,6 @@ const CatDetailsPage: React.FC = () => {
         console.error("Failed to sync application status", e);
       }
     }
-  };
-
-  const handleChatSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim() || !cat) return;
-
-    const userMsg = chatInput;
-    setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
-    setChatInput('');
-    setChatLoading(true);
-
-    const response = await chatAboutCat(cat.name, userMsg);
-
-    setChatHistory(prev => [...prev, { role: 'ai', text: response }]);
-    setChatLoading(false);
   };
 
   const handleAdoptSubmit = async (e: React.FormEvent) => {
@@ -263,7 +241,6 @@ const CatDetailsPage: React.FC = () => {
 
       <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-slate-100 flex flex-col md:flex-row">
         {/* Image Side */}
-        {/* Image Side */}
         <div className="md:w-1/2 bg-slate-100 relative h-96 md:h-auto group">
           <CatImageGallery
             images={cat.image_url.split(',')}
@@ -273,7 +250,7 @@ const CatDetailsPage: React.FC = () => {
         </div>
 
         {/* Info Side */}
-        < div className="md:w-1/2 p-6 md:p-10 flex flex-col" >
+        <div className="md:w-1/2 p-6 md:p-10 flex flex-col">
           <div className="flex justify-between items-start mb-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -314,8 +291,6 @@ const CatDetailsPage: React.FC = () => {
             <p>{cat.description}</p>
           </div>
 
-
-
           <div className="mt-auto space-y-4">
             {renderApplicationStatus()}
 
@@ -336,71 +311,12 @@ const CatDetailsPage: React.FC = () => {
                 {cat.name} 找到了永远的家
               </div>
             )}
-
-            <button
-              onClick={() => setChatOpen(!chatOpen)}
-              className="w-full py-3.5 bg-white border-2 border-brand-100 text-brand-600 font-bold rounded-xl hover:bg-brand-50 transition-all flex justify-center items-center gap-2"
-            >
-              <MessageCircle size={18} />
-              {chatOpen ? '关闭对话' : `问问 AI 关于 ${cat.name}`}
-            </button>
           </div>
         </div>
       </div>
 
-      {/* AI Chat Section */}
-      {chatOpen && (
-        <div className="mt-6 bg-white rounded-2xl shadow-lg border border-brand-100 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div className="bg-brand-50 p-4 border-b border-brand-100 flex justify-between items-center">
-            <h3 className="font-bold text-brand-800 flex items-center gap-2">
-              <Sparkles size={16} />
-              喵喵助手
-            </h3>
-            <span className="text-xs text-brand-600">Powered by Gemini</span>
-          </div>
-
-          <div className="h-64 overflow-y-auto p-4 space-y-3 bg-slate-50/50">
-            {chatHistory.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${msg.role === 'user'
-                  ? 'bg-brand-500 text-white rounded-tr-sm'
-                  : 'bg-white border border-slate-200 text-slate-700 rounded-tl-sm shadow-sm'
-                  }`}>
-                  {msg.text}
-                </div>
-              </div>
-            ))}
-            {chatLoading && (
-              <div className="flex justify-start">
-                <div className="bg-white border border-slate-200 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm">
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
-                    <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-75"></span>
-                    <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-150"></span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <form onSubmit={handleChatSubmit} className="p-3 bg-white border-t border-slate-100 flex gap-2">
-            <input
-              type="text"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              placeholder="输入你的问题..."
-              className="flex-grow px-4 py-2 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none"
-            />
-            <button
-              type="submit"
-              disabled={chatLoading || !chatInput.trim()}
-              className="p-2.5 bg-brand-500 text-white rounded-xl hover:bg-brand-600 disabled:opacity-50"
-            >
-              <Send size={18} />
-            </button>
-          </form>
-        </div>
-      )}
+      {/* 评论区 */}
+      <CommentSection cat={cat} />
 
       {/* Adoption Modal */}
       {isAdoptModalOpen && (

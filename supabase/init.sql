@@ -35,13 +35,29 @@ CREATE TABLE IF NOT EXISTS adoption_applications (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. 创建索引以提高查询性能
+-- 3. 创建评论表
+CREATE TABLE IF NOT EXISTS comments (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  cat_id UUID REFERENCES cats(id) ON DELETE CASCADE,
+  parent_id UUID REFERENCES comments(id) ON DELETE CASCADE,  -- 回复的父评论ID，顶级评论为NULL
+  nickname VARCHAR(50) NOT NULL,                              -- 评论者昵称
+  avatar_url VARCHAR(255),                                    -- 评论者头像URL
+  content TEXT NOT NULL,                                      -- 评论内容
+  is_ai_reply BOOLEAN DEFAULT FALSE,                          -- 是否为AI自动回复
+  like_count INTEGER DEFAULT 0,                               -- 点赞数
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 4. 创建索引以提高查询性能
 CREATE INDEX IF NOT EXISTS idx_cats_status ON cats(status);
 CREATE INDEX IF NOT EXISTS idx_cats_created_at ON cats(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_applications_status ON adoption_applications(status);
 CREATE INDEX IF NOT EXISTS idx_applications_cat_id ON adoption_applications(cat_id);
+CREATE INDEX IF NOT EXISTS idx_comments_cat_id ON comments(cat_id);
+CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments(parent_id);
+CREATE INDEX IF NOT EXISTS idx_comments_created_at ON comments(created_at DESC);
 
--- 4. 插入一些示例数据
+-- 5. 插入一些示例数据
 INSERT INTO cats (name, age, gender, breed, description, image_url, tags, status, is_stray, is_sterilized, is_dewormed, is_vaccinated) VALUES
   ('小橘', 2, 'Female', '橘猫', '小橘是一只精力充沛的小老虎，喜欢追逐激光笔，也喜欢在阳光下打盹。她话很多，会经常跟你喵喵叫，分享她的一天。', 'https://picsum.photos/id/237/600/600', ARRAY['活泼好动', '话唠'], '可领养', true, true, true, true),
   ('黑夜', 5, 'Male', '孟买猫', '黑夜里的神秘影子……等等，其实只是一只想要温暖大腿的粘人黑猫。一开始可能有点害羞，但一旦信任你，呼噜声就像柴油引擎一样响。', 'https://picsum.photos/id/40/600/600', ARRAY['高冷安静', '粘人'], '可领养', false, true, true, true),
@@ -49,5 +65,5 @@ INSERT INTO cats (name, age, gender, breed, description, image_url, tags, status
   ('咪咪', 3, 'Female', '英短蓝猫', '咪咪是一只优雅的英短蓝猫，喜欢安静地趴在窗台上看风景。她性格温顺，非常适合公寓生活。', 'https://picsum.photos/id/244/600/600', ARRAY['高冷安静', '适合公寓'], '可领养', false, true, true, true),
   ('虎斑', 4, 'Male', '美短虎斑', '虎斑是一只活泼好动的美短虎斑，喜欢玩逗猫棒和纸团。他非常聪明，能学会开门和叫妈妈。', 'https://picsum.photos/id/169/600/600', ARRAY['活泼好动', '聪明'], '可领养', false, true, true, true);
 
--- 5. 显示创建结果
+-- 6. 显示创建结果
 SELECT 'cats 表创建成功，已插入 ' || COUNT(*) || ' 条数据' AS result FROM cats;

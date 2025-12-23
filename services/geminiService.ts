@@ -41,20 +41,31 @@ export const generateCatBio = async (
   }
 };
 
-export const chatAboutCat = async (catName: string, userQuestion: string): Promise<string> => {
+/**
+ * 生成AI评论回复
+ * @param catName 猫咪名字
+ * @param catBreed 猫咪品种
+ * @param userComment 用户评论内容
+ * @returns AI生成的回复内容
+ */
+export const generateCommentReply = async (
+  catName: string,
+  catBreed: string,
+  userComment: string
+): Promise<string> => {
   try {
-    const response = await fetch('/api/chat', {
+    const response = await fetch('/api/comment-reply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ catName, userQuestion }),
+      body: JSON.stringify({ catName, catBreed, userComment }),
     });
 
     if (!response.ok) throw new Error('API request failed');
 
     const data = await response.json();
-    return data.answer || "我没听清你的问题，喵？";
+    return data.reply || "喵~谢谢你的留言！";
   } catch (e) {
-    console.error("Chat Error:", e);
-    return "猫咪现在有点分心，没法回答你。";
+    console.error("Comment Reply Error:", e);
+    return "喵喵喵~ 感谢你的关注！";
   }
 };
