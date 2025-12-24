@@ -55,7 +55,6 @@ const AdminPage: React.FC = () => {
       setUpdatingId(id);
       await catService.updateStatus(id, newStatus);
       setCats(cats.map(cat => cat.id === id ? { ...cat, status: newStatus } : cat));
-      localStorage.setItem('cat_data_update_ts', Date.now().toString());
       window.dispatchEvent(new Event('cat-data-updated'));
       success('状态更新成功');
     } catch (err) {
@@ -75,7 +74,6 @@ const AdminPage: React.FC = () => {
       setDeletingId(id);
       await catService.delete(id);
       setCats(prev => prev.filter(cat => cat.id !== id));
-      localStorage.setItem('cat_data_update_ts', Date.now().toString());
       window.dispatchEvent(new Event('cat-data-updated'));
       success('删除成功');
     } catch (err) {
@@ -112,8 +110,7 @@ const AdminPage: React.FC = () => {
         success('已拒绝申请');
       }
 
-      // 触发首页缓存刷新
-      localStorage.setItem('cat_data_update_ts', Date.now().toString());
+      // 触发数据更新事件
       window.dispatchEvent(new Event('cat-data-updated'));
 
     } catch (err) {

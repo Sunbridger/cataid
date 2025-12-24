@@ -169,8 +169,6 @@ const AddCatPage: React.FC = () => {
       .then(() => {
         // 3. 成功回调
         success(`${submitData.name} 发布成功！`);
-        // 更新时间戳，确保下次请求绕过缓存
-        localStorage.setItem('cat_data_update_ts', Date.now().toString());
         // 派发全局事件通知首页刷新
         window.dispatchEvent(new Event('cat-data-updated'));
       })

@@ -181,8 +181,7 @@ const CatDetailsPage: React.FC = () => {
       const storedApps = JSON.parse(localStorage.getItem('my_applications') || '[]');
       localStorage.setItem('my_applications', JSON.stringify([...storedApps, newApp]));
 
-      // 触发首页缓存刷新（猫咪状态可能变为"待定"）
-      localStorage.setItem('cat_data_update_ts', Date.now().toString());
+      // 触发数据更新事件
       window.dispatchEvent(new Event('cat-data-updated'));
 
       setMyApplication(newApp);
@@ -332,8 +331,8 @@ const CatDetailsPage: React.FC = () => {
               onClick={handleToggleFavorite}
               disabled={favoriteLoading}
               className={`p-2 md:p-3 rounded-full transition-all ${isFavorited
-                  ? 'bg-red-500 text-white hover:bg-red-600'
-                  : 'bg-red-50 text-red-500 hover:bg-red-100'
+                ? 'bg-red-500 text-white hover:bg-red-600'
+                : 'bg-red-50 text-red-500 hover:bg-red-100'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               title={isFavorited ? '取消收藏' : '收藏'}
             >

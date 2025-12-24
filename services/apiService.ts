@@ -312,12 +312,9 @@ export const authApi = {
     nickname: string;
   }): Promise<{ user: User | null; error: string | null }> => {
     try {
-      const result = await request<{ data: User; message: string }>('/auth', {
+      const result = await request<{ data: User; message: string }>('/user?action=register', {
         method: 'POST',
-        body: JSON.stringify({
-          action: 'register',
-          ...data,
-        }),
+        body: JSON.stringify(data),
       });
       return { user: result.data, error: null };
     } catch (error) {
@@ -335,12 +332,9 @@ export const authApi = {
     password: string;
   }): Promise<{ user: User | null; error: string | null }> => {
     try {
-      const result = await request<{ data: User; message: string }>('/auth', {
+      const result = await request<{ data: User; message: string }>('/user?action=login', {
         method: 'POST',
-        body: JSON.stringify({
-          action: 'login',
-          ...data,
-        }),
+        body: JSON.stringify(data),
       });
       return { user: result.data, error: null };
     } catch (error) {
@@ -372,7 +366,7 @@ export const userApi = {
           commentCount: number;
           adoptionCount: number;
         }
-      }>(`/user-stats?userId=${userId}`);
+      }>(`/user?action=stats&userId=${userId}`);
       return result.data;
     } catch (error) {
       console.error('获取用户统计失败:', error);
@@ -397,7 +391,7 @@ export const favoriteApi = {
    */
   getUserFavorites: async (userId: string): Promise<any[]> => {
     try {
-      const result = await request<{ data: any[] }>(`/favorites?userId=${userId}`);
+      const result = await request<{ data: any[] }>(`/interactions?type=favorites&userId=${userId}`);
       return result.data;
     } catch (error) {
       console.error('获取收藏列表失败:', error);
@@ -410,7 +404,7 @@ export const favoriteApi = {
    */
   addFavorite: async (userId: string, catId: string): Promise<boolean> => {
     try {
-      await request('/favorites', {
+      await request('/interactions?type=favorites', {
         method: 'POST',
         body: JSON.stringify({ userId, catId }),
       });
@@ -426,7 +420,7 @@ export const favoriteApi = {
    */
   removeFavorite: async (userId: string, catId: string): Promise<boolean> => {
     try {
-      await request(`/favorites?userId=${userId}&catId=${catId}`, {
+      await request(`/interactions?type=favorites&userId=${userId}&catId=${catId}`, {
         method: 'DELETE',
       });
       return true;
@@ -462,7 +456,7 @@ export const commentLikeApi = {
    */
   getUserLikes: async (userId: string): Promise<any[]> => {
     try {
-      const result = await request<{ data: any[] }>(`/comment-likes?userId=${userId}`);
+      const result = await request<{ data: any[] }>(`/interactions?type=likes&userId=${userId}`);
       return result.data;
     } catch (error) {
       console.error('获取点赞列表失败:', error);
@@ -475,7 +469,7 @@ export const commentLikeApi = {
    */
   addLike: async (userId: string, commentId: string): Promise<boolean> => {
     try {
-      await request('/comment-likes', {
+      await request('/interactions?type=likes', {
         method: 'POST',
         body: JSON.stringify({ userId, commentId }),
       });
@@ -491,7 +485,7 @@ export const commentLikeApi = {
    */
   removeLike: async (userId: string, commentId: string): Promise<boolean> => {
     try {
-      await request(`/comment-likes?userId=${userId}&commentId=${commentId}`, {
+      await request(`/interactions?type=likes&userId=${userId}&commentId=${commentId}`, {
         method: 'DELETE',
       });
       return true;
