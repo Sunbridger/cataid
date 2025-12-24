@@ -132,6 +132,10 @@ const CatDetailsPage: React.FC = () => {
       const storedApps = JSON.parse(localStorage.getItem('my_applications') || '[]');
       localStorage.setItem('my_applications', JSON.stringify([...storedApps, newApp]));
 
+      // 触发首页缓存刷新（猫咪状态可能变为"待定"）
+      localStorage.setItem('cat_data_update_ts', Date.now().toString());
+      window.dispatchEvent(new Event('cat-data-updated'));
+
       setMyApplication(newApp);
       setIsAdoptModalOpen(false);
 

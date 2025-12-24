@@ -112,6 +112,10 @@ const AdminPage: React.FC = () => {
         success('已拒绝申请');
       }
 
+      // 触发首页缓存刷新
+      localStorage.setItem('cat_data_update_ts', Date.now().toString());
+      window.dispatchEvent(new Event('cat-data-updated'));
+
     } catch (err) {
       console.error(err);
       error('操作失败，请重试');

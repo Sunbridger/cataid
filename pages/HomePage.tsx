@@ -3,8 +3,10 @@ import { catService } from '../services/apiService';
 import { Cat } from '../types';
 import CatCard from '../components/CatCard';
 import { Loader2, Search } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 const HomePage: React.FC = () => {
+  const { success, error: toastError } = useToast();
   const [cats, setCats] = useState<Cat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -63,8 +65,10 @@ const HomePage: React.FC = () => {
       if (!force) setLoading(true);
       const data = await catService.getAll(force);
       setCats(data);
+      if (force) success('已刷新最新数据');
     } catch (err) {
       setError('加载喵星人失败，请稍后再试。');
+      if (force) toastError('刷新失败');
     } finally {
       setLoading(false);
     }
