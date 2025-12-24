@@ -20,7 +20,7 @@ const MyApplicationsPage: React.FC = () => {
   const loadMyApplications = async () => {
     try {
       // 调用 API 获取用户申请
-      const response = await fetch(`/api/user-data?userId=${user?.id}&type=applications`);
+      const response = await fetch(`/api/user?action=applications&userId=${user?.id}`);
       if (response.ok) {
         const result = await response.json();
         setApplications(result.data || []);
