@@ -84,6 +84,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // GET /api/cats - 获取所有猫咪
     if (req.method === 'GET') {
       const data = await getAllCats();
+      // CDN 缓存 3 秒，过期后 10 秒内可返回旧数据同时后台刷新
+      res.setHeader('Cache-Control', 's-maxage=3, stale-while-revalidate=10');
       return res.status(200).json({ data });
     }
 
