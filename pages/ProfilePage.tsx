@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { authService, userService } from '../services/apiService';
-import { User, Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle, ThumbsUp } from 'lucide-react';
+import { User, Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle, ThumbsUp, Cat } from 'lucide-react';
 
 type AuthMode = 'login' | 'register';
 
@@ -411,6 +411,7 @@ const ProfilePage: React.FC = () => {
 
       {/* 功能菜单 */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <MenuItem icon={<Cat size={20} />} title="我的猫咪" color="text-brand-600" to="/my/cats" />
         <MenuItem icon={<Heart size={20} />} title="我的收藏" color="text-red-500" to="/my/favorites" />
         <MenuItem icon={<ThumbsUp size={20} />} title="我的点赞" color="text-brand-500" to="/my/likes" />
         <MenuItem icon={<MessageCircle size={20} />} title="我的评论" color="text-blue-500" to="/my/comments" />

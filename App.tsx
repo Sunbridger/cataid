@@ -10,6 +10,7 @@ import MyFavoritesPage from './pages/MyFavoritesPage';
 import MyLikesPage from './pages/MyLikesPage';
 import MyCommentsPage from './pages/MyCommentsPage';
 import MyApplicationsPage from './pages/MyApplicationsPage';
+import MyAdoptedCatsPage from './pages/MyAdoptedCatsPage';
 import { ToastProvider } from './context/ToastContext';
 import { UserProvider } from './context/UserContext';
 
@@ -34,6 +35,7 @@ const Layout: React.FC = () => {
           <Route path="/my/likes" element={<MyLikesPage />} />
           <Route path="/my/comments" element={<MyCommentsPage />} />
           <Route path="/my/applications" element={<MyApplicationsPage />} />
+          <Route path="/my/cats" element={<MyAdoptedCatsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
