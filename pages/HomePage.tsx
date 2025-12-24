@@ -1,13 +1,16 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { catService } from '../services/apiService';
+import { catService, favoriteService } from '../services/apiService';
 import { Cat } from '../types';
 import CatCard from '../components/CatCard';
 import { Loader2, Search } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import { useUser } from '../context/UserContext';
 
 const HomePage: React.FC = () => {
+  const { user } = useUser();
   const { success, error: toastError } = useToast();
   const [cats, setCats] = useState<Cat[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,9 +18,8 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     fetchCats();
 
-    // Listen for global data updates (e.g. from background upload in AddCatPage)
+    // Listen for global data updates
     const handleDataUpdate = () => {
-      // 强制刷新，绕过 CDN 缓存
       fetchCats(true);
     };
 
@@ -26,6 +28,25 @@ const HomePage: React.FC = () => {
       window.removeEventListener('cat-data-updated', handleDataUpdate);
     };
   }, []);
+
+  // 加载用户收藏
+  useEffect(() => {
+    if (user?.id) {
+      loadFavorites();
+    } else {
+      setFavoriteIds(new Set());
+    }
+  }, [user?.id]);
+
+  const loadFavorites = async () => {
+    if (!user?.id) return;
+    try {
+      const favorites = await favoriteService.getUserFavorites(user.id);
+      setFavoriteIds(new Set(favorites.map(fav => fav.catId)));
+    } catch (err) {
+      console.error('加载收藏失败:', err);
+    }
+  };
 
   // Pull to refresh state
   const [touchStart, setTouchStart] = useState(0);
@@ -204,7 +225,11 @@ const HomePage: React.FC = () => {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             {filteredCats.map(cat => (
-              <CatCard key={cat.id} cat={cat} />
+              <CatCard
+                key={cat.id}
+                cat={cat}
+                isFavorited={favoriteIds.has(cat.id)}
+              />
             ))}
           </div>
         )}

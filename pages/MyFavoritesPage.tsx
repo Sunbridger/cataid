@@ -4,6 +4,7 @@ import { ArrowLeft, Heart, Loader2, Trash2 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { favoriteService } from '../services/apiService';
 import { Cat } from '../types';
+import CatCard from '../components/CatCard';
 
 interface Favorite {
   id: string;
@@ -107,75 +108,25 @@ const MyFavoritesPage: React.FC = () => {
 
       {/* 收藏列表 */}
       {!loading && favorites.length > 0 && (
-        <div className="space-y-4">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
           {favorites.map(favorite => {
             const cat = favorite.cat;
             if (!cat) return null;
 
             return (
-              <div
-                key={favorite.id}
-                className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow"
-              >
-                <div className="flex gap-4 p-4">
-                  {/* 猫咪图片 */}
-                  <Link to={`/cat/${cat.id}`} className="flex-shrink-0">
-                    <img
-                      src={cat.image_url?.split(',')[0] || 'https://via.placeholder.com/150'}
-                      alt={cat.name}
-                      className="w-24 h-24 object-cover rounded-xl"
-                    />
-                  </Link>
-
-                  {/* 猫咪信息 */}
-                  <div className="flex-1 min-w-0">
-                    <Link to={`/cat/${cat.id}`}>
-                      <h3 className="text-lg font-bold text-slate-800 mb-1 hover:text-brand-500 transition-colors">
-                        {cat.name}
-                      </h3>
-                    </Link>
-                    <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
-                      <span>{cat.age}岁</span>
-                      <span>·</span>
-                      <span>{cat.gender === 'Male' ? '♂ 男孩' : '♀ 女孩'}</span>
-                      <span>·</span>
-                      <span>{cat.breed}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {cat.tags?.slice(0, 3).map((tag, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-0.5 bg-brand-50 text-brand-600 text-xs rounded-full"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 删除按钮 */}
-                  <button
-                    onClick={() => handleRemoveFavorite(cat.id)}
-                    className="flex-shrink-0 p-2 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    title="取消收藏"
-                  >
-                    <Trash2 size={20} />
-                  </button>
-                </div>
-
-                {/* 状态标签 */}
-                <div className="px-4 pb-4">
-                  <span
-                    className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${cat.status === '可领养'
-                        ? 'bg-green-50 text-green-600'
-                        : cat.status === '已领养'
-                          ? 'bg-slate-100 text-slate-500'
-                          : 'bg-amber-50 text-amber-600'
-                      }`}
-                  >
-                    {cat.status}
-                  </span>
-                </div>
+              <div key={favorite.id} className="relative group">
+                <CatCard cat={cat} />
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleRemoveFavorite(cat.id);
+                  }}
+                  className="absolute top-2 right-2 md:top-3 md:right-3 z-20 p-1.5 md:p-2 bg-white/90 backdrop-blur-sm rounded-full text-red-500 shadow-sm hover:bg-red-50 hover:text-red-600 hover:scale-110 transition-all duration-200"
+                  title="取消收藏"
+                >
+                  <Trash2 size={16} className="md:w-[18px] md:h-[18px]" />
+                </button>
               </div>
             );
           })}

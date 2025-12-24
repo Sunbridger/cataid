@@ -5,9 +5,10 @@ import { Heart } from 'lucide-react';
 
 interface CatCardProps {
   cat: Cat;
+  isFavorited?: boolean;
 }
 
-const CatCard: React.FC<CatCardProps> = ({ cat }) => {
+const CatCard: React.FC<CatCardProps> = ({ cat, isFavorited = false }) => {
   const status = cat.status || '可领养';
   const isAdopted = status === '已领养';
 
@@ -38,8 +39,10 @@ const CatCard: React.FC<CatCardProps> = ({ cat }) => {
           </div>
         </div>
 
-        <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-white/90 backdrop-blur-sm p-1.5 md:p-2 rounded-full shadow-sm text-brand-500">
-          <Heart size={16} className="md:w-[18px] md:h-[18px]" fill="currentColor" />
+        {/* 收藏状态图标 */}
+        <div className={`absolute top-2 right-2 md:top-3 md:right-3 p-1.5 md:p-2 rounded-full shadow-sm backdrop-blur-sm transition-colors
+          ${isFavorited ? 'bg-red-50 text-red-500' : 'bg-white/90 text-slate-300'}`}>
+          <Heart size={16} className="md:w-[18px] md:h-[18px]" fill={isFavorited ? "currentColor" : "none"} />
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-3 pt-12 md:p-4 md:pt-16">
