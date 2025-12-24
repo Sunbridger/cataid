@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ThumbsUp, Loader2, MessageCircle, Sparkles } from 'lucide-react';
+import { ArrowLeft, ThumbsUp, Loader2, MessageCircle, Sparkles, Heart } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { commentLikeService } from '../services/apiService';
 import { Comment } from '../types';
@@ -14,6 +14,7 @@ const MyLikesPage: React.FC = () => {
   const navigate = useNavigate();
   const [likedComments, setLikedComments] = useState<LikedComment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
 
   // 加载点赞的评论
   useEffect(() => {
@@ -57,6 +58,30 @@ const MyLikesPage: React.FC = () => {
       console.error('加载点赞评论失败:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 取消点赞
+  const handleUnlike = async (commentId: string) => {
+    if (!user?.id || processingIds.has(commentId)) return;
+
+    // 标记为处理中
+    setProcessingIds(prev => new Set(prev).add(commentId));
+
+    try {
+      await commentLikeService.removeLike(user.id, commentId);
+
+      // 从列表中移除
+      setLikedComments(prev => prev.filter(c => c.id !== commentId));
+    } catch (error) {
+      console.error('取消点赞失败:', error);
+    } finally {
+      // 移除处理中状态
+      setProcessingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(commentId);
+        return newSet;
+      });
     }
   };
 
@@ -123,15 +148,26 @@ const MyLikesPage: React.FC = () => {
                     </div>
                     <p className="text-slate-600 text-sm leading-relaxed">{comment.content}</p>
                   </div>
+
+                  {/* 右侧点赞按钮 - 可点击取消点赞 */}
+                  <button
+                    onClick={() => handleUnlike(comment.id)}
+                    disabled={processingIds.has(comment.id)}
+                    className="flex-shrink-0 flex flex-col items-center gap-0.5 text-red-500 hover:text-red-400 transition-colors disabled:opacity-50"
+                    title="点击取消点赞"
+                  >
+                    {processingIds.has(comment.id) ? (
+                      <Loader2 size={18} className="animate-spin" />
+                    ) : (
+                      <Heart size={18} fill="currentColor" />
+                    )}
+                    <span className="text-[10px] font-medium">{comment.likeCount}</span>
+                  </button>
                 </div>
 
                 {/* 底部信息 */}
                 <div className="flex items-center justify-between text-xs text-slate-400 pl-13 pt-2 border-t border-slate-50 mt-2">
                   <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1 text-pink-500 font-medium">
-                      <ThumbsUp size={12} className="fill-pink-500" />
-                      {comment.likeCount}
-                    </span>
                     {comment.catName && (
                       <Link
                         to={`/cat/${comment.catId}`}
