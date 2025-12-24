@@ -171,31 +171,29 @@ const ProfilePage: React.FC = () => {
   // 未登录界面
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center">
-        {/* 全宽头部背景 - 粉色系可爱风 */}
-        <div className="w-full bg-gradient-to-r from-pink-400 via-rose-400 to-pink-300 relative overflow-hidden rounded-b-[2rem] shadow-xl shadow-pink-500/10 flex-shrink-0 pt-8 pb-12 -mx-4">
-          <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
-          <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-          <div className="absolute top-4 left-4 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
-
-          {/* 头部内容 */}
-          <div className="h-full flex flex-col items-center justify-center text-white text-center px-6">
-            <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-3 text-2xl shadow-inner border border-white/20">
-              🐱
-            </div>
-            <h1 className="text-xl font-bold tracking-tight">
-              {authMode === 'register' ? '加入暖心社区' : '欢迎回家'}
-            </h1>
-            <p className="opacity-90 text-xs mt-1.5 font-medium">
-              {authMode === 'register' ? '遇见命中注定的猫咪' : '登录账号，查看您的毛孩子'}
-            </p>
-          </div>
+      <div className="min-h-screen bg-slate-50 pb-20">
+        {/* 标准顶部导航栏 */}
+        <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-30 px-4 py-3 flex items-center justify-center shadow-sm border-b border-slate-100 -mx-4">
+          <h1 className="text-lg font-bold text-slate-800">
+            {authMode === 'register' ? '注册账号' : '登录账号'}
+          </h1>
         </div>
 
-        {/* 表单卡片 */}
-        <div className="w-full max-w-lg px-6 -mt-8 relative z-10 pb-10">
-          <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100 p-6">
-            <div className="bg-slate-50 p-1 rounded-xl flex relative mb-5">
+        <div className="max-w-md mx-auto py-6">
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 md:p-8">
+            <div className="flex flex-col items-center justify-center text-center mb-8">
+              <div className="w-16 h-16 bg-pink-50 rounded-2xl flex items-center justify-center mb-4 text-3xl shadow-sm border border-pink-100">
+                🐱
+              </div>
+              <h2 className="text-2xl font-bold text-slate-800 mb-2">
+                {authMode === 'register' ? '加入暖心社区' : '欢迎回家'}
+              </h2>
+              <p className="text-slate-500 text-sm font-medium">
+                {authMode === 'register' ? '遇见命中注定的猫咪' : '登录账号，查看您的毛孩子'}
+              </p>
+            </div>
+
+            <div className="bg-slate-50 p-1 rounded-xl flex relative mb-6">
               <div
                 className={`absolute inset-y-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-all duration-300 ease-out ${authMethod === 'email' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-0'}`}
               ></div>
@@ -215,7 +213,7 @@ const ProfilePage: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleAuth} className="space-y-3">
+            <form onSubmit={handleAuth} className="space-y-4">
               {authMethod === 'phone' ? (
                 <div className="group">
                   <div className="relative">
