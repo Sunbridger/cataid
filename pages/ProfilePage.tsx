@@ -1,13 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { authService } from '../services/apiService';
+import { authService, userService } from '../services/apiService';
 import { User, Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 type AuthMode = 'login' | 'register';
 
 const ProfilePage: React.FC = () => {
   const { user, isLoggedIn, isGuest, login, logout, updateUser } = useUser();
+
+  // 获取用户统计数据
+  useEffect(() => {
+    if (user?.id && !isGuest) {
+      // 只为正式用户获取统计数据
+      userService.getStats(user.id).then(stats => {
+        updateUser(stats);
+      });
+    }
+  }, [user?.id, isGuest]);
   const [isEditing, setIsEditing] = useState(false);
   const [editNickname, setEditNickname] = useState('');
 

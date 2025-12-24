@@ -40,27 +40,11 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 export const catApi = {
   /**
    * 获取所有猫咪
+   * @param forceRefresh 是否强制刷新（绕过 CDN 缓存）
    */
   getAll: async (forceRefresh = false): Promise<Cat[]> => {
-    let url = '/cats';
-    // 强制刷新或检查最近是否有更新
-    if (forceRefresh) {
-      url += `?t=${Date.now()}`;
-    } else {
-      try {
-        const lastUpdate = localStorage.getItem('cat_data_update_ts');
-        if (lastUpdate) {
-          const diff = Date.now() - parseInt(lastUpdate, 10);
-          // 设置 5 秒窗口期
-          if (diff > 0 && diff < 5000) {
-            url += `?t=${lastUpdate}`;
-          }
-        }
-      } catch (e) {
-        // 忽略 localStorage 错误
-      }
-    }
-
+    // 强制刷新时添加时间戳绕过 CDN 缓存
+    const url = forceRefresh ? `/cats?t=${Date.now()}` : '/cats';
     const result = await request<{ data: Cat[] }>(url);
     return result.data;
   },
@@ -368,3 +352,104 @@ export const authApi = {
 
 // 导出认证服务
 export const authService = authApi;
+
+/**
+ * 用户数据 API
+ */
+export const userApi = {
+  /**
+   * 获取用户统计数据
+   */
+  getStats: async (userId: string): Promise<{
+    favoriteCount: number;
+    commentCount: number;
+    adoptionCount: number;
+  }> => {
+    try {
+      const result = await request<{
+        data: {
+          favoriteCount: number;
+          commentCount: number;
+          adoptionCount: number;
+        }
+      }>(`/user-stats?userId=${userId}`);
+      return result.data;
+    } catch (error) {
+      console.error('获取用户统计失败:', error);
+      return {
+        favoriteCount: 0,
+        commentCount: 0,
+        adoptionCount: 0,
+      };
+    }
+  },
+};
+
+// 导出用户服务
+export const userService = userApi;
+
+/**
+ * 收藏相关 API
+ */
+export const favoriteApi = {
+  /**
+   * 获取用户收藏列表
+   */
+  getUserFavorites: async (userId: string): Promise<any[]> => {
+    try {
+      const result = await request<{ data: any[] }>(`/favorites?userId=${userId}`);
+      return result.data;
+    } catch (error) {
+      console.error('获取收藏列表失败:', error);
+      return [];
+    }
+  },
+
+  /**
+   * 添加收藏
+   */
+  addFavorite: async (userId: string, catId: string): Promise<boolean> => {
+    try {
+      await request('/favorites', {
+        method: 'POST',
+        body: JSON.stringify({ userId, catId }),
+      });
+      return true;
+    } catch (error) {
+      console.error('添加收藏失败:', error);
+      return false;
+    }
+  },
+
+  /**
+   * 删除收藏
+   */
+  removeFavorite: async (userId: string, catId: string): Promise<boolean> => {
+    try {
+      await request(`/favorites?userId=${userId}&catId=${catId}`, {
+        method: 'DELETE',
+      });
+      return true;
+    } catch (error) {
+      console.error('删除收藏失败:', error);
+      return false;
+    }
+  },
+
+  /**
+   * 检查是否已收藏
+   */
+  isFavorited: async (userId: string, catId: string): Promise<boolean> => {
+    try {
+      const favorites = await favoriteApi.getUserFavorites(userId);
+      return favorites.some(fav => fav.catId === catId);
+    } catch (error) {
+      console.error('检查收藏状态失败:', error);
+      return false;
+    }
+  },
+};
+
+// 导出收藏服务
+export const favoriteService = favoriteApi;
+
