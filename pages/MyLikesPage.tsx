@@ -163,13 +163,6 @@ const MyLikesPage: React.FC = () => {
           ))}
         </div>
       )}
-
-      {/* 提示信息 */}
-      <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl">
-        <p className="text-sm text-green-800">
-          ✅ <strong>云端同步已启用：</strong>您的点赞数据已保存到云端，可在不同设备间同步。
-        </p>
-      </div>
     </div>
   );
 };

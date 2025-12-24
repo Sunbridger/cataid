@@ -124,6 +124,17 @@ const CatDetailsPage: React.FC = () => {
     }
   }, [id, user?.id]);
 
+  // 当打开领养模态框时，自动填充用户信息
+  useEffect(() => {
+    if (isAdoptModalOpen && user) {
+      setAdoptForm({
+        name: user.nickname || '',
+        contact: user.phone || user.email || '',
+        reason: ''
+      });
+    }
+  }, [isAdoptModalOpen, user]);
+
   const loadCat = async (catId: string) => {
     try {
       const data = await catService.getById(catId);
