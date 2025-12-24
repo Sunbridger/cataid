@@ -326,7 +326,9 @@ const CatDetailsPage: React.FC = () => {
                   {cat.is_stray ? '流浪' : '家养'}
                 </span>
                 <span className={`px-2 py-0.5 rounded text-xs font-bold ${status === '可领养' ? 'bg-green-100 text-green-700' :
-                  status === '待定' ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-600'
+                  status === '待定' ? 'bg-amber-100 text-amber-700' :
+                    status === '已领养' ? 'bg-gradient-to-r from-rose-400 to-pink-500 text-white shadow-md' :
+                      'bg-slate-200 text-slate-600'
                   }`}>
                   {status}
                 </span>
@@ -396,7 +398,7 @@ const CatDetailsPage: React.FC = () => {
             )}
 
             {(!myApplication && isAdopted) && (
-              <div className="w-full py-3.5 bg-slate-100 text-slate-500 font-bold rounded-xl flex justify-center items-center gap-2 cursor-not-allowed">
+              <div className="w-full py-3.5 bg-rose-50 text-rose-600 border border-rose-100 font-bold rounded-xl flex justify-center items-center gap-2 cursor-not-allowed">
                 <CheckCircle2 size={20} />
                 {cat.name} 找到了永远的家
               </div>

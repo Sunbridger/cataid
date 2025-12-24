@@ -133,7 +133,7 @@ const HomePage: React.FC = () => {
 
   return (
     <div
-      className="space-y-8"
+      className="flex flex-col gap-6"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -141,7 +141,7 @@ const HomePage: React.FC = () => {
       {/* Pull to Refresh Indicator */}
       {/* Pull to Refresh Indicator */}
       <div
-        className="fixed top-16 left-0 right-0 z-50 flex justify-center pointer-events-none transition-transform duration-300"
+        className="fixed top-0 left-0 right-0 z-50 flex justify-center pointer-events-none transition-transform duration-300"
         style={{
           transform: `translateY(${refreshing ? 10 : Math.min(pullDistance - 60, -60)}px)`, // 默认隐藏在 -60px
           opacity: pullDistance > 0 || refreshing ? 1 : 0
@@ -153,53 +153,65 @@ const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Hero Section */}
-      <section className="bg-brand-500 rounded-2xl md:rounded-3xl p-4 md:p-8 text-center text-white relative overflow-hidden shadow-lg transition-transform duration-200">
-        <div className="relative z-10 max-w-xl mx-auto space-y-2 md:space-y-3">
-          <h1 className="text-lg md:text-3xl font-bold tracking-tight">
-            寻找你的喵星人伙伴
+      {/* Header Section */}
+      <div className="flex flex-col gap-3 sticky top-0 bg-slate-50/95 backdrop-blur-sm z-30 -mx-4 px-4 pb-2 md:static md:bg-transparent md:p-0">
+        <div className="flex items-center justify-between md:hidden pt-2">
+          <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">
+            发现<span className="text-brand-600">喵星人</span>
           </h1>
-          <p className="text-brand-100 text-xs md:text-base px-2 text-opacity-90">
-            成千上万只可爱的猫咪正在等待一个温暖的家。
-          </p>
+        </div>
 
-          <div className="relative max-w-md mx-auto mt-3 md:mt-5">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
-              <Search size={14} className="md:w-4 md:h-4" />
-            </div>
-            <input
-              type="text"
-              placeholder="搜索品种、名字..."
-              className="w-full py-2 md:py-2.5 pl-8 md:pl-9 pr-4 rounded-full text-xs md:text-sm text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-500/30 shadow-lg"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+        {/* Search Bar */}
+        <div className="relative group">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
           </div>
+          <input
+            type="text"
+            className="block w-full pl-10 pr-4 py-2.5 border-none rounded-xl bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-[0_2px_10px_rgb(0,0,0,0.03)] transition-shadow"
+            placeholder="搜索喵星人（品种、名字...）"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
 
-          <div className="flex flex-wrap justify-center gap-1.5 mt-2 md:mt-3 opacity-90">
-            {['家养', '已接种', '已驱虫', '已绝育'].map(tag => (
+        {/* Filter Tags */}
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide select-none transition-all">
+          <button
+            onClick={() => setSearchTerm('')}
+            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap
+              ${searchTerm === ''
+                ? 'bg-brand-600 text-white shadow-md transform scale-105'
+                : 'bg-white text-slate-600 border border-slate-100 shadow-sm'
+              }`}
+          >
+            全部
+          </button>
+          {['家养', '已接种', '已驱虫', '已绝育'].map(tag => {
+            const isActive = searchTerm === tag;
+            return (
               <button
                 key={tag}
-                onClick={() => setSearchTerm(searchTerm === tag ? '' : tag)}
-                className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs transition-all border ${searchTerm === tag ? 'bg-white text-brand-600 border-white font-bold' : 'bg-white/10 hover:bg-white/20 backdrop-blur-sm border-white/10 text-white'}`}
+                onClick={() => setSearchTerm(isActive ? '' : tag)}
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap
+                  ${isActive
+                    ? 'bg-brand-500 text-white shadow-md transform scale-105'
+                    : 'bg-white text-slate-600 border border-slate-100 shadow-sm'
+                  }`}
               >
                 {tag}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
-
-        {/* Decorative Circles */}
-        <div className="absolute -top-32 -left-32 w-48 h-48 md:w-64 md:h-64 bg-white/10 rounded-full blur-3xl opacity-60"></div>
-        <div className="absolute -bottom-32 -right-32 w-56 h-56 md:w-72 md:h-72 bg-brand-600/50 rounded-full blur-3xl opacity-60"></div>
-      </section>
+      </div>
 
       {/* Content Area */}
-      <section>
-        <div className="flex justify-between items-center mb-4 md:mb-6">
-          <h2 className="text-xl md:text-2xl font-bold text-slate-800">待领养猫咪</h2>
-          <span className="text-slate-500 text-xs md:text-sm font-medium bg-white px-2 py-0.5 md:px-3 md:py-1 rounded-full border border-slate-200">
-            {filteredCats.length} 只
+      <section className="min-h-[500px]">
+        <div className="flex justify-between items-center mb-4 px-1">
+          <h2 className="text-lg font-bold text-slate-800">最新待领养</h2>
+          <span className="text-slate-400 text-xs font-medium">
+            共 {filteredCats.length} 只
           </span>
         </div>
 

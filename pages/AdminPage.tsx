@@ -200,7 +200,7 @@ const AdminPage: React.FC = () => {
                           <td className="p-4">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
                           ${cat.status === '可领养' ? 'bg-green-50 text-green-700 border-green-200' :
-                                cat.status === '已领养' ? 'bg-slate-100 text-slate-700 border-slate-200' :
+                                cat.status === '已领养' ? 'bg-rose-50 text-rose-700 border-rose-200' :
                                   'bg-amber-50 text-amber-700 border-amber-200'}`}>
                               {cat.status || '可领养'}
                             </span>
@@ -258,7 +258,7 @@ const AdminPage: React.FC = () => {
                           <h3 className="font-bold text-slate-800 text-lg truncate">{cat.name}</h3>
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold border
                             ${cat.status === '可领养' ? 'bg-green-50 text-green-700 border-green-200' :
-                              cat.status === '已领养' ? 'bg-slate-100 text-slate-500 border-slate-200' :
+                              cat.status === '已领养' ? 'bg-rose-50 text-rose-600 border-rose-200' :
                                 'bg-amber-50 text-amber-700 border-amber-200'}`}>
                             {cat.status || '可领养'}
                           </span>

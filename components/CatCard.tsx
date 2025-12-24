@@ -15,7 +15,7 @@ const CatCard: React.FC<CatCardProps> = ({ cat, isFavorited = false }) => {
   return (
     <Link
       to={`/cat/${cat.id}`}
-      className={`group block bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-slate-100 ${isAdopted ? 'opacity-80 grayscale-[0.5]' : ''}`}
+      className={`group block bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-slate-100`}
     >
       <div className="relative aspect-square md:aspect-[4/3] overflow-hidden bg-slate-100">
         <img
@@ -29,7 +29,7 @@ const CatCard: React.FC<CatCardProps> = ({ cat, isFavorited = false }) => {
         <div className="absolute top-2 left-2 md:top-3 md:left-3 flex flex-col gap-1.5 z-10 items-start">
           {status !== '可领养' && (
             <div className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold shadow-sm uppercase tracking-wide
-             ${status === '已领养' ? 'bg-slate-800 text-white' : 'bg-amber-100 text-amber-800'}`}>
+             ${status === '已领养' ? 'bg-gradient-to-r from-rose-400 to-pink-500 text-white shadow-md' : 'bg-amber-100 text-amber-800'}`}>
               {status}
             </div>
           )}
