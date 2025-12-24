@@ -100,7 +100,7 @@ const CommentItem: React.FC<{
             className={`flex flex-col items-center gap-0.5 transition-colors ${isLiked ? 'text-red-500' : 'text-slate-300 hover:text-slate-400'}`}
           >
             <Heart size={16} fill={isLiked ? 'currentColor' : 'none'} />
-            <span className="text-[10px]">{(comment.likeCount || 0) + (isLiked ? 1 : 0) || ''}</span>
+            <span className="text-[10px]">{comment.likeCount || ''}</span>
           </button>
         </div>
       </div>
@@ -215,22 +215,77 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
   };
 
   const handleLike = async (commentId: string) => {
-    // 已点赞则不重复点赞
-    if (likedComments.has(commentId)) return;
+    const isCurrentlyLiked = likedComments.has(commentId);
 
-    // 乐观更新 UI
+    // 乐观更新 UI - 切换点赞状态
     const newLiked = new Set(likedComments);
-    newLiked.add(commentId);
+    if (isCurrentlyLiked) {
+      newLiked.delete(commentId);
+    } else {
+      newLiked.add(commentId);
+    }
     setLikedComments(newLiked);
+
+    // 乐观更新评论的 likeCount
+    setComments(prevComments =>
+      prevComments.map(comment => {
+        if (comment.id === commentId) {
+          return {
+            ...comment,
+            likeCount: (comment.likeCount || 0) + (isCurrentlyLiked ? -1 : 1)
+          };
+        }
+        // 检查子评论
+        if (comment.replies) {
+          return {
+            ...comment,
+            replies: comment.replies.map(reply =>
+              reply.id === commentId
+                ? { ...reply, likeCount: (reply.likeCount || 0) + (isCurrentlyLiked ? -1 : 1) }
+                : reply
+            )
+          };
+        }
+        return comment;
+      })
+    );
 
     if (user?.id) {
       // 已登录：使用云端 API
       try {
-        await commentLikeService.addLike(user.id, commentId);
+        if (isCurrentlyLiked) {
+          // 取消点赞
+          await commentLikeService.removeLike(user.id, commentId);
+        } else {
+          // 添加点赞
+          await commentLikeService.addLike(user.id, commentId);
+        }
       } catch (error) {
-        console.error('点赞失败:', error);
+        console.error(isCurrentlyLiked ? '取消点赞失败:' : '点赞失败:', error);
         // 失败时回滚
         setLikedComments(likedComments);
+        // 回滚 likeCount
+        setComments(prevComments =>
+          prevComments.map(comment => {
+            if (comment.id === commentId) {
+              return {
+                ...comment,
+                likeCount: (comment.likeCount || 0) + (isCurrentlyLiked ? 1 : -1)
+              };
+            }
+            if (comment.replies) {
+              return {
+                ...comment,
+                replies: comment.replies.map(reply =>
+                  reply.id === commentId
+                    ? { ...reply, likeCount: (reply.likeCount || 0) + (isCurrentlyLiked ? 1 : -1) }
+                    : reply
+                )
+              };
+            }
+            return comment;
+          })
+        );
       }
     }
   };
