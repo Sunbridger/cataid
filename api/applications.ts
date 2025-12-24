@@ -64,7 +64,8 @@ function toCamelCase(data: any) {
     contactInfo: item.contact_info,
     reason: item.reason,
     status: item.status,
-    createdAt: item.created_at
+    createdAt: item.created_at,
+    reviewedAt: item.reviewed_at || null
   });
 
   return Array.isArray(data) ? data.map(convert) : convert(data);
