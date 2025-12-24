@@ -119,25 +119,12 @@ const AdminPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
-      {/* 沉浸式顶部 - 粉色系 */}
-      <div className="bg-gradient-to-r from-pink-400 via-rose-400 to-pink-300 pb-16 pt-8 px-4 rounded-b-[2rem] relative overflow-hidden shadow-lg shadow-pink-500/10">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
-        <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/10 rounded-full blur-2xl -ml-10 -mb-10"></div>
-
-        <div className="max-w-6xl mx-auto relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="bg-white/20 backdrop-blur-md p-3 rounded-2xl border border-white/20 shadow-inner text-white">
-              <Shield size={32} />
-            </div>
-            <div className="text-white">
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">管理后台</h1>
-              <p className="text-pink-50 font-medium opacity-90">管理猫咪信息与审核领养申请</p>
-            </div>
-          </div>
-        </div>
+      {/* 标准顶部导航栏 */}
+      <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-30 px-4 py-3 flex items-center justify-center shadow-sm border-b border-slate-100 -mx-4">
+        <h1 className="text-lg font-bold text-slate-800">管理后台</h1>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 -mt-8 relative z-20">
+      <div className="max-w-6xl mx-auto py-6">
         {/* Tab 切换 */}
         <div className="bg-white p-1.5 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 mb-6 flex overflow-x-auto">
           <button
@@ -149,7 +136,7 @@ const AdminPage: React.FC = () => {
           >
             领养审核
             {applications.filter(a => a.status === 'pending').length > 0 && (
-              <span className="bg-white text-pink-500 text-[10px] px-1.5 py-0.5 rounded-full shadow-sm">
+              <span className="bg-white/20 text-white text-[10px] px-1.5 py-0.5 rounded-full backdrop-blur-sm">
                 {applications.filter(a => a.status === 'pending').length}
               </span>
             )}
@@ -157,8 +144,8 @@ const AdminPage: React.FC = () => {
           <button
             onClick={() => setActiveTab('cats')}
             className={`flex-1 md:flex-none whitespace-nowrap px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'cats'
-              ? 'bg-slate-800 text-white shadow-lg'
-              : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+              ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-500/20'
+              : 'text-slate-500 hover:text-pink-600 hover:bg-pink-50'
               }`}
           >
             猫咪管理
