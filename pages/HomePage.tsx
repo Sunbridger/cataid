@@ -133,7 +133,7 @@ const HomePage: React.FC = () => {
 
   return (
     <div
-      className="flex flex-col gap-6"
+      className="flex flex-col gap-1"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -155,24 +155,24 @@ const HomePage: React.FC = () => {
 
       {/* Header Section */}
       <div className="flex flex-col gap-3 sticky top-0 bg-slate-50/95 backdrop-blur-sm z-30 -mx-4 px-4 pb-2 md:static md:bg-transparent md:p-0">
-        <div className="flex items-center justify-between md:hidden pt-2">
-          <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">
-            发现<span className="text-brand-600">喵星人</span>
+        <div className="flex items-center gap-3 pt-2 md:block md:pt-0">
+          <h1 className="text-lg font-extrabold text-slate-800 tracking-tight md:hidden flex-shrink-0">
+            发现<span className="text-brand-600">喵</span>
           </h1>
-        </div>
 
-        {/* Search Bar */}
-        <div className="relative group">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
+          {/* Search Bar */}
+          <div className="relative group flex-1">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
+            </div>
+            <input
+              type="text"
+              className="block w-full pl-9 pr-4 py-2 border-none rounded-2xl bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-[0_2px_10px_rgb(0,0,0,0.03)] transition-shadow"
+              placeholder="搜索品种、名字..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-          <input
-            type="text"
-            className="block w-full pl-10 pr-4 py-2.5 border-none rounded-xl bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-[0_2px_10px_rgb(0,0,0,0.03)] transition-shadow"
-            placeholder="搜索喵星人（品种、名字...）"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
         </div>
 
         {/* Filter Tags */}
@@ -208,12 +208,7 @@ const HomePage: React.FC = () => {
 
       {/* Content Area */}
       <section className="min-h-[500px]">
-        <div className="flex justify-between items-center mb-4 px-1">
-          <h2 className="text-lg font-bold text-slate-800">最新待领养</h2>
-          <span className="text-slate-400 text-xs font-medium">
-            共 {filteredCats.length} 只
-          </span>
-        </div>
+
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-brand-500">
