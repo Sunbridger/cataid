@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { catService, adoptionService } from '../services/apiService';
 import { Cat, CatStatus, AdoptionApplication, ApplicationStatus } from '../types';
 import { CAT_STATUSES } from '../constants';
-import { Loader2, Settings, FileText, CheckCircle, XCircle, Trash2 } from 'lucide-react';
+import { Loader2, Settings, FileText, CheckCircle, XCircle, Trash2, Shield } from 'lucide-react';
 
 import { useToast } from '../context/ToastContext';
 
@@ -85,9 +85,6 @@ const AdminPage: React.FC = () => {
   };
 
   const handleReviewApplication = async (app: AdoptionApplication, status: ApplicationStatus) => {
-    // Removed window.confirm to improve UX and avoid blocking issues.
-    // Instead, we rely on immediate feedback and the ability to see the status change.
-
     try {
       setProcessingAppId(app.id);
 
@@ -98,7 +95,6 @@ const AdminPage: React.FC = () => {
       setApplications(prev => prev.map(a => a.id === app.id ? { ...a, status } : a));
 
       // If approved/rejected, we might need to update the cat list in the background
-      // so the "Cats Management" tab reflects the changes immediately.
       if (status === 'approved') {
         setCats(prev => prev.map(c => c.id === app.catId ? { ...c, status: '已领养' } : c));
         success('已通过申请');
@@ -122,90 +118,96 @@ const AdminPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
-        <div className="flex items-center gap-4">
-          <div className="bg-gradient-to-br from-brand-500 to-brand-600 text-white p-3 rounded-2xl shadow-lg shadow-brand-500/20">
-            <Settings size={28} />
-          </div>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">管理后台</h1>
-            <p className="text-sm text-slate-500 font-medium">管理猫咪信息与审核领养申请</p>
+    <div className="min-h-screen bg-slate-50 pb-20">
+      {/* 沉浸式顶部 - 粉色系 */}
+      <div className="bg-gradient-to-r from-pink-400 via-rose-400 to-pink-300 pb-16 pt-8 px-4 rounded-b-[2rem] relative overflow-hidden shadow-lg shadow-pink-500/10">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+        <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/10 rounded-full blur-2xl -ml-10 -mb-10"></div>
+
+        <div className="max-w-6xl mx-auto relative z-10 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="bg-white/20 backdrop-blur-md p-3 rounded-2xl border border-white/20 shadow-inner text-white">
+              <Shield size={32} />
+            </div>
+            <div className="text-white">
+              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">管理后台</h1>
+              <p className="text-pink-50 font-medium opacity-90">管理猫咪信息与审核领养申请</p>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+      <div className="max-w-6xl mx-auto px-4 -mt-8 relative z-20">
+        {/* Tab 切换 */}
+        <div className="bg-white p-1.5 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 mb-6 flex overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('applications')}
+            className={`flex-1 md:flex-none whitespace-nowrap px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'applications'
+              ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-500/20'
+              : 'text-slate-500 hover:text-pink-600 hover:bg-pink-50'
+              }`}
+          >
+            领养审核
+            {applications.filter(a => a.status === 'pending').length > 0 && (
+              <span className="bg-white text-pink-500 text-[10px] px-1.5 py-0.5 rounded-full shadow-sm">
+                {applications.filter(a => a.status === 'pending').length}
+              </span>
+            )}
+          </button>
           <button
             onClick={() => setActiveTab('cats')}
-            className={`flex-1 md:flex-none whitespace-nowrap px-4 md:px-6 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'cats'
-              ? 'bg-slate-800 text-white shadow-md'
+            className={`flex-1 md:flex-none whitespace-nowrap px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'cats'
+              ? 'bg-slate-800 text-white shadow-lg'
               : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
               }`}
           >
             猫咪管理
           </button>
-          <button
-            onClick={() => setActiveTab('applications')}
-            className={`flex-1 md:flex-none whitespace-nowrap px-4 md:px-6 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 ${activeTab === 'applications'
-              ? 'bg-brand-600 text-white shadow-md'
-              : 'text-slate-500 hover:text-brand-600 hover:bg-brand-50'
-              }`}
-          >
-            领养审核
-            {applications.filter(a => a.status === 'pending').length > 0 && (
-              <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                {applications.filter(a => a.status === 'pending').length}
-              </span>
-            )}
-          </button>
         </div>
-      </div>
 
-      {activeTab === 'cats' ? (
-        // Cats Table
-        // Cats Management
-        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-          {loadingCats ? (
-            <div className="flex justify-center items-center py-20 bg-white rounded-3xl shadow-lg border border-slate-100">
-              <Loader2 className="animate-spin text-slate-400" size={32} />
-            </div>
-          ) : (
-            <>
-              {/* Desktop Table View */}
-              <div className="hidden md:block bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm uppercase tracking-wider">
-                        <th className="p-4 font-semibold">猫咪</th>
-                        <th className="p-4 font-semibold">基本信息</th>
-                        <th className="p-4 font-semibold">当前状态</th>
-                        <th className="p-4 font-semibold">操作</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {cats.map((cat) => (
-                        <tr key={cat.id} className="hover:bg-slate-50 transition-colors">
-                          <td className="p-4 w-24">
-                            <img
-                              src={cat.image_url.split(',')[0]}
-                              alt={cat.name}
-                              className="w-16 h-16 rounded-lg object-cover bg-slate-200"
-                            />
-                          </td>
-                          <td className="p-4">
-                            <div className="font-bold text-slate-800">{cat.name}</div>
-                            <div className="text-sm text-slate-500">{cat.breed} • {new Date(cat.created_at).toLocaleDateString('zh-CN')}</div>
-                          </td>
-                          <td className="p-4">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
-                          ${cat.status === '可领养' ? 'bg-green-50 text-green-700 border-green-200' :
-                                cat.status === '已领养' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                                  'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                              {cat.status || '可领养'}
-                            </span>
-                          </td>
-                          <td className="p-4">
+        {activeTab === 'cats' ? (
+          // Cats Table
+          <div className="animate-in fade-in slide-in-from-bottom-2">
+            {loadingCats ? (
+              <div className="flex justify-center items-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
+                <Loader2 className="animate-spin text-pink-400" size={32} />
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden md:block bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50/50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                          <th className="p-4 pl-6">猫咪</th>
+                          <th className="p-4">基本信息</th>
+                          <th className="p-4">当前状态</th>
+                          <th className="p-4">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {cats.map((cat) => (
+                          <tr key={cat.id} className="hover:bg-slate-50/80 transition-colors">
+                            <td className="p-4 pl-6 w-24">
+                              <img
+                                src={cat.image_url.split(',')[0]}
+                                alt={cat.name}
+                                className="w-14 h-14 rounded-xl object-cover bg-slate-100 shadow-sm border border-slate-100"
+                              />
+                            </td>
+                            <td className="p-4">
+                              <div className="font-bold text-slate-800 text-base">{cat.name}</div>
+                              <div className="text-xs font-medium text-slate-400 mt-0.5">{cat.breed} • {new Date(cat.created_at).toLocaleDateString('zh-CN')}</div>
+                            </td>
+                            <td className="p-4">
+                              <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold border
+                            ${cat.status === '可领养' ? 'bg-green-50 text-green-700 border-green-100' :
+                                  cat.status === '已领养' ? 'bg-pink-50 text-pink-700 border-pink-100' :
+                                    'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                                {cat.status || '可领养'}
+                              </span>
+                            </td>
                             <td className="p-4">
                               <div className="flex items-center gap-2">
                                 <div className="relative max-w-[140px]">
@@ -213,7 +215,7 @@ const AdminPage: React.FC = () => {
                                     value={cat.status || '可领养'}
                                     onChange={(e) => handleStatusChange(cat.id, e.target.value as CatStatus)}
                                     disabled={updatingId === cat.id}
-                                    className="appearance-none w-full bg-white border border-slate-300 text-slate-700 py-1.5 pl-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 disabled:opacity-50 cursor-pointer"
+                                    className="appearance-none w-full bg-white border border-slate-200 text-slate-600 py-1.5 pl-3 pr-8 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 disabled:opacity-50 cursor-pointer shadow-sm transition-shadow"
                                   >
                                     {CAT_STATUSES.map(status => (
                                       <option key={status} value={status}>{status}</option>
@@ -221,161 +223,161 @@ const AdminPage: React.FC = () => {
                                   </select>
                                   {updatingId === cat.id && (
                                     <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-                                      <Loader2 className="animate-spin text-brand-500" size={14} />
+                                      <Loader2 className="animate-spin text-pink-500" size={14} />
                                     </div>
                                   )}
                                 </div>
                                 <button
                                   onClick={() => handleDeleteCat(cat.id)}
                                   disabled={deletingId === cat.id}
-                                  className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                                  className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors disabled:opacity-50 border border-transparent hover:border-red-100"
                                   title="删除"
                                 >
                                   {deletingId === cat.id ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
                                 </button>
                               </div>
                             </td>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
 
-              {/* Mobile Card View */}
-              <div className="md:hidden space-y-4">
-                {cats.map((cat) => (
-                  <div key={cat.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex gap-4">
-                    <img
-                      src={cat.image_url.split(',')[0]}
-                      alt={cat.name}
-                      className="w-20 h-20 rounded-xl object-cover bg-slate-100 flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0 flex flex-col justify-between">
-                      <div>
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-bold text-slate-800 text-lg truncate">{cat.name}</h3>
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold border
-                            ${cat.status === '可领养' ? 'bg-green-50 text-green-700 border-green-200' :
-                              cat.status === '已领养' ? 'bg-rose-50 text-rose-600 border-rose-200' :
-                                'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                            {cat.status || '可领养'}
-                          </span>
-                        </div>
-                        <p className="text-sm text-slate-500 mt-1">{cat.breed} • {new Date(cat.created_at).toLocaleDateString('zh-CN')}</p>
-                      </div>
-
-                      <div className="mt-2">
-                        <div className="flex items-center gap-2">
-                          <div className="relative w-full">
-                            <select
-                              value={cat.status || '可领养'}
-                              onChange={(e) => handleStatusChange(cat.id, e.target.value as CatStatus)}
-                              disabled={updatingId === cat.id}
-                              className="appearance-none w-full bg-slate-50 border border-slate-200 text-slate-700 py-2 pl-3 pr-8 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 disabled:opacity-50"
-                            >
-                              {CAT_STATUSES.map(status => (
-                                <option key={status} value={status}>{status}</option>
-                              ))}
-                            </select>
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                              {updatingId === cat.id ? (
-                                <Loader2 className="animate-spin" size={16} />
-                              ) : (
-                                <Settings size={16} />
-                              )}
-                            </div>
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-3">
+                  {cats.map((cat) => (
+                    <div key={cat.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex gap-4">
+                      <img
+                        src={cat.image_url.split(',')[0]}
+                        alt={cat.name}
+                        className="w-20 h-20 rounded-xl object-cover bg-slate-100 flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0 flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-start">
+                            <h3 className="font-bold text-slate-800 text-lg truncate">{cat.name}</h3>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold border
+                              ${cat.status === '可领养' ? 'bg-green-50 text-green-700 border-green-100' :
+                                cat.status === '已领养' ? 'bg-pink-50 text-pink-600 border-pink-100' :
+                                  'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                              {cat.status || '可领养'}
+                            </span>
                           </div>
-                          <button
-                            onClick={() => handleDeleteCat(cat.id)}
-                            disabled={deletingId === cat.id}
-                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 bg-slate-50 border border-slate-200"
-                          >
-                            {deletingId === cat.id ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
-                          </button>
+                          <p className="text-sm text-slate-500 mt-1">{cat.breed} • {new Date(cat.created_at).toLocaleDateString('zh-CN')}</p>
+                        </div>
+
+                        <div className="mt-3">
+                          <div className="flex items-center gap-2">
+                            <div className="relative w-full">
+                              <select
+                                value={cat.status || '可领养'}
+                                onChange={(e) => handleStatusChange(cat.id, e.target.value as CatStatus)}
+                                disabled={updatingId === cat.id}
+                                className="appearance-none w-full bg-slate-50 border border-slate-200 text-slate-700 py-2 pl-3 pr-8 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 disabled:opacity-50"
+                              >
+                                {CAT_STATUSES.map(status => (
+                                  <option key={status} value={status}>{status}</option>
+                                ))}
+                              </select>
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                {updatingId === cat.id ? (
+                                  <Loader2 className="animate-spin text-pink-500" size={16} />
+                                ) : (
+                                  <Settings size={16} />
+                                )}
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => handleDeleteCat(cat.id)}
+                              disabled={deletingId === cat.id}
+                              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors disabled:opacity-50 bg-slate-50 border border-slate-200"
+                            >
+                              {deletingId === cat.id ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                            </button>
+                          </div>
                         </div>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          // Applications Table
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+            {loadingApps ? (
+              <div className="flex justify-center items-center py-20">
+                <Loader2 className="animate-spin text-pink-400" size={32} />
+              </div>
+            ) : applications.length === 0 ? (
+              <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-slate-300">
+                <FileText className="mx-auto text-slate-300 mb-4" size={48} />
+                <p className="text-slate-500">暂时没有领养申请</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {applications.map((app) => (
+                  <div key={app.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all flex flex-col lg:flex-row gap-6">
+                    {/* Cat Info */}
+                    <div className="flex items-start gap-4 lg:w-1/4">
+                      <img src={app.catImage} alt={app.catName} className="w-16 h-16 rounded-xl object-cover bg-slate-100 border border-slate-100" />
+                      <div>
+                        <p className="text-xs text-slate-400 font-bold tracking-wider mb-1">申请领养</p>
+                        <h3 className="font-bold text-slate-800 text-lg">{app.catName}</h3>
+                        <p className="text-xs text-slate-400 mt-1 font-mono">{new Date(app.createdAt).toLocaleString('zh-CN')}</p>
+                      </div>
+                    </div>
+
+                    {/* Applicant Info */}
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="font-bold text-slate-800 text-lg">{app.applicantName}</span>
+                        <span className="bg-slate-50 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-lg text-xs font-mono">{app.contactInfo}</span>
+                      </div>
+                      <div className="bg-slate-50 p-4 rounded-2xl text-sm text-slate-600 leading-relaxed border border-slate-100 relative">
+                        <span className="absolute -top-2.5 left-4 px-2 bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-wider">申请理由 / 经验</span>
+                        {app.reason}
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="lg:w-48 flex flex-col justify-center gap-2 border-t lg:border-t-0 lg:border-l border-slate-100 pt-4 lg:pt-0 lg:pl-6">
+                      {app.status === 'pending' ? (
+                        <>
+                          <button
+                            onClick={() => handleReviewApplication(app, 'approved')}
+                            disabled={!!processingAppId}
+                            className="w-full py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 shadow-md shadow-green-500/20 active:scale-95"
+                          >
+                            {processingAppId === app.id ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle size={16} />}
+                            通过申请
+                          </button>
+                          <button
+                            onClick={() => handleReviewApplication(app, 'rejected')}
+                            disabled={!!processingAppId}
+                            className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 hover:shadow-inner"
+                          >
+                            {processingAppId === app.id ? <Loader2 className="animate-spin" size={16} /> : <XCircle size={16} />}
+                            婉拒
+                          </button>
+                        </>
+                      ) : (
+                        <div className={`w-full py-3 rounded-xl flex items-center justify-center gap-2 font-bold border
+                        ${app.status === 'approved' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-slate-50 border-slate-100 text-slate-500'}`}>
+                          {app.status === 'approved' ? <CheckCircle size={18} /> : <XCircle size={18} />}
+                          {app.status === 'approved' ? '已通过' : '已驳回'}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
-            </>
-          )}
-        </div>
-      ) : (
-        // Applications Table
-        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-          {loadingApps ? (
-            <div className="flex justify-center items-center py-20">
-              <Loader2 className="animate-spin text-brand-400" size={32} />
-            </div>
-          ) : applications.length === 0 ? (
-            <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-slate-300">
-              <FileText className="mx-auto text-slate-300 mb-4" size={48} />
-              <p className="text-slate-500">暂时没有领养申请</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {applications.map((app) => (
-                <div key={app.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all flex flex-col lg:flex-row gap-6">
-                  {/* Cat Info */}
-                  <div className="flex items-start gap-4 lg:w-1/4">
-                    <img src={app.catImage} alt={app.catName} className="w-16 h-16 rounded-xl object-cover bg-slate-100" />
-                    <div>
-                      <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">申请领养</p>
-                      <h3 className="font-bold text-slate-800">{app.catName}</h3>
-                      <p className="text-xs text-slate-400 mt-1">{new Date(app.createdAt).toLocaleString('zh-CN')}</p>
-                    </div>
-                  </div>
-
-                  {/* Applicant Info */}
-                  <div className="flex-1 space-y-3">
-                    <div className="flex items-center gap-3">
-                      <span className="font-bold text-slate-800 text-lg">{app.applicantName}</span>
-                      <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs font-mono">{app.contactInfo}</span>
-                    </div>
-                    <div className="bg-slate-50 p-3 rounded-xl text-sm text-slate-600 leading-relaxed border border-slate-100">
-                      <span className="font-semibold text-slate-400 block text-xs mb-1 uppercase">申请理由 / 经验</span>
-                      {app.reason}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="lg:w-48 flex flex-col justify-center gap-2 border-t lg:border-t-0 lg:border-l border-slate-100 pt-4 lg:pt-0 lg:pl-6">
-                    {app.status === 'pending' ? (
-                      <>
-                        <button
-                          onClick={() => handleReviewApplication(app, 'approved')}
-                          disabled={!!processingAppId}
-                          className="w-full py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 shadow-sm"
-                        >
-                          {processingAppId === app.id ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle size={16} />}
-                          通过申请
-                        </button>
-                        <button
-                          onClick={() => handleReviewApplication(app, 'rejected')}
-                          disabled={!!processingAppId}
-                          className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
-                        >
-                          {processingAppId === app.id ? <Loader2 className="animate-spin" size={16} /> : <XCircle size={16} />}
-                          婉拒
-                        </button>
-                      </>
-                    ) : (
-                      <div className={`w-full py-3 rounded-xl flex items-center justify-center gap-2 font-bold border
-                        ${app.status === 'approved' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-slate-50 border-slate-100 text-slate-500'}`}>
-                        {app.status === 'approved' ? <CheckCircle size={18} /> : <XCircle size={18} />}
-                        {app.status === 'approved' ? '已通过' : '已驳回'}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
