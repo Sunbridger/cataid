@@ -174,10 +174,26 @@ async function handleAddFavorite(req: VercelRequest, res: VercelResponse) {
     .eq('cat_id', catId)
     .single();
 
+  // 如果已收藏，则取消收藏（toggle 功能）
   if (existing) {
-    return res.status(400).json({ error: '已经收藏过了' });
+    const { error: deleteError } = await supabase
+      .from('favorites')
+      .delete()
+      .eq('user_id', userId)
+      .eq('cat_id', catId);
+
+    if (deleteError) {
+      console.error('取消收藏失败:', deleteError);
+      return res.status(500).json({ error: '取消收藏失败' });
+    }
+
+    return res.status(200).json({
+      message: '已取消收藏',
+      action: 'removed'
+    });
   }
 
+  // 添加收藏
   const { data: newFavorite, error } = await supabase
     .from('favorites')
     .insert([{ user_id: userId, cat_id: catId }])
@@ -190,6 +206,8 @@ async function handleAddFavorite(req: VercelRequest, res: VercelResponse) {
   }
 
   return res.status(201).json({
+    message: '收藏成功',
+    action: 'added',
     data: {
       id: newFavorite.id,
       userId: newFavorite.user_id,
