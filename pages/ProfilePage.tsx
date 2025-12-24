@@ -10,14 +10,14 @@ const ProfilePage: React.FC = () => {
   const { user, isLoggedIn, isGuest, login, logout, updateUser } = useUser();
   const navigate = useNavigate();
 
-  // 获取用户统计数据
+  // 获取用户统计数据（包括游客）
   useEffect(() => {
-    if (user?.id && !isGuest) {
+    if (user?.id) {
       userService.getStats(user.id).then(stats => {
         updateUser(stats);
       });
     }
-  }, [user?.id, isGuest]);
+  }, [user?.id]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editNickname, setEditNickname] = useState('');
@@ -434,7 +434,7 @@ const ProfilePage: React.FC = () => {
             />
             <StatItem
               icon={<ThumbsUp size={20} className="fill-pink-400 text-pink-400" />}
-              value={0}
+              value={user?.likeCount || 0}
               label="点赞"
               to="/my/likes"
             />

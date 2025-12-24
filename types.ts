@@ -106,6 +106,7 @@ export interface User {
   status: UserStatus;
   role: UserRole;
   favoriteCount: number;
+  likeCount: number;      // 用户点赞评论数
   commentCount: number;
   adoptionCount: number;
   createdAt: string;

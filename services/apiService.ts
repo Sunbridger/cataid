@@ -356,6 +356,7 @@ export const userApi = {
    */
   getStats: async (userId: string): Promise<{
     favoriteCount: number;
+    likeCount: number;
     commentCount: number;
     adoptionCount: number;
   }> => {
@@ -363,6 +364,7 @@ export const userApi = {
       const result = await request<{
         data: {
           favoriteCount: number;
+          likeCount: number;
           commentCount: number;
           adoptionCount: number;
         }
@@ -372,6 +374,7 @@ export const userApi = {
       console.error('获取用户统计失败:', error);
       return {
         favoriteCount: 0,
+        likeCount: 0,
         commentCount: 0,
         adoptionCount: 0,
       };
