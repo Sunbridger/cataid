@@ -199,7 +199,7 @@ const AddCatPage: React.FC = () => {
           </p>
           <Link
             to="/profile"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-500 text-white font-bold rounded-xl hover:bg-brand-600 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-600 transition-colors"
           >
             {!isLoggedIn ? '去登录' : '去绑定账号'}
             <ArrowRight size={18} />
@@ -214,7 +214,7 @@ const AddCatPage: React.FC = () => {
           {/* Section: 基本信息 */}
           <div className="space-y-6">
             <div className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
-              <span className="w-1.5 h-6 bg-brand-500 rounded-full"></span>
+              <span className="w-1.5 h-6 bg-pink-500 rounded-full"></span>
               基本信息
             </div>
 
@@ -222,12 +222,12 @@ const AddCatPage: React.FC = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <label className="block text-sm font-bold text-slate-700 flex items-center gap-2">
-                  <Camera size={18} className="text-brand-500" />
+                  <Camera size={18} className="text-pink-500" />
                   猫咪照片
                   <span className="text-slate-400 font-normal text-xs">(最多9张)</span>
                 </label>
                 {analyzingImage && (
-                  <div className="flex items-center gap-2 text-xs text-brand-600 font-medium bg-brand-50 px-3 py-1 rounded-full animate-pulse">
+                  <div className="flex items-center gap-2 text-xs text-pink-600 font-medium bg-pink-50 px-3 py-1 rounded-full animate-pulse">
                     <Sparkles size={12} />
                     AI 正在识别品种...
                   </div>
@@ -247,7 +247,7 @@ const AddCatPage: React.FC = () => {
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
                     </button>
                     {index === 0 && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-brand-500/80 text-white text-[10px] font-bold py-1 text-center backdrop-blur-sm">
+                      <div className="absolute bottom-0 left-0 right-0 bg-pink-500/80 text-white text-[10px] font-bold py-1 text-center backdrop-blur-sm">
                         封面
                       </div>
                     )}
@@ -257,12 +257,12 @@ const AddCatPage: React.FC = () => {
                 {formData.imageFiles.length < 9 && (
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="aspect-square rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:bg-white hover:border-brand-400 hover:shadow-md transition-all group overflow-hidden"
+                    className="aspect-square rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:bg-white hover:border-pink-400 hover:shadow-md transition-all group overflow-hidden"
                   >
-                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mb-2 group-hover:scale-110 transition-transform text-brand-500">
+                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mb-2 group-hover:scale-110 transition-transform text-pink-500">
                       <Upload size={20} />
                     </div>
-                    <span className="text-xs font-bold text-slate-400 group-hover:text-brand-500">上传照片</span>
+                    <span className="text-xs font-bold text-slate-400 group-hover:text-pink-500">上传照片</span>
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -283,7 +283,7 @@ const AddCatPage: React.FC = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all placeholder:text-slate-300"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all placeholder:text-slate-300"
                   placeholder="例如：咪咪"
                 />
               </div>
@@ -295,7 +295,7 @@ const AddCatPage: React.FC = () => {
                   name="breed"
                   value={formData.breed}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all placeholder:text-slate-300"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all placeholder:text-slate-300"
                   placeholder="例如：中华田园猫"
                 />
               </div>
@@ -318,7 +318,7 @@ const AddCatPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, is_stray: true }))}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_stray ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_stray ? 'bg-white text-pink-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                       >
                         流浪
                       </button>
@@ -400,7 +400,7 @@ const AddCatPage: React.FC = () => {
                   max="30"
                   value={formData.age}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
                 />
               </div>
 
@@ -423,7 +423,7 @@ const AddCatPage: React.FC = () => {
           {/* Section: 更多细节 */}
           <div className="space-y-6">
             <div className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
-              <span className="w-1.5 h-6 bg-brand-500 rounded-full"></span>
+              <span className="w-1.5 h-6 bg-pink-500 rounded-full"></span>
               性格与故事
             </div>
 
@@ -436,8 +436,8 @@ const AddCatPage: React.FC = () => {
                     type="button"
                     onClick={() => handleTagToggle(tag)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${formData.tags.includes(tag)
-                      ? 'bg-brand-500 text-white border-brand-600 shadow-md shadow-brand-500/20'
-                      : 'bg-white text-slate-600 border-slate-200 hover:border-brand-300 hover:text-brand-600'
+                      ? 'bg-pink-500 text-white border-pink-600 shadow-md shadow-pink-500/20'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-pink-300 hover:text-pink-600'
                       }`}
                   >
                     {tag}
@@ -453,7 +453,7 @@ const AddCatPage: React.FC = () => {
                   type="button"
                   onClick={handleGenerateBio}
                   disabled={generatingBio}
-                  className="text-xs flex items-center gap-1.5 text-brand-600 font-bold bg-brand-50 px-2 py-1 rounded-md hover:bg-brand-100 transition-colors disabled:opacity-50"
+                  className="text-xs flex items-center gap-1.5 text-pink-600 font-bold bg-pink-50 px-2 py-1 rounded-md hover:bg-pink-100 transition-colors disabled:opacity-50"
                 >
                   {generatingBio ? <Loader2 className="animate-spin" size={12} /> : <Sparkles size={12} />}
                   {generatingBio ? '正在撰写...' : 'AI 生成故事'}
@@ -465,7 +465,7 @@ const AddCatPage: React.FC = () => {
                 value={formData.description}
                 onChange={handleInputChange}
                 rows={4}
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all resize-none placeholder:text-slate-300 text-sm leading-relaxed"
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all resize-none placeholder:text-slate-300 text-sm leading-relaxed"
                 placeholder="请介绍一下猫咪的来历、性格习惯，以及对领养人的小期待..."
               />
             </div>
@@ -473,7 +473,7 @@ const AddCatPage: React.FC = () => {
 
           <button
             type="submit"
-            className="w-full py-4 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 mt-4"
+            className="w-full py-4 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-xl shadow-lg shadow-pink-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 mt-4"
           >
             发布领养信息
             <ArrowRight size={20} />
