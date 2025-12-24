@@ -49,7 +49,8 @@ function toCamelCase(item: any) {
     contactInfo: item.contact_info,
     reason: item.reason,
     status: item.status,
-    createdAt: item.created_at
+    createdAt: item.created_at,
+    reviewedAt: item.reviewed_at || null
   };
 }
 
@@ -121,7 +122,10 @@ async function reviewApplication(appId: string, status: string, catId: string) {
 
   const { error } = await supabase
     .from('adoption_applications')
-    .update({ status })
+    .update({
+      status,
+      reviewed_at: new Date().toISOString()
+    })
     .eq('id', appId);
 
   if (error) throw error;
