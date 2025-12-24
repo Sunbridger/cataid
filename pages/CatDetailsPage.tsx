@@ -168,6 +168,7 @@ const CatDetailsPage: React.FC = () => {
     try {
       const newApp = await adoptionService.submitApplication({
         catId: cat.id,
+        userId: user?.id,
         catName: cat.name,
         catImage: cat.image_url.split(',')[0],
         applicantName: adoptForm.name,
