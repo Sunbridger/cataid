@@ -69,3 +69,25 @@ export const generateCommentReply = async (
     return "喵喵喵~ 感谢你的关注！";
   }
 };
+
+/**
+ * 生成可爱的猫咪相关昵称
+ * @returns AI 生成的可爱昵称（4-6个中文字符）
+ */
+export const generateCuteNickname = async (): Promise<string | null> => {
+  try {
+    const response = await fetch('/api/ai?type=nickname', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+
+    if (!response.ok) throw new Error('API request failed');
+
+    const data = await response.json();
+    return data.nickname || null;
+  } catch (e) {
+    console.error("Nickname Generation Error:", e);
+    return null;
+  }
+};

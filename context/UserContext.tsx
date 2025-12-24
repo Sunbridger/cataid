@@ -11,21 +11,29 @@ const generateDeviceId = (): string => {
   return newId;
 };
 
+const CUTE_NICKNAMES = [
+  "正在晒太阳", "偷吃小鱼干", "追蝴蝶的猫", "趴在键盘上", "躲进纸箱里",
+  "呼噜呼噜怪", "踩奶小能手", "贪睡的橘猫", "发呆的毛球", "摇尾巴的喵",
+  "想要猫罐头", "软糯小肉垫", "傲娇喵星人", "粘人的小妖精", "暴躁小可爱",
+  "优雅的猫步", "慵懒的午后", "好奇的猫猫", "粉嫩小鼻头", "圆滚滚的肚",
+  "机灵小黑猫", "憨憨蓝胖子", "甜美布偶猫", "短腿小曼基", "凶萌小脑斧",
+  "流浪旅行家", "等风来的喵", "遇见一只猫", "温暖铲屎官", "爱猫的少年",
+  "吸猫重症患", "撸猫专业户", "猫咪守护者", "云养猫达人", "口袋里的猫",
+  "想变成猫咪", "喵喵幼儿园", "猫尾巴草", "胡须长长", "耳朵尖尖",
+  "爪爪肉嘟嘟", "背影圆滚滚", "睡不醒的猫", "森林里的猫", "屋顶的猫咪",
+  "窗边的守候", "月光下的猫", "星空喵行者", "吃饱就困困", "梦里有小鱼"
+];
+
 // 生成随机昵称
 const generateNickname = (): string => {
-  const adjectives = ['快乐的', '可爱的', '温柔的', '活泼的', '聪明的', '勇敢的', '善良的', '阳光的'];
-  const nouns = ['猫咪控', '铲屎官', '喵星人', '猫奴', '撸猫人', '爱猫人', '吸猫达人', '猫咪爱好者'];
-  const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-  const noun = nouns[Math.floor(Math.random() * nouns.length)];
-  const num = Math.floor(Math.random() * 1000);
-  return `${adj}${noun}${num}`;
+  return CUTE_NICKNAMES[Math.floor(Math.random() * CUTE_NICKNAMES.length)];
 };
 
-// 生成随机头像
+// 生成随机头像 - 使用 RoboHash 猫咪版生成唯一头像
 const generateAvatar = (nickname: string): string => {
-  const colors = ['f97316', 'ec4899', '8b5cf6', '06b6d4', '10b981', '3b82f6', 'ef4444', 'f59e0b'];
-  const color = colors[Math.floor(Math.random() * colors.length)];
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}&background=${color}&color=fff&rounded=true&bold=true&size=128`;
+  // set=set4 是 RoboHash 的猫咪风格
+  // 同一个昵称永远对应同一只猫咪头像
+  return `https://robohash.org/${encodeURIComponent(nickname)}?set=set4&size=128x128`;
 };
 
 interface UserContextType {
@@ -62,14 +70,16 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(false);
   }, []);
 
-  // 自动登录（游客模式）
-  const autoLogin = () => {
+  // 自动登录（游客模式）- 使用AI生成可爱昵称
+  const autoLogin = async () => {
     const deviceId = generateDeviceId();
-    const nickname = generateNickname();
+
+    // 先使用静态昵称快速登录
+    let nickname = generateNickname();
     const avatarUrl = generateAvatar(nickname);
 
     const newUser: User = {
-      id: deviceId,  // 使用 deviceId 作为用户 ID
+      id: deviceId,
       deviceId,
       nickname,
       avatarUrl,
@@ -85,7 +95,28 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(newUser);
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
 
-    // TODO: 可以在这里调用后端 API 同步用户数据
+    // 异步尝试获取 AI 生成的昵称
+    try {
+      const response = await fetch('/api/ai?type=nickname', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.nickname && data.nickname.length >= 4 && data.nickname.length <= 6) {
+          const aiNickname = data.nickname;
+          const aiAvatarUrl = generateAvatar(aiNickname);
+          const updatedUser = { ...newUser, nickname: aiNickname, avatarUrl: aiAvatarUrl };
+          setUser(updatedUser);
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
+        }
+      }
+    } catch (e) {
+      // AI 失败时使用已设置的静态昵称
+      console.log('AI 昵称生成失败，使用静态昵称');
+    }
   };
 
   // 登录

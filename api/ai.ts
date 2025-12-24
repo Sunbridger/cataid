@@ -175,6 +175,54 @@ async function handleReply(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ reply: '喵喵喵~ 感谢你的关注！' });
   }
 }
+// 5. 生成可爱昵称 (Moonshot)
+async function handleNickname(req: VercelRequest, res: VercelResponse) {
+  try {
+    const apiKey = process.env.MOONSHOT_API_KEY;
+
+    if (!apiKey) {
+      // 演示模式 - 返回随机预设昵称
+      const demoNicknames = ["偷吃小鱼干", "踩奶小能手", "追蝴蝶的猫", "睡不醒的猫", "软糯小肉垫"];
+      return res.status(200).json({ nickname: demoNicknames[Math.floor(Math.random() * demoNicknames.length)] });
+    }
+
+    const response = await fetch(MOONSHOT_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: 'moonshot-v1-8k',
+        messages: [
+          {
+            role: 'system',
+            content: '你是一个可爱昵称生成器。只返回一个昵称，不要有任何其他文字。'
+          },
+          {
+            role: 'user',
+            content: '请生成一个可爱的、与猫咪相关的中文昵称。要求：4-6个中文字符，不含数字和英文字母，风格可爱温馨，可以是猫咪的行为、特征、或爱猫人的身份。只返回昵称本身，不要有引号或其他符号。'
+          }
+        ],
+        temperature: 1.0, max_tokens: 20
+      })
+    });
+
+    if (!response.ok) throw new Error('AI 服务请求失败');
+    const data = await response.json();
+    let nickname = data.choices?.[0]?.message?.content?.trim() || '';
+
+    // 清理可能的引号和多余符号
+    nickname = nickname.replace(/["""'']/g, '').trim();
+
+    // 验证长度
+    if (nickname.length < 4 || nickname.length > 6) {
+      nickname = "软糯小肉垫"; // 默认值
+    }
+
+    return res.status(200).json({ nickname });
+  } catch (error) {
+    console.error("Nickname Error:", error);
+    return res.status(200).json({ nickname: "追蝴蝶的猫" });
+  }
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(res);
@@ -188,6 +236,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     case 'generate-bio': return handleGenerateBio(req, res);
     case 'chat': return handleChat(req, res);
     case 'reply': return handleReply(req, res);
+    case 'nickname': return handleNickname(req, res);
     default: return res.status(400).json({ error: 'Invalid or missing type parameter' });
   }
 }

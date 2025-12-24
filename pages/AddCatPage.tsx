@@ -179,319 +179,321 @@ const AddCatPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-slate-800">发布猫咪领养信息</h1>
-        <p className="text-slate-500 mt-2">帮助毛孩子找到永远的家。</p>
+    <div className="min-h-screen bg-slate-50 pb-20">
+      {/* 标准顶部导航栏 */}
+      <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-30 px-4 py-3 flex items-center justify-center shadow-sm border-b border-slate-100 -mx-4">
+        <h1 className="text-lg font-bold text-slate-800">发布猫咪</h1>
       </div>
 
-      {/* 权限检查 - 未登录或游客 */}
-      {!canPost && (
-        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8 text-center">
-          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Lock size={28} className="text-slate-400" />
-          </div>
-          <h2 className="text-xl font-bold text-slate-800 mb-2">需要登录才能发布</h2>
-          <p className="text-slate-500 mb-6">
-            {!isLoggedIn
-              ? '请先登录您的账号，然后才能发布猫咪领养信息。'
-              : '您当前是游客模式，请绑定手机号或邮箱后才能发布。'}
-          </p>
-          <Link
-            to="/profile"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-600 transition-colors"
-          >
-            {!isLoggedIn ? '去登录' : '去绑定账号'}
-            <ArrowRight size={18} />
-          </Link>
-        </div>
-      )}
-
-      {/* 已登录用户显示表单 */}
-      {canPost && (
-        <form onSubmit={handleSubmit} className="bg-white px-6 py-8 md:p-10 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 space-y-8">
-
-          {/* Section: 基本信息 */}
-          <div className="space-y-6">
-            <div className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
-              <span className="w-1.5 h-6 bg-pink-500 rounded-full"></span>
-              基本信息
+      <div className="max-w-2xl mx-auto py-6">
+        {/* 权限检查 - 未登录或游客 */}
+        {!canPost && (
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 text-center">
+            <div className="w-20 h-20 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Lock size={32} className="text-pink-300" />
             </div>
+            <h2 className="text-xl font-bold text-slate-800 mb-3">需要登录才能发布</h2>
+            <p className="text-slate-500 mb-8 text-sm leading-relaxed max-w-xs mx-auto">
+              {!isLoggedIn
+                ? '请先登录您的账号，然后才能发布猫咪领养信息。'
+                : '您当前是游客模式，请绑定手机号或邮箱后才能发布。'}
+            </p>
+            <Link
+              to="/profile"
+              className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-pink-400 to-rose-400 text-white font-bold rounded-2xl hover:shadow-lg hover:shadow-pink-500/30 transition-all active:scale-95"
+            >
+              {!isLoggedIn ? '去登录' : '去绑定账号'}
+              <ArrowRight size={18} />
+            </Link>
+          </div>
+        )}
 
-            {/* Image Upload */}
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <label className="block text-sm font-bold text-slate-700 flex items-center gap-2">
-                  <Camera size={18} className="text-pink-500" />
-                  猫咪照片
-                  <span className="text-slate-400 font-normal text-xs">(最多9张)</span>
-                </label>
-                {analyzingImage && (
-                  <div className="flex items-center gap-2 text-xs text-pink-600 font-medium bg-pink-50 px-3 py-1 rounded-full animate-pulse">
-                    <Sparkles size={12} />
-                    AI 正在识别品种...
-                  </div>
-                )}
+        {/* 已登录用户显示表单 */}
+        {canPost && (
+          <form onSubmit={handleSubmit} className="bg-white px-6 py-8 md:p-10 rounded-3xl shadow-sm border border-slate-100 space-y-8">
+
+            {/* Section: 基本信息 */}
+            <div className="space-y-6">
+              <div className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
+                <span className="w-1.5 h-6 bg-pink-500 rounded-full"></span>
+                基本信息
               </div>
 
-              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
-                {formData.imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 shadow-sm group">
-                    <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-1.5 right-1.5 bg-white/90 text-slate-700 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 hover:text-red-500 shadow-sm transform hover:scale-110"
+              {/* Image Upload */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <label className="block text-sm font-bold text-slate-700 flex items-center gap-2">
+                    <Camera size={18} className="text-pink-500" />
+                    猫咪照片
+                    <span className="text-slate-400 font-normal text-xs">(最多9张)</span>
+                  </label>
+                  {analyzingImage && (
+                    <div className="flex items-center gap-2 text-xs text-pink-600 font-medium bg-pink-50 px-3 py-1 rounded-full animate-pulse">
+                      <Sparkles size={12} />
+                      AI 正在识别品种...
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
+                  {formData.imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 shadow-sm group">
+                      <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-1.5 right-1.5 bg-white/90 text-slate-700 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 hover:text-red-500 shadow-sm transform hover:scale-110"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                      </button>
+                      {index === 0 && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-pink-500/80 text-white text-[10px] font-bold py-1 text-center backdrop-blur-sm">
+                          封面
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {formData.imageFiles.length < 9 && (
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="aspect-square rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:bg-white hover:border-pink-400 hover:shadow-md transition-all group overflow-hidden"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-                    </button>
-                    {index === 0 && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-pink-500/80 text-white text-[10px] font-bold py-1 text-center backdrop-blur-sm">
-                        封面
+                      <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mb-2 group-hover:scale-110 transition-transform text-pink-500">
+                        <Upload size={20} />
                       </div>
-                    )}
-                  </div>
-                ))}
-
-                {formData.imageFiles.length < 9 && (
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="aspect-square rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:bg-white hover:border-pink-400 hover:shadow-md transition-all group overflow-hidden"
-                  >
-                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mb-2 group-hover:scale-110 transition-transform text-pink-500">
-                      <Upload size={20} />
+                      <span className="text-xs font-bold text-slate-400 group-hover:text-pink-500">上传照片</span>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
                     </div>
-                    <span className="text-xs font-bold text-slate-400 group-hover:text-pink-500">上传照片</span>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-              <div className="space-y-1.5">
-                <label className="block text-sm font-medium text-slate-700">名字</label>
-                <input
-                  required
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all placeholder:text-slate-300"
-                  placeholder="例如：咪咪"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="block text-sm font-medium text-slate-700">品种</label>
-                <input
-                  required
-                  name="breed"
-                  value={formData.breed}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all placeholder:text-slate-300"
-                  placeholder="例如：中华田园猫"
-                />
-              </div>
-
-              <div className="space-y-4 pt-2">
-                <label className="block text-sm font-medium text-slate-700">健康状况与来源</label>
-
-                <div className="grid grid-cols-2 gap-4">
-                  {/* is_stray */}
-                  <div className="flex flex-col gap-2">
-                    <span className="text-xs text-slate-500">来源</span>
-                    <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, is_stray: false }))}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_stray ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                      >
-                        家养
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, is_stray: true }))}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_stray ? 'bg-white text-pink-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                      >
-                        流浪
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* is_sterilized */}
-                  <div className="flex flex-col gap-2">
-                    <span className="text-xs text-slate-500">是否绝育</span>
-                    <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, is_sterilized: true }))}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_sterilized ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                      >
-                        已绝育
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, is_sterilized: false }))}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_sterilized ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                      >
-                        未绝育
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* is_dewormed */}
-                  <div className="flex flex-col gap-2">
-                    <span className="text-xs text-slate-500">是否驱虫</span>
-                    <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, is_dewormed: true }))}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_dewormed ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                      >
-                        已驱虫
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, is_dewormed: false }))}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_dewormed ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                      >
-                        未驱虫
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* is_vaccinated */}
-                  <div className="flex flex-col gap-2">
-                    <span className="text-xs text-slate-500">是否接种疫苗</span>
-                    <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, is_vaccinated: true }))}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_vaccinated ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                      >
-                        已接种
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, is_vaccinated: false }))}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_vaccinated ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                      >
-                        未接种
-                      </button>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="block text-sm font-medium text-slate-700">年龄 (岁)</label>
-                <input
-                  required
-                  type="number"
-                  name="age"
-                  min="0"
-                  max="30"
-                  value={formData.age}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
-                />
-              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-slate-700">名字</label>
+                  <input
+                    required
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all placeholder:text-slate-300"
+                    placeholder="例如：咪咪"
+                  />
+                </div>
 
-              <div className="space-y-1.5">
-                <label className="block text-sm font-medium text-slate-700">性别</label>
-                <div className="flex gap-4">
-                  <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border cursor-pointer transition-all ${formData.gender === 'Male' ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
-                    <input type="radio" name="gender" value="Male" checked={formData.gender === 'Male'} onChange={handleInputChange} className="hidden" />
-                    <span className="font-semibold text-sm">公猫</span>
-                  </label>
-                  <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border cursor-pointer transition-all ${formData.gender === 'Female' ? 'bg-pink-50 border-pink-200 text-pink-700' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
-                    <input type="radio" name="gender" value="Female" checked={formData.gender === 'Female'} onChange={handleInputChange} className="hidden" />
-                    <span className="font-semibold text-sm">母猫</span>
-                  </label>
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-slate-700">品种</label>
+                  <input
+                    required
+                    name="breed"
+                    value={formData.breed}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all placeholder:text-slate-300"
+                    placeholder="例如：中华田园猫"
+                  />
+                </div>
+
+                <div className="space-y-4 pt-2">
+                  <label className="block text-sm font-medium text-slate-700">健康状况与来源</label>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* is_stray */}
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs text-slate-500">来源</span>
+                      <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, is_stray: false }))}
+                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_stray ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                          家养
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, is_stray: true }))}
+                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_stray ? 'bg-white text-pink-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                          流浪
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* is_sterilized */}
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs text-slate-500">是否绝育</span>
+                      <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, is_sterilized: true }))}
+                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_sterilized ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                          已绝育
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, is_sterilized: false }))}
+                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_sterilized ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                          未绝育
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* is_dewormed */}
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs text-slate-500">是否驱虫</span>
+                      <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, is_dewormed: true }))}
+                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_dewormed ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                          已驱虫
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, is_dewormed: false }))}
+                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_dewormed ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                          未驱虫
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* is_vaccinated */}
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs text-slate-500">是否接种疫苗</span>
+                      <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, is_vaccinated: true }))}
+                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_vaccinated ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                          已接种
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, is_vaccinated: false }))}
+                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_vaccinated ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                          未接种
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-slate-700">年龄 (岁)</label>
+                  <input
+                    required
+                    type="number"
+                    name="age"
+                    min="0"
+                    max="30"
+                    value={formData.age}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-slate-700">性别</label>
+                  <div className="flex gap-4">
+                    <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border cursor-pointer transition-all ${formData.gender === 'Male' ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
+                      <input type="radio" name="gender" value="Male" checked={formData.gender === 'Male'} onChange={handleInputChange} className="hidden" />
+                      <span className="font-semibold text-sm">公猫</span>
+                    </label>
+                    <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border cursor-pointer transition-all ${formData.gender === 'Female' ? 'bg-pink-50 border-pink-200 text-pink-700' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
+                      <input type="radio" name="gender" value="Female" checked={formData.gender === 'Female'} onChange={handleInputChange} className="hidden" />
+                      <span className="font-semibold text-sm">母猫</span>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Section: 更多细节 */}
-          <div className="space-y-6">
-            <div className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
-              <span className="w-1.5 h-6 bg-pink-500 rounded-full"></span>
-              性格与故事
-            </div>
+            {/* Section: 更多细节 */}
+            <div className="space-y-6">
+              <div className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
+                <span className="w-1.5 h-6 bg-pink-500 rounded-full"></span>
+                性格与故事
+              </div>
 
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-slate-700">性格特点 (多选)</label>
-              <div className="flex flex-wrap gap-2">
-                {CAT_CATEGORIES.map(tag => (
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-slate-700">性格特点 (多选)</label>
+                <div className="flex flex-wrap gap-2">
+                  {CAT_CATEGORIES.map(tag => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => handleTagToggle(tag)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${formData.tags.includes(tag)
+                        ? 'bg-pink-500 text-white border-pink-600 shadow-md shadow-pink-500/20'
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-pink-300 hover:text-pink-600'
+                        }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="block text-sm font-medium text-slate-700">猫咪简介</label>
                   <button
-                    key={tag}
                     type="button"
-                    onClick={() => handleTagToggle(tag)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${formData.tags.includes(tag)
-                      ? 'bg-pink-500 text-white border-pink-600 shadow-md shadow-pink-500/20'
-                      : 'bg-white text-slate-600 border-slate-200 hover:border-pink-300 hover:text-pink-600'
-                      }`}
+                    onClick={handleGenerateBio}
+                    disabled={generatingBio}
+                    className="text-xs flex items-center gap-1.5 text-pink-600 font-bold bg-pink-50 px-2 py-1 rounded-md hover:bg-pink-100 transition-colors disabled:opacity-50"
                   >
-                    {tag}
+                    {generatingBio ? <Loader2 className="animate-spin" size={12} /> : <Sparkles size={12} />}
+                    {generatingBio ? '正在撰写...' : 'AI 生成故事'}
                   </button>
-                ))}
+                </div>
+                <textarea
+                  required
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all resize-none placeholder:text-slate-300 text-sm leading-relaxed"
+                  placeholder="请介绍一下猫咪的来历、性格习惯，以及对领养人的小期待..."
+                />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="block text-sm font-medium text-slate-700">猫咪简介</label>
-                <button
-                  type="button"
-                  onClick={handleGenerateBio}
-                  disabled={generatingBio}
-                  className="text-xs flex items-center gap-1.5 text-pink-600 font-bold bg-pink-50 px-2 py-1 rounded-md hover:bg-pink-100 transition-colors disabled:opacity-50"
-                >
-                  {generatingBio ? <Loader2 className="animate-spin" size={12} /> : <Sparkles size={12} />}
-                  {generatingBio ? '正在撰写...' : 'AI 生成故事'}
-                </button>
-              </div>
-              <textarea
-                required
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                rows={4}
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all resize-none placeholder:text-slate-300 text-sm leading-relaxed"
-                placeholder="请介绍一下猫咪的来历、性格习惯，以及对领养人的小期待..."
-              />
-            </div>
-          </div>
+            <button
+              type="submit"
+              className="w-full py-4 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-xl shadow-lg shadow-pink-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 mt-4"
+            >
+              发布领养信息
+              <ArrowRight size={20} />
+            </button>
+          </form>
+        )}
 
-          <button
-            type="submit"
-            className="w-full py-4 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-xl shadow-lg shadow-pink-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 mt-4"
-          >
-            发布领养信息
-            <ArrowRight size={20} />
-          </button>
-        </form>
-      )}
-
-      <ConfirmModal
-        isOpen={showConfirm}
-        title="确认发布"
-        message="确定要发布这条领养信息吗？请确保所有信息真实有效，每一条信息都代表着对一个小生命的责任。"
-        onConfirm={handleConfirmSubmit}
-        onCancel={() => setShowConfirm(false)}
-        confirmText="确认发布"
-        cancelText="我再想想"
-        type="info"
-      />
-    </div >
+        <ConfirmModal
+          isOpen={showConfirm}
+          title="确认发布"
+          message="确定要发布这条领养信息吗？请确保所有信息真实有效，每一条信息都代表着对一个小生命的责任。"
+          onConfirm={handleConfirmSubmit}
+          onCancel={() => setShowConfirm(false)}
+          confirmText="确认发布"
+          cancelText="我再想想"
+          type="info"
+        />
+      </div>
+    </div>
   );
 };
 
