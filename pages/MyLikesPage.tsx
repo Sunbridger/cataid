@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, ThumbsUp, Loader2, MessageCircle } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, ThumbsUp, Loader2, MessageCircle, Sparkles } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { commentLikeService } from '../services/apiService';
 import { Comment } from '../types';
@@ -11,17 +11,22 @@ interface LikedComment extends Comment {
 
 const MyLikesPage: React.FC = () => {
   const { user, isLoggedIn } = useUser();
+  const navigate = useNavigate();
   const [likedComments, setLikedComments] = useState<LikedComment[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 加载点赞的评论
   useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/profile');
+      return;
+    }
     if (user?.id) {
       loadLikedComments();
     } else {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, isLoggedIn, navigate]);
 
   const loadLikedComments = async () => {
     if (!user?.id) return;
@@ -55,116 +60,113 @@ const MyLikesPage: React.FC = () => {
     }
   };
 
-  if (!isLoggedIn) {
+  if (loading) {
     return (
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-          <ThumbsUp size={48} className="text-slate-300 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-slate-800 mb-2">请先登录</h2>
-          <p className="text-slate-500 mb-4">登录后查看您点赞的评论</p>
-          <Link
-            to="/profile"
-            className="inline-block px-6 py-2 bg-brand-500 text-white rounded-xl hover:bg-brand-600"
-          >
-            去登录
-          </Link>
-        </div>
+      <div className="flex justify-center items-center min-h-screen bg-slate-50">
+        <Loader2 className="animate-spin text-pink-500" size={32} />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      {/* 头部 */}
-      <div className="flex items-center gap-4 mb-6">
-        <Link
-          to="/profile"
-          className="p-2 hover:bg-slate-100 rounded-full transition-colors"
-        >
-          <ArrowLeft size={24} className="text-slate-600" />
-        </Link>
-        <h1 className="text-2xl font-bold text-slate-800">我的点赞</h1>
-        {!loading && likedComments.length > 0 && (
-          <span className="text-sm text-slate-500">({likedComments.length})</span>
-        )}
+    <div className="min-h-screen bg-slate-50 pb-20">
+      {/* 沉浸式顶部 - 粉色系 */}
+      <div className="bg-gradient-to-r from-pink-400 via-rose-400 to-pink-300 pb-10 pt-6 px-4 rounded-b-[2rem] relative overflow-hidden shadow-lg shadow-pink-500/10">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+        <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/10 rounded-full blur-2xl -ml-10 -mb-10"></div>
+
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-4">
+            <Link to="/profile" className="p-2 -ml-2 text-white/90 hover:bg-white/20 rounded-full transition-colors">
+              <ArrowLeft size={24} />
+            </Link>
+            <h1 className="text-xl font-bold text-white">我的点赞</h1>
+          </div>
+
+          <div className="flex items-center gap-4 text-white px-2">
+            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-inner">
+              <ThumbsUp size={24} className="text-white fill-white/20" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold tracking-tight">{likedComments.length}</div>
+              <div className="text-[10px] text-white/80 uppercase tracking-wider font-medium mt-0.5">收获赞同</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* 加载中 */}
-      {loading && (
-        <div className="bg-white rounded-2xl shadow-sm py-16 text-center">
-          <Loader2 size={32} className="text-brand-500 mx-auto mb-2 animate-spin" />
-          <p className="text-slate-400">加载中...</p>
-        </div>
-      )}
-
-      {/* 空状态 */}
-      {!loading && likedComments.length === 0 && (
-        <div className="bg-white rounded-2xl shadow-sm text-center py-16">
-          <ThumbsUp size={48} className="text-slate-200 mx-auto mb-4" />
-          <p className="text-slate-400 mb-2">还没有点赞的评论</p>
-          <p className="text-slate-400 text-sm mb-4">去看看猫咪们的评论区吧</p>
-          <Link
-            to="/"
-            className="text-brand-500 hover:underline text-sm"
-          >
-            去看看可爱的猫咪们 →
-          </Link>
-        </div>
-      )}
-
-      {/* 点赞列表 */}
-      {!loading && likedComments.length > 0 && (
-        <div className="space-y-4">
-          {likedComments.map(comment => (
-            <div
-              key={comment.id}
-              className="bg-white rounded-2xl shadow-sm p-4 hover:shadow-md transition-shadow"
-            >
-              {/* 评论者信息 */}
-              <div className="flex items-start gap-3 mb-3">
-                <img
-                  src={comment.avatarUrl || 'https://ui-avatars.com/api/?name=U&background=e2e8f0&color=94a3b8&rounded=true&size=128'}
-                  alt={comment.nickname}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-slate-800">{comment.nickname}</span>
-                    {comment.isAiReply && (
-                      <span className="px-2 py-0.5 bg-purple-100 text-purple-600 text-xs rounded-full">
-                        AI
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-slate-600 text-sm leading-relaxed">{comment.content}</p>
-                </div>
-              </div>
-
-              {/* 底部信息 */}
-              <div className="flex items-center justify-between text-xs text-slate-400 pl-13">
-                <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-1">
-                    <ThumbsUp size={14} className="text-brand-500" fill="currentColor" />
-                    {comment.likeCount}
-                  </span>
-                  {comment.catName && (
-                    <Link
-                      to={`/cat/${comment.catId}`}
-                      className="flex items-center gap-1 hover:text-brand-500 transition-colors"
-                    >
-                      <MessageCircle size={14} />
-                      来自 {comment.catName}
-                    </Link>
-                  )}
-                </div>
-                <span>{new Date(comment.createdAt).toLocaleDateString('zh-CN')}</span>
+      <div className="max-w-md mx-auto px-4 -mt-6 relative z-20">
+        {likedComments.length === 0 ? (
+          <div className="bg-white rounded-3xl p-8 text-center shadow-xl shadow-slate-200/50 border border-slate-100">
+            <div className="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-6 text-pink-300 relative">
+              <ThumbsUp size={40} className="fill-pink-200" />
+              <div className="absolute top-0 right-0 bg-white p-1.5 rounded-full shadow-sm">
+                <Sparkles size={16} className="text-yellow-400 fill-yellow-400" />
               </div>
             </div>
-          ))}
-        </div>
-      )}
+            <h3 className="text-xl font-bold text-slate-800 mb-3">还没有点赞的评论</h3>
+            <p className="text-slate-500 mb-8 text-sm leading-relaxed">
+              去看看猫咪们的评论区，为精彩的发言点个赞吧。
+            </p>
+            <Link
+              to="/"
+              className="inline-flex items-center justify-center px-8 py-3.5 bg-gradient-to-r from-pink-400 to-rose-400 text-white font-bold rounded-2xl hover:shadow-lg hover:shadow-pink-500/30 transition-all active:scale-95"
+            >
+              遇见喵星人
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {likedComments.map(comment => (
+              <div
+                key={comment.id}
+                className="bg-white rounded-2xl shadow-sm p-4 hover:shadow-md transition-shadow border border-slate-100"
+              >
+                {/* 评论者信息 */}
+                <div className="flex items-start gap-3 mb-3">
+                  <img
+                    src={comment.avatarUrl || 'https://ui-avatars.com/api/?name=U&background=e2e8f0&color=94a3b8&rounded=true&size=128'}
+                    alt={comment.nickname}
+                    className="w-10 h-10 rounded-full object-cover border border-slate-100"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-slate-700 text-sm">{comment.nickname}</span>
+                      {comment.isAiReply && (
+                        <span className="px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[10px] rounded-md font-bold">
+                          AI
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-slate-600 text-sm leading-relaxed">{comment.content}</p>
+                  </div>
+                </div>
+
+                {/* 底部信息 */}
+                <div className="flex items-center justify-between text-xs text-slate-400 pl-13 pt-2 border-t border-slate-50 mt-2">
+                  <div className="flex items-center gap-4">
+                    <span className="flex items-center gap-1 text-pink-500 font-medium">
+                      <ThumbsUp size={12} className="fill-pink-500" />
+                      {comment.likeCount}
+                    </span>
+                    {comment.catName && (
+                      <Link
+                        to={`/cat/${comment.catId}`}
+                        className="flex items-center gap-1 hover:text-pink-500 transition-colors bg-slate-50 px-2 py-1 rounded-lg"
+                      >
+                        <MessageCircle size={12} />
+                        来自 {comment.catName}
+                      </Link>
+                    )}
+                  </div>
+                  <span>{new Date(comment.createdAt).toLocaleDateString('zh-CN')}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
-
 export default MyLikesPage;

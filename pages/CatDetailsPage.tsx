@@ -195,7 +195,7 @@ const CatDetailsPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader2 className="animate-spin text-brand-500" size={32} />
+        <Loader2 className="animate-spin text-pink-500" size={32} />
       </div>
     );
   }
@@ -204,7 +204,7 @@ const CatDetailsPage: React.FC = () => {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-bold text-slate-800">未找到该猫咪</h2>
-        <Link to="/" className="text-brand-600 mt-4 inline-block hover:underline">返回首页</Link>
+        <Link to="/" className="text-pink-600 mt-4 inline-block hover:underline">返回首页</Link>
       </div>
     );
   }
@@ -275,7 +275,7 @@ const CatDetailsPage: React.FC = () => {
                   onClick={handleShare}
                   className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 active:bg-slate-100 flex items-center gap-3"
                 >
-                  <Share size={18} className="text-brand-500" />
+                  <Share size={18} className="text-pink-500" />
                   分享详情
                 </button>
               </div>
@@ -285,7 +285,7 @@ const CatDetailsPage: React.FC = () => {
       </div>
 
       {/* Desktop Back Button */}
-      <Link to="/" className="hidden md:inline-flex items-center text-slate-500 hover:text-brand-600 mb-6 font-medium transition-colors">
+      <Link to="/" className="hidden md:inline-flex items-center text-slate-500 hover:text-pink-600 mb-6 font-medium transition-colors">
         <ArrowLeft size={18} className="mr-1" /> 返回列表
       </Link>
 
@@ -304,7 +304,7 @@ const CatDetailsPage: React.FC = () => {
           <div className="flex justify-between items-start mb-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className={`px-2 py-0.5 rounded text-xs font-bold text-white ${cat.is_stray ? 'bg-orange-400' : 'bg-brand-500'}`}>
+                <span className={`px-2 py-0.5 rounded text-xs font-bold text-white ${cat.is_stray ? 'bg-orange-400' : 'bg-pink-500'}`}>
                   {cat.is_stray ? '流浪' : '家养'}
                 </span>
                 <span className={`px-2 py-0.5 rounded text-xs font-bold ${status === '可领养' ? 'bg-green-100 text-green-700' :
@@ -345,7 +345,7 @@ const CatDetailsPage: React.FC = () => {
             {cat.is_dewormed && <span className="px-2 py-1 bg-teal-50 text-teal-700 rounded-lg text-sm font-semibold">已驱虫</span>}
 
             {cat.tags.map(tag => (
-              <span key={tag} className="px-3 py-1 bg-brand-50 text-brand-700 rounded-lg text-sm font-semibold">
+              <span key={tag} className="px-3 py-1 bg-pink-50 text-pink-700 rounded-lg text-sm font-semibold">
                 {tag}
               </span>
             ))}
@@ -361,7 +361,7 @@ const CatDetailsPage: React.FC = () => {
             {(!myApplication && !isAdopted) && (
               canApply ? (
                 <button
-                  className={`w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-lg shadow-brand-500/20 transition-all flex justify-center items-center gap-2
+                  className={`w-full py-3.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:shadow-pink-500/30 text-white font-bold rounded-xl shadow-lg transition-all flex justify-center items-center gap-2
                    ${status !== '可领养' ? 'opacity-50 cursor-not-allowed' : ''}`}
                   onClick={() => setIsAdoptModalOpen(true)}
                   disabled={status !== '可领养'}
@@ -414,7 +414,7 @@ const CatDetailsPage: React.FC = () => {
                   type="text"
                   value={adoptForm.name}
                   onChange={e => setAdoptForm({ ...adoptForm, name: e.target.value })}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none"
                   placeholder="怎么称呼您？"
                 />
               </div>
@@ -426,7 +426,7 @@ const CatDetailsPage: React.FC = () => {
                   type="text"
                   value={adoptForm.contact}
                   onChange={e => setAdoptForm({ ...adoptForm, contact: e.target.value })}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none"
                   placeholder="手机号或微信号"
                 />
               </div>
@@ -438,7 +438,7 @@ const CatDetailsPage: React.FC = () => {
                   value={adoptForm.reason}
                   onChange={e => setAdoptForm({ ...adoptForm, reason: e.target.value })}
                   rows={4}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none resize-none"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none resize-none"
                   placeholder="简单介绍一下您的家庭环境和养宠经验..."
                 />
               </div>
@@ -447,7 +447,7 @@ const CatDetailsPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all flex justify-center items-center gap-2 disabled:opacity-70"
+                  className="w-full py-3.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:shadow-pink-500/30 text-white font-bold rounded-xl transition-all flex justify-center items-center gap-2 disabled:opacity-70"
                 >
                   {submitting ? (
                     <>

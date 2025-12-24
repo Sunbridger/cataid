@@ -1,30 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { authService, userService, catService } from '../services/apiService';
-import { User, Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle, ThumbsUp, Cat, Loader2 } from 'lucide-react';
+import { Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle, ThumbsUp, Cat, Loader2 } from 'lucide-react';
 
 type AuthMode = 'login' | 'register';
 
 const ProfilePage: React.FC = () => {
   const { user, isLoggedIn, isGuest, login, logout, updateUser } = useUser();
+  const navigate = useNavigate();
 
   // 获取用户统计数据
   useEffect(() => {
     if (user?.id && !isGuest) {
-      // 只为正式用户获取统计数据
       userService.getStats(user.id).then(stats => {
         updateUser(stats);
       });
     }
   }, [user?.id, isGuest]);
+
   const [isEditing, setIsEditing] = useState(false);
   const [editNickname, setEditNickname] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // 认证相关状态
-  const [authMode, setAuthMode] = useState<AuthMode>('register'); // 默认显示注册
+  const [authMode, setAuthMode] = useState<AuthMode>('register');
   const [authMethod, setAuthMethod] = useState<'phone' | 'email'>('phone');
   const [showPassword, setShowPassword] = useState(false);
   const [authForm, setAuthForm] = useState({
@@ -67,7 +68,6 @@ const ProfilePage: React.FC = () => {
     setAuthLoading(true);
 
     try {
-      // 调用后端 API
       if (authMode === 'register') {
         const { user: newUser, error } = await authService.register({
           phone: authMethod === 'phone' ? authForm.phone : undefined,
@@ -109,18 +109,15 @@ const ProfilePage: React.FC = () => {
     setAuthLoading(false);
   };
 
-  // 处理游客登录
   const handleGuestLogin = () => {
     login();
   };
 
-  // 开始编辑昵称
   const handleEditStart = () => {
     setEditNickname(user?.nickname || '');
     setIsEditing(true);
   };
 
-  // 保存昵称
   const handleSaveNickname = async () => {
     if (!user?.id || isGuest) return;
 
@@ -138,18 +135,15 @@ const ProfilePage: React.FC = () => {
     setIsEditing(false);
   };
 
-  // 处理头像点击
   const handleAvatarClick = () => {
     if (isGuest) return;
     fileInputRef.current?.click();
   };
 
-  // 处理文件选择和上传
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user?.id) return;
 
-    // 限制 5MB
     if (file.size > 5 * 1024 * 1024) {
       alert('图片大小不能超过 5MB');
       return;
@@ -157,13 +151,10 @@ const ProfilePage: React.FC = () => {
 
     setIsUploading(true);
     try {
-      // 1. 上传图片
       const imageUrl = await catService.uploadImage(file);
       if (!imageUrl) {
         throw new Error('图片上传失败');
       }
-
-      // 2. 更新用户信息
       const updatedUser = await userService.updateProfile(user.id, { avatarUrl: imageUrl });
       if (updatedUser) {
         updateUser(updatedUser);
@@ -173,231 +164,197 @@ const ProfilePage: React.FC = () => {
       alert('更新头像失败，请重试');
     } finally {
       setIsUploading(false);
-      // 清空 input，允许重复选择同一张图
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  // 未登录状态 - 显示注册/登录表单
+  // 未登录界面
   if (!isLoggedIn) {
     return (
-      <div className="max-w-lg mx-auto">
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          {/* 头部背景 */}
-          <div className="h-28 bg-gradient-to-br from-brand-400 via-brand-500 to-orange-400 relative">
-            <div className="absolute inset-0 bg-black/10"></div>
-            <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent"></div>
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center">
+        {/* 全宽头部背景 - 粉色系可爱风 */}
+        <div className="w-full bg-gradient-to-r from-pink-400 via-rose-400 to-pink-300 relative overflow-hidden rounded-b-[2rem] shadow-xl shadow-pink-500/10 flex-shrink-0 pt-8 pb-12">
+          <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+          <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+          <div className="absolute top-4 left-4 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
+
+          {/* 头部内容 */}
+          <div className="h-full flex flex-col items-center justify-center text-white text-center px-6">
+            <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-3 text-2xl shadow-inner border border-white/20">
+              🐱
+            </div>
+            <h1 className="text-xl font-bold tracking-tight">
+              {authMode === 'register' ? '加入暖心社区' : '欢迎回家'}
+            </h1>
+            <p className="opacity-90 text-xs mt-1.5 font-medium">
+              {authMode === 'register' ? '遇见命中注定的猫咪' : '登录账号，查看您的毛孩子'}
+            </p>
           </div>
+        </div>
 
-          {/* 认证卡片 */}
-          <div className="px-6 pb-8 -mt-6 relative">
-            <div className="w-16 h-16 bg-white rounded-2xl mx-auto flex items-center justify-center shadow-lg border-4 border-white">
-              <span className="text-3xl">🐱</span>
-            </div>
-
-            <div className="text-center mt-3">
-              <h2 className="text-xl font-bold text-slate-800">
-                {authMode === 'register' ? '创建账号' : '欢迎回来'}
-              </h2>
-              <p className="text-slate-500 text-sm mt-1">
-                {authMode === 'register' ? '加入猫猫领养平台，帮助更多毛孩子' : '登录您的账号继续'}
-              </p>
-            </div>
-
-            {/* 切换登录方式 Tab */}
-            <div className="flex bg-slate-100 rounded-xl p-1 mt-6">
+        {/* 表单卡片 */}
+        <div className="w-full max-w-lg px-6 -mt-8 relative z-10 pb-10">
+          <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100 p-6">
+            <div className="bg-slate-50 p-1 rounded-xl flex relative mb-5">
+              <div
+                className={`absolute inset-y-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-all duration-300 ease-out ${authMethod === 'email' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-0'}`}
+              ></div>
               <button
                 onClick={() => setAuthMethod('phone')}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-1.5
-                  ${authMethod === 'phone' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}
+                className={`flex-1 relative z-10 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2 ${authMethod === 'phone' ? 'text-rose-500' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 <Phone size={16} />
                 手机号
               </button>
               <button
                 onClick={() => setAuthMethod('email')}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-1.5
-                  ${authMethod === 'email' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}
+                className={`flex-1 relative z-10 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2 ${authMethod === 'email' ? 'text-rose-500' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 <Mail size={16} />
                 邮箱
               </button>
             </div>
 
-            {/* 表单 */}
-            <form onSubmit={handleAuth} className="mt-4 space-y-4">
-              {/* 手机号/邮箱输入 */}
+            <form onSubmit={handleAuth} className="space-y-3">
               {authMethod === 'phone' ? (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">手机号</label>
-                  <input
-                    type="tel"
-                    value={authForm.phone}
-                    onChange={(e) => setAuthForm(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="请输入手机号"
-                    maxLength={11}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-base"
-                  />
+                <div className="group">
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-rose-500 transition-colors">
+                      <Phone size={18} />
+                    </div>
+                    <input
+                      type="tel"
+                      value={authForm.phone}
+                      onChange={(e) => setAuthForm(prev => ({ ...prev, phone: e.target.value }))}
+                      placeholder="请输入手机号"
+                      maxLength={11}
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-rose-400 focus:outline-none transition-all font-medium text-slate-700 placeholder:text-slate-400 text-sm"
+                    />
+                  </div>
                 </div>
               ) : (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">邮箱</label>
-                  <input
-                    type="email"
-                    value={authForm.email}
-                    onChange={(e) => setAuthForm(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="请输入邮箱地址"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-base"
-                  />
+                <div className="group">
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-rose-500 transition-colors">
+                      <Mail size={18} />
+                    </div>
+                    <input
+                      type="email"
+                      value={authForm.email}
+                      onChange={(e) => setAuthForm(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="你的邮箱地址"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-rose-400 focus:outline-none transition-all font-medium text-slate-700 placeholder:text-slate-400 text-sm"
+                    />
+                  </div>
                 </div>
               )}
 
-              {/* 密码输入 */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">密码</label>
+              <div className="group">
                 <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-rose-500 transition-colors">
+                    <div className="w-5 flex justify-center font-mono text-base font-bold">***</div>
+                  </div>
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={authForm.password}
                     onChange={(e) => setAuthForm(prev => ({ ...prev, password: e.target.value }))}
-                    placeholder={authMode === 'register' ? '设置密码（至少6位）' : '请输入密码'}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-base pr-12"
+                    placeholder={authMode === 'register' ? '设置安全密码 (6位以上)' : '请输入密码'}
+                    className="w-full pl-10 pr-10 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-rose-400 focus:outline-none transition-all font-medium text-slate-700 placeholder:text-slate-400 text-sm"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 transition-colors"
                   >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
 
-              {/* 注册时显示昵称输入 */}
               {authMode === 'register' && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">昵称</label>
-                  <input
-                    type="text"
-                    value={authForm.nickname}
-                    onChange={(e) => setAuthForm(prev => ({ ...prev, nickname: e.target.value }))}
-                    placeholder="给自己起个名字吧"
-                    maxLength={20}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-base"
-                  />
+                <div className="group">
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-rose-500 transition-colors">
+                      <div className="w-5 flex justify-center text-base">😊</div>
+                    </div>
+                    <input
+                      type="text"
+                      value={authForm.nickname}
+                      onChange={(e) => setAuthForm(prev => ({ ...prev, nickname: e.target.value }))}
+                      placeholder="给自己起个好听的名字"
+                      maxLength={20}
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 rounded-xl border-2 border-transparent focus:bg-white focus:border-rose-400 focus:outline-none transition-all font-medium text-slate-700 placeholder:text-slate-400 text-sm"
+                    />
+                  </div>
                 </div>
               )}
 
-              {/* 错误提示 */}
               {authError && (
-                <div className="flex items-center gap-2 text-red-500 text-sm bg-red-50 px-3 py-2 rounded-lg">
-                  <AlertCircle size={16} />
+                <div className="flex items-center gap-2 text-rose-500 text-xs bg-rose-50 px-3 py-2 rounded-lg border border-rose-100 font-medium animate-pulse">
+                  <AlertCircle size={14} />
                   {authError}
                 </div>
               )}
 
-              {/* 提交按钮 */}
               <button
                 type="submit"
                 disabled={authLoading}
-                className="w-full py-3.5 bg-brand-500 text-white font-bold rounded-xl hover:bg-brand-600 transition-all shadow-lg shadow-brand-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3.5 bg-gradient-to-r from-pink-400 to-rose-400 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-rose-400/30 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2"
               >
-                {authLoading ? '处理中...' : (authMode === 'register' ? '注册' : '登录')}
+                {authLoading ? <Loader2 className="animate-spin h-5 w-5 mx-auto" /> : (authMode === 'register' ? '立即注册' : '登 录')}
               </button>
             </form>
 
-            {/* 切换注册/登录 */}
-            <div className="mt-4 text-center text-sm text-slate-500">
-              {authMode === 'register' ? (
-                <span>
-                  已有账号？
-                  <button
-                    onClick={() => setAuthMode('login')}
-                    className="text-brand-600 font-medium ml-1 hover:underline"
-                  >
-                    去登录
-                  </button>
-                </span>
-              ) : (
-                <span>
-                  没有账号？
-                  <button
-                    onClick={() => setAuthMode('register')}
-                    className="text-brand-600 font-medium ml-1 hover:underline"
-                  >
-                    去注册
-                  </button>
-                </span>
-              )}
+            <div className="mt-6 flex items-center justify-between text-xs font-medium">
+              <button
+                onClick={() => setAuthMode(authMode === 'register' ? 'login' : 'register')}
+                className="text-slate-500 hover:text-rose-500 transition-colors"
+              >
+                {authMode === 'register' ? '已有账号？去登录' : '没有账号？去注册'}
+              </button>
+
+              <button
+                onClick={handleGuestLogin}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                先逛逛看 →
+              </button>
             </div>
-
-            {/* 分割线 */}
-            <div className="flex items-center gap-3 mt-6">
-              <div className="flex-1 h-px bg-slate-200"></div>
-              <span className="text-xs text-slate-400">或</span>
-              <div className="flex-1 h-px bg-slate-200"></div>
-            </div>
-
-            {/* 游客登录 */}
-            <button
-              onClick={handleGuestLogin}
-              className="w-full mt-4 py-3 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors text-sm"
-            >
-              随便逛逛（游客模式）
-            </button>
-
-            <p className="text-center text-xs text-slate-400 mt-4">
-              注册即表示您同意我们的服务条款和隐私政策
-            </p>
           </div>
         </div>
       </div>
     );
   }
 
-  // 已登录状态
+  // 已登录状态 - 现代化 Dashboard 设计 (修复：高度缩小，粉色系可爱风)
   return (
-    <div className="max-w-lg mx-auto space-y-4">
-      {/* 游客提示 */}
-      {isGuest && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
-          <AlertCircle size={20} className="text-amber-500 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-amber-800 font-medium text-sm">您当前是游客模式</p>
-            <p className="text-amber-600 text-xs mt-1">绑定手机号或邮箱后才能发布领养信息、发表评论和申请领养</p>
-            <button
-              onClick={logout}
-              className="mt-2 text-xs text-amber-700 font-medium hover:underline"
-            >
-              去注册正式账号 →
-            </button>
-          </div>
-        </div>
-      )}
+    <div className="min-h-screen bg-slate-50 pb-20">
+      {/* 顶部个人卡片区域 - 紧凑型 */}
+      <div className="bg-gradient-to-r from-pink-400 via-rose-400 to-pink-300 pb-10 pt-6 px-4 rounded-b-[2rem] shadow-xl shadow-pink-500/10 relative overflow-hidden">
+        {/* 背景纹理 */}
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+        <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/5 to-transparent"></div>
 
-      {/* 用户信息卡片 */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-        {/* 头部背景 */}
-        <div className="h-24 bg-gradient-to-br from-brand-400 via-brand-500 to-orange-400 relative">
-          <button className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors">
-            <Settings size={18} />
-          </button>
-        </div>
+        {/* 设置按钮 */}
+        <button className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-all border border-white/20 hover:rotate-90 duration-500 z-20">
+          <Settings size={18} />
+        </button>
 
-        {/* 用户信息 */}
-        <div className="px-6 pb-6 -mt-10 relative">
-          <div className="relative inline-block group">
+        {/* 用户基础信息 */}
+        <div className="relative z-10 flex flex-col items-center">
+          {/* 头像 - 缩小尺寸 */}
+          <div className="relative mb-2 group">
             <div
-              className={`w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden relative bg-slate-200 ${!isGuest ? 'cursor-pointer' : ''}`}
+              className={`w-20 h-20 rounded-full border-[4px] border-white/40 shadow-xl overflow-hidden relative bg-pink-50 ${!isGuest ? 'cursor-pointer group-hover:scale-105 transition-transform duration-300' : ''}`}
               onClick={handleAvatarClick}
             >
               <img
-                src={user?.avatarUrl || 'https://ui-avatars.com/api/?name=U&background=e2e8f0&color=94a3b8&rounded=true&size=128'}
+                src={user?.avatarUrl || 'https://ui-avatars.com/api/?name=User&background=fce7f3&color=db2777&rounded=true&size=128'}
                 alt={user?.nickname}
-                className={`w-full h-full object-cover transition-opacity ${isUploading ? 'opacity-50' : 'opacity-100'}`}
+                className={`w-full h-full object-cover ${isUploading ? 'opacity-50 blur-sm' : ''}`}
               />
               {isUploading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                   <Loader2 className="w-6 h-6 text-white animate-spin" />
                 </div>
               )}
@@ -406,12 +363,11 @@ const ProfilePage: React.FC = () => {
               <button
                 onClick={handleAvatarClick}
                 disabled={isUploading}
-                className="absolute bottom-0 right-0 p-1.5 bg-brand-500 text-white rounded-full shadow-lg hover:bg-brand-600 transition-colors disabled:bg-slate-400"
+                className="absolute bottom-0 right-0 p-1.5 bg-slate-800 text-white rounded-full shadow-lg border-2 border-white hover:bg-black transition-colors transform hover:scale-110"
               >
-                <Camera size={14} />
+                <Camera size={12} />
               </button>
             )}
-
             {/* 隐藏的文件输入框 */}
             <input
               type="file"
@@ -422,125 +378,214 @@ const ProfilePage: React.FC = () => {
             />
           </div>
 
-          <div className="mt-3 flex items-center gap-2">
+          {/* 昵称 */}
+          <div className="text-center w-full text-white">
             {isEditing ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center gap-2 mb-1">
                 <input
                   type="text"
                   value={editNickname}
                   onChange={(e) => setEditNickname(e.target.value)}
-                  className="px-3 py-1.5 border border-slate-200 rounded-lg text-lg font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                  className="px-3 py-1 bg-white/20 border border-white/30 rounded-lg text-lg font-bold text-white focus:outline-none focus:bg-white/30 text-center w-40 placeholder-white/70"
                   maxLength={20}
                   autoFocus
                 />
-                <button
-                  onClick={handleSaveNickname}
-                  className="px-3 py-1.5 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600"
-                >
-                  保存
-                </button>
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="px-3 py-1.5 text-slate-500 text-sm hover:text-slate-700"
-                >
-                  取消
-                </button>
+                <button onClick={handleSaveNickname} className="p-1.5 bg-white text-pink-500 rounded-lg shadow-sm font-bold"><ThumbsUp size={14} /></button>
               </div>
             ) : (
-              <>
-                <h2 className="text-xl font-bold text-slate-800">{user?.nickname}</h2>
-                <button
-                  onClick={handleEditStart}
-                  className="p-1 text-slate-400 hover:text-brand-500 transition-colors"
-                >
-                  <Edit2 size={14} />
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <h2 className="text-xl font-bold tracking-tight shadow-black/5 drop-shadow-sm">{user?.nickname}</h2>
+                <button onClick={handleEditStart} className="text-white/80 hover:text-white transition-colors bg-white/10 p-0.5 rounded-full">
+                  <Edit2 size={12} />
                 </button>
-                {isGuest && (
-                  <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-xs rounded-full">游客</span>
-                )}
-              </>
+              </div>
             )}
-          </div>
 
-          <p className="text-sm text-slate-500 mt-1">
-            {user?.phone && <span className="mr-3">{user.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')}</span>}
-            {user?.email && <span>📧 {user.email.replace(/(.{2}).*@/, '$1***@')}</span>}
-            {!user?.phone && !user?.email && <span>ID: {user?.id?.slice(-8)}</span>}
-          </p>
-
-          {/* 统计数据 */}
-          <div className="flex items-center gap-6 mt-4 pt-4 border-t border-slate-100">
-            <div className="text-center">
-              <div className="text-lg font-bold text-slate-800">{user?.favoriteCount || 0}</div>
-              <div className="text-xs text-slate-500">收藏</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-slate-800">{user?.commentCount || 0}</div>
-              <div className="text-xs text-slate-500">评论</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-slate-800">{user?.adoptionCount || 0}</div>
-              <div className="text-xs text-slate-500">申请</div>
+            <div className="flex items-center justify-center gap-2 text-xs font-medium text-white/90">
+              {isGuest ? (
+                <span className="bg-white/20 text-white px-2 py-0.5 rounded-full text-[10px] backdrop-blur-sm border border-white/20">游客身份</span>
+              ) : (
+                <>
+                  <span className="font-mono opacity-90">ID: {user?.id?.slice(-6).toUpperCase()}</span>
+                  {(user?.phone || user?.email) && (
+                    <span className="w-0.5 h-0.5 bg-white/60 rounded-full"></span>
+                  )}
+                  {user?.phone ? (
+                    <span className="font-mono opacity-90">{user.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')}</span>
+                  ) : user?.email ? (
+                    <span className="font-mono opacity-90">{user.email.replace(/(.{2}).*@/, '$1***@')}</span>
+                  ) : null}
+                </>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* 功能菜单 */}
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        <MenuItem icon={<Cat size={20} />} title="我的猫咪" color="text-brand-600" to="/my/cats" />
-        <MenuItem icon={<Heart size={20} />} title="我的收藏" color="text-red-500" to="/my/favorites" />
-        <MenuItem icon={<ThumbsUp size={20} />} title="我的点赞" color="text-brand-500" to="/my/likes" />
-        <MenuItem icon={<MessageCircle size={20} />} title="我的评论" color="text-blue-500" to="/my/comments" />
-        <MenuItem icon={<FileText size={20} />} title="领养申请" color="text-green-500" to="/my/applications" />
-      </div>
+      {/* 内容区域 - 悬浮在 Header 之上 */}
+      <div className="max-w-lg mx-auto -mt-6 relative z-10 space-y-4">
 
-      {/* 退出登录 */}
-      <button
-        onClick={logout}
-        className="w-full py-4 bg-white rounded-2xl shadow-sm text-red-500 font-medium hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
-      >
-        <LogOut size={18} />
-        退出登录
-      </button>
+        {/* 核心数据概览 (Dashboard) */}
+        <div className="bg-white rounded-3xl shadow-lg shadow-slate-200/50 p-4 border border-slate-50/50">
+          <div className="grid grid-cols-4 gap-2">
+            <StatItem
+              icon={<Heart size={20} className="fill-rose-400 text-rose-400" />}
+              value={user?.favoriteCount || 0}
+              label="收藏"
+              to="/my/favorites"
+            />
+            <StatItem
+              icon={<ThumbsUp size={20} className="fill-pink-400 text-pink-400" />}
+              value={0}
+              label="点赞"
+              to="/my/likes"
+            />
+            <StatItem
+              icon={<MessageCircle size={20} className="fill-sky-400 text-sky-400" />}
+              value={user?.commentCount || 0}
+              label="评论"
+              to="/my/comments"
+            />
+            <StatItem
+              icon={<FileText size={20} className="fill-amber-400 text-amber-400" />}
+              value={user?.adoptionCount || 0}
+              label="申请"
+              to="/my/applications"
+            />
+          </div>
+        </div>
+
+        {/* 游客提示横幅 */}
+        {isGuest && (
+          <div className="bg-rose-50 border border-rose-100 rounded-2xl p-3 flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center">
+                <AlertCircle size={16} />
+              </div>
+              <div>
+                <h4 className="font-bold text-rose-800 text-xs">功能受限</h4>
+                <p className="text-rose-600/80 text-[10px] text-left">登录解锁全部领养功能</p>
+              </div>
+            </div>
+            <button onClick={logout} className="px-3 py-1.5 bg-rose-400 text-white text-[10px] font-bold rounded-lg shadow-md shadow-rose-400/20 active:scale-95 transition-all">
+              去登录
+            </button>
+          </div>
+        )}
+
+        {/* 主要功能入口 - 强调 "我的猫咪" - 替换暗色为暖色可爱风 */}
+        <Link
+          to="/my/cats"
+          className="block bg-gradient-to-r from-amber-50 to-orange-50 rounded-3xl p-5 shadow-lg shadow-orange-100/50 relative overflow-hidden group hover:scale-[1.01] transition-transform duration-300 border border-orange-100"
+        >
+          {/* 装饰圆点 */}
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <div className="flex gap-2">
+              <div className="w-2 h-2 rounded-full bg-orange-400"></div>
+              <div className="w-2 h-2 rounded-full bg-orange-400"></div>
+            </div>
+            <div className="flex gap-2 mt-2 ml-4">
+              <div className="w-2 h-2 rounded-full bg-orange-400"></div>
+              <div className="w-2 h-2 rounded-full bg-orange-400"></div>
+            </div>
+          </div>
+
+          <div className="relative z-10 flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="p-2 bg-white rounded-xl shadow-sm text-amber-500">
+                  <Cat size={20} />
+                </div>
+                <h3 className="text-lg font-bold tracking-tight text-amber-900">我的猫咪</h3>
+              </div>
+              <p className="text-amber-700/70 text-xs font-medium pl-1">查看已成功领养的毛孩子</p>
+            </div>
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-amber-400 group-hover:bg-amber-400 group-hover:text-white transition-all shadow-sm">
+              <ChevronRight size={18} />
+            </div>
+          </div>
+        </Link>
+
+        {/* 其他功能菜单 */}
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+          <MenuItemGroup title="服务中心">
+            <MenuItem icon={<Mail size={18} />} title="消息通知" color="text-pink-500" badge="0" />
+            <MenuItem icon={<Phone size={18} />} title="联系客服" color="text-emerald-500" />
+          </MenuItemGroup>
+        </div>
+
+        <button
+          onClick={logout}
+          className="w-full py-3.5 bg-white border border-slate-100 rounded-2xl text-slate-400 font-medium hover:bg-slate-50 hover:text-rose-500 transition-colors flex items-center justify-center gap-2 text-xs"
+        >
+          <LogOut size={16} />
+          退出登录
+        </button>
+
+        <div className="text-center pb-6 pt-2">
+          <p className="text-[10px] text-slate-300 font-mono uppercase tracking-widest">Version 1.0.0</p>
+        </div>
+      </div>
     </div>
   );
 };
 
-// 菜单项组件
+// 仪表盘统计项
+const StatItem: React.FC<{
+  icon: React.ReactNode;
+  value: number;
+  label: string;
+  to: string;
+}> = ({ icon, value, label, to }) => (
+  <Link to={to} className="flex flex-col items-center justify-center p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer active:scale-95 group">
+    <div className="mb-2 p-3 bg-slate-50 rounded-2xl group-hover:bg-white group-hover:shadow-sm group-hover:-translate-y-1 transition-all duration-300">
+      {icon}
+    </div>
+    <span className="text-lg font-bold text-slate-800 leading-none mb-1">{value}</span>
+    <span className="text-xs text-slate-500 font-medium">{label}</span>
+  </Link>
+);
+
+// 菜单组
+const MenuItemGroup: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+  <div>
+    <div className="px-5 py-3 bg-slate-50/50 border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+      {title}
+    </div>
+    <div>{children}</div>
+  </div>
+);
+
+// 菜单项
 const MenuItem: React.FC<{
   icon: React.ReactNode;
   title: string;
   color?: string;
   to?: string;
   onClick?: () => void;
-}> = ({ icon, title, color = 'text-slate-600', to, onClick }) => {
+  badge?: string;
+}> = ({ icon, title, color = 'text-slate-600', to, onClick, badge }) => {
   const content = (
     <>
-      <div className="flex items-center gap-3">
-        <span className={color}>{icon}</span>
-        <span className="font-medium text-slate-700">{title}</span>
+      <div className="flex items-center gap-3.5">
+        <div className={`p-1.5 rounded-lg bg-slate-50 ${color}`}>{icon}</div>
+        <span className="font-bold text-slate-700 text-sm">{title}</span>
       </div>
-      <ChevronRight size={18} className="text-slate-400" />
+      <div className="flex items-center gap-2">
+        {badge && <span className="px-2 py-0.5 bg-rose-500 text-white text-[10px] font-bold rounded-full">{badge}</span>}
+        <ChevronRight size={16} className="text-slate-300" />
+      </div>
     </>
   );
 
+  const className = "w-full px-5 py-3.5 flex items-center justify-between hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-b-0 active:bg-slate-100";
+
   if (to) {
-    return (
-      <Link
-        to={to}
-        className="w-full px-4 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-b-0"
-      >
-        {content}
-      </Link>
-    );
+    return <Link to={to} className={className}>{content}</Link>;
   }
 
   return (
-    <button
-      onClick={onClick}
-      className="w-full px-4 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-b-0"
-    >
+    <button onClick={onClick} className={className}>
       {content}
     </button>
   );

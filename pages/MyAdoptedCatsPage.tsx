@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { userService } from '../services/apiService';
 import { AdoptionApplication } from '../types';
 import { useUser } from '../context/UserContext';
-import { Loader2, ArrowLeft, Heart, Cat } from 'lucide-react';
+import { Loader2, ArrowLeft, Heart, Cat, Calendar, Sparkles } from 'lucide-react';
 import CatCard from '../components/CatCard';
 
 const MyAdoptedCatsPage: React.FC = () => {
@@ -39,57 +39,75 @@ const MyAdoptedCatsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="animate-spin text-brand-500" size={32} />
+      <div className="flex justify-center items-center min-h-screen bg-slate-50">
+        <Loader2 className="animate-spin text-pink-500" size={32} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-10 -mx-4">
-      {/* 顶部导航 */}
-      <div className="sticky top-0 bg-white/95 backdrop-blur-md z-20 border-b border-slate-100 px-4 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link to="/profile" className="p-2 -ml-2 text-slate-600 hover:bg-slate-50 rounded-full transition-colors">
-            <ArrowLeft size={22} />
-          </Link>
-          <h1 className="text-lg font-bold text-slate-800">我的猫咪</h1>
+    <div className="min-h-screen bg-slate-50 pb-20">
+      {/* 沉浸式顶部 - 粉色系 */}
+      <div className="bg-gradient-to-r from-pink-400 via-rose-400 to-pink-300 pb-10 pt-6 px-4 rounded-b-[2rem] relative overflow-hidden shadow-lg shadow-pink-500/10">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+        <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/10 rounded-full blur-2xl -ml-10 -mb-10"></div>
+
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-4">
+            <Link to="/profile" className="p-2 -ml-2 text-white/90 hover:bg-white/20 rounded-full transition-colors">
+              <ArrowLeft size={24} />
+            </Link>
+            <h1 className="text-xl font-bold text-white">我的猫咪家族</h1>
+          </div>
+
+          <div className="flex items-center gap-4 text-white px-2">
+            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-inner">
+              <Cat size={24} className="text-white" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold tracking-tight">{adoptedCats.length}</div>
+              <div className="text-[10px] text-white/80 uppercase tracking-wider font-medium mt-0.5">已成功领养</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-4 py-6">
+      <div className="max-w-md mx-auto px-4 -mt-6 relative z-20">
         {adoptedCats.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-200 shadow-sm">
-            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+          <div className="bg-white rounded-3xl p-8 text-center shadow-xl shadow-slate-200/50 border border-slate-100">
+            <div className="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-6 text-pink-300 relative">
               <Cat size={40} />
+              <div className="absolute top-0 right-0 bg-white p-1.5 rounded-full shadow-sm">
+                <Sparkles size={16} className="text-yellow-400 fill-yellow-400" />
+              </div>
             </div>
-            <h3 className="text-lg font-bold text-slate-800 mb-2">还没有成功领养的猫咪</h3>
-            <p className="text-slate-500 mb-6 max-w-xs mx-auto text-sm">
-              如果您提交的申请通过审核，猫咪就会出现在这里。
+            <h3 className="text-xl font-bold text-slate-800 mb-3">还没有领养记录</h3>
+            <p className="text-slate-500 mb-8 text-sm leading-relaxed">
+              这里空空如也。去寻找命中注定的那只猫咪吧，它正在等待一个温暖的家。
             </p>
             <Link
               to="/"
-              className="inline-flex items-center justify-center px-6 py-2.5 bg-brand-500 text-white font-bold rounded-xl hover:bg-brand-600 transition-colors text-sm shadow-md shadow-brand-500/20"
+              className="inline-flex items-center justify-center px-8 py-3.5 bg-gradient-to-r from-pink-400 to-rose-400 text-white font-bold rounded-2xl hover:shadow-lg hover:shadow-pink-500/30 transition-all active:scale-95"
             >
-              去发现喵星人
+              去领养中心逛逛
             </Link>
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="bg-orange-50 p-4 rounded-2xl text-amber-800 text-sm flex items-start gap-3 border border-orange-100 shadow-sm">
-              <Heart className="flex-shrink-0 mt-0.5 text-orange-500 fill-orange-500" size={18} />
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-start gap-4">
+              <div className="w-10 h-10 bg-rose-50 rounded-full flex items-center justify-center flex-shrink-0">
+                <Heart className="text-rose-500 fill-rose-500" size={20} />
+              </div>
               <div>
-                <p className="font-bold mb-1 text-base">感谢您给它们一个家！</p>
-                <p className="opacity-90 leading-relaxed text-xs text-amber-900/80">
-                  这里是您成功领养的猫咪伙伴。请记得定期更新它们的生活动态，我们希望能看到它们幸福的样子。
+                <p className="font-bold text-slate-800 mb-1 text-sm">感谢您的爱心！</p>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  您已经为 {adoptedCats.length} 只流浪猫咪提供了温暖的家。这里是它们的专属空间。
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5">
               {adoptedCats.map((app) => {
-                // 如果后端返回了完整的 cat 对象，优先使用
-                // 否则构造一个临时对象（防止页面崩溃）
                 const catData = app.cat || {
                   id: app.catId,
                   name: app.catName,
@@ -111,12 +129,23 @@ const MyAdoptedCatsPage: React.FC = () => {
                 const displayCat = { ...catData, status: '已领养' as const };
 
                 return (
-                  <CatCard
-                    key={app.id}
-                    cat={displayCat}
-                    // 这里不处理收藏状态，因为已经是自己的猫了
-                    isFavorited={false}
-                  />
+                  <div key={app.id} className="relative group">
+                    {/* 装饰性背景 */}
+                    <div className="absolute inset-x-4 top-4 bottom-0 bg-pink-500/5 rounded-3xl transform translate-y-2 blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                    <div className="relative bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm transition-transform hover:-translate-y-1 duration-300">
+                      <CatCard
+                        cat={displayCat}
+                        isFavorited={false}
+                      />
+                      <div className="px-4 pb-4 -mt-2 relative z-10 bg-white">
+                        <div className="flex items-center gap-2 text-xs text-slate-400 font-medium bg-slate-50 p-2 rounded-lg border border-slate-100">
+                          <Calendar size={14} className="text-pink-400" />
+                          <span>领养时间：{new Date(app.updatedAt || app.createdAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
             </div>

@@ -34,7 +34,7 @@ const CatCard: React.FC<CatCardProps> = ({ cat, isFavorited = false }) => {
             </div>
           )}
           <div className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold shadow-sm uppercase tracking-wide text-white
-             ${cat.is_stray ? 'bg-orange-500' : 'bg-brand-500'}`}>
+             ${cat.is_stray ? 'bg-rose-400' : 'bg-pink-500'}`}>
             {cat.is_stray ? '流浪' : '家养'}
           </div>
         </div>
@@ -59,7 +59,7 @@ const CatCard: React.FC<CatCardProps> = ({ cat, isFavorited = false }) => {
           {cat.is_dewormed && <span className="text-[10px] md:text-xs px-1.5 py-0.5 md:px-2 md:py-1 bg-teal-50 text-teal-700 rounded-md font-medium">驱虫</span>}
 
           {cat.tags.slice(0, 3).map(tag => (
-            <span key={tag} className="text-[10px] md:text-xs px-1.5 py-0.5 md:px-2 md:py-1 bg-brand-50 text-brand-600 rounded-md font-medium truncate max-w-full">
+            <span key={tag} className="text-[10px] md:text-xs px-1.5 py-0.5 md:px-2 md:py-1 bg-pink-50 text-pink-600 rounded-md font-medium truncate max-w-full">
               {tag}
             </span>
           ))}
@@ -68,9 +68,9 @@ const CatCard: React.FC<CatCardProps> = ({ cat, isFavorited = false }) => {
           {cat.description}
         </p>
         <div className="mt-3 md:mt-4 pt-2 md:pt-3 border-t border-slate-100 flex justify-between items-center text-xs md:text-sm font-medium">
-          <span className="text-brand-600">{isAdopted ? '查看详情' : `看看 ${cat.name} \u2192`}</span>
+          <span className="text-pink-600">{isAdopted ? '查看详情' : `看看 ${cat.name} \u2192`}</span>
           <div className="flex items-center gap-1 text-slate-400">
-            <Heart size={14} className="text-red-400" fill="currentColor" />
+            <Heart size={14} className="text-pink-400" fill="currentColor" />
             <span>{cat.commentCount || 0}</span>
           </div>
         </div>

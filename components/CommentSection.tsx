@@ -111,7 +111,7 @@ const CommentItem: React.FC<{
           {comment.replies.length > 2 && (
             <button
               onClick={() => setShowReplies(!showReplies)}
-              className="flex items-center gap-1 text-xs text-brand-600 font-medium mb-2 hover:text-brand-700"
+              className="flex items-center gap-1 text-xs text-pink-600 font-medium mb-2 hover:text-pink-700"
             >
               {showReplies ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               {showReplies ? '收起回复' : `展开 ${comment.replies.length} 条回复`}
@@ -342,7 +342,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
               {replyTo && (
                 <div className="mb-2 flex items-center justify-between text-sm">
                   <span className="text-slate-500">
-                    回复 <span className="text-brand-600 font-medium">@{replyTo.nickname}</span>
+                    回复 <span className="text-pink-600 font-medium">@{replyTo.nickname}</span>
                   </span>
                   <button
                     onClick={() => {
@@ -364,7 +364,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
                   onChange={(e) => setInputValue(e.target.value)}
                   placeholder={`${user?.nickname}，说点什么吧...`}
                   rows={1}
-                  className="flex-1 px-4 py-2.5 rounded-full bg-slate-100 border-0 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-white resize-none text-sm leading-relaxed"
+                  className="flex-1 px-4 py-2.5 rounded-full bg-slate-100 border-0 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:bg-white resize-none text-sm leading-relaxed"
                   style={{ minHeight: '40px', maxHeight: '120px' }}
                   onInput={(e) => {
                     const target = e.target as HTMLTextAreaElement;
@@ -381,7 +381,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
                 <button
                   onClick={handleSubmit}
                   disabled={submitting || !inputValue.trim()}
-                  className="p-2.5 bg-brand-500 text-white rounded-full hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                  className="p-2.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full hover:shadow-lg hover:shadow-pink-500/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex-shrink-0"
                 >
                   {submitting ? (
                     <Loader2 className="animate-spin" size={18} />

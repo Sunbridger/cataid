@@ -139,7 +139,6 @@ const HomePage: React.FC = () => {
       onTouchEnd={handleTouchEnd}
     >
       {/* Pull to Refresh Indicator */}
-      {/* Pull to Refresh Indicator */}
       <div
         className="fixed top-0 left-0 right-0 z-50 flex justify-center pointer-events-none transition-transform duration-300"
         style={{
@@ -148,7 +147,7 @@ const HomePage: React.FC = () => {
         }}
       >
         <div className="bg-white/90 backdrop-blur rounded-full p-2 shadow-md border border-slate-100 flex items-center gap-2">
-          <Loader2 className={`text-brand-500 ${refreshing ? 'animate-spin' : ''}`} style={{ transform: `rotate(${pullDistance * 2}deg)` }} size={20} />
+          <Loader2 className={`text-pink-500 ${refreshing ? 'animate-spin' : ''}`} style={{ transform: `rotate(${pullDistance * 2}deg)` }} size={20} />
           {refreshing && <span className="text-xs text-slate-500 font-medium pr-1">刷新中...</span>}
         </div>
       </div>
@@ -157,17 +156,17 @@ const HomePage: React.FC = () => {
       <div className="flex flex-col gap-3 sticky top-0 bg-slate-50/95 backdrop-blur-sm z-30 -mx-4 px-4 pb-2 md:static md:bg-transparent md:p-0">
         <div className="flex items-center gap-3 pt-2 md:block md:pt-0">
           <h1 className="text-lg font-extrabold text-slate-800 tracking-tight md:hidden flex-shrink-0">
-            发现<span className="text-brand-600">喵</span>
+            发现<span className="text-pink-500">喵</span>
           </h1>
 
           {/* Search Bar */}
           <div className="relative group flex-1">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
+              <Search className="h-4 w-4 text-slate-400 group-focus-within:text-pink-500 transition-colors" />
             </div>
             <input
               type="text"
-              className="block w-full pl-9 pr-4 py-2 border-none rounded-2xl bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-[0_2px_10px_rgb(0,0,0,0.03)] transition-shadow"
+              className="block w-full pl-9 pr-4 py-2 border-none rounded-2xl bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 shadow-[0_2px_10px_rgb(0,0,0,0.03)] transition-shadow"
               placeholder="搜索品种、名字..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -181,7 +180,7 @@ const HomePage: React.FC = () => {
             onClick={() => setSearchTerm('')}
             className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap
               ${searchTerm === ''
-                ? 'bg-brand-600 text-white shadow-md transform scale-105'
+                ? 'bg-gradient-to-r from-pink-400 to-rose-400 text-white shadow-md transform scale-105'
                 : 'bg-white text-slate-600 border border-slate-100 shadow-sm'
               }`}
           >
@@ -195,7 +194,7 @@ const HomePage: React.FC = () => {
                 onClick={() => setSearchTerm(isActive ? '' : tag)}
                 className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap
                   ${isActive
-                    ? 'bg-brand-500 text-white shadow-md transform scale-105'
+                    ? 'bg-gradient-to-r from-pink-400 to-rose-400 text-white shadow-md transform scale-105'
                     : 'bg-white text-slate-600 border border-slate-100 shadow-sm'
                   }`}
               >
@@ -211,7 +210,7 @@ const HomePage: React.FC = () => {
 
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-brand-500">
+          <div className="flex flex-col items-center justify-center py-20 text-pink-500">
             <Loader2 className="animate-spin mb-4" size={48} />
             <p className="text-slate-500">正在召唤喵星人...</p>
           </div>
@@ -224,7 +223,7 @@ const HomePage: React.FC = () => {
             <p className="text-slate-400 text-lg">没有找到符合条件的猫咪。</p>
             <button
               onClick={() => setSearchTerm('')}
-              className="mt-4 text-brand-600 font-medium hover:underline"
+              className="mt-4 text-pink-500 font-medium hover:underline"
             >
               清除筛选条件
             </button>

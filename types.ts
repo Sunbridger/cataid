@@ -37,6 +37,7 @@ export interface NewCatInput {
 }
 
 export interface AdoptionApplication {
+  updatedAt: string;
   id: string;
   catId: string;
   userId?: string;        // 申请者用户ID
