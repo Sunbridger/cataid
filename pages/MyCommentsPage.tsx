@@ -61,34 +61,17 @@ const MyCommentsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
-      {/* 沉浸式顶部 - 粉色系 */}
-      <div className="bg-gradient-to-r from-pink-400 via-rose-400 to-pink-300 pb-10 pt-6 px-4 rounded-b-[2rem] relative overflow-hidden shadow-lg shadow-pink-500/10">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
-        <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/10 rounded-full blur-2xl -ml-10 -mb-10"></div>
-
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-4">
-            <Link to="/profile" className="p-2 -ml-2 text-white/90 hover:bg-white/20 rounded-full transition-colors">
-              <ArrowLeft size={24} />
-            </Link>
-            <h1 className="text-xl font-bold text-white">我的评论</h1>
-          </div>
-
-          <div className="flex items-center gap-4 text-white px-2">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-inner">
-              <MessageCircle size={24} className="text-white" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold tracking-tight">{comments.length}</div>
-              <div className="text-[10px] text-white/80 uppercase tracking-wider font-medium mt-0.5">累计互动</div>
-            </div>
-          </div>
-        </div>
+      {/* 标准顶部导航栏 */}
+      <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-30 px-4 py-3 flex items-center shadow-sm border-b border-slate-100 -mx-4">
+        <Link to="/profile" className="p-2 -ml-2 text-slate-600 hover:bg-slate-50 rounded-full transition-colors">
+          <ArrowLeft size={24} />
+        </Link>
+        <h1 className="flex-1 text-center text-lg font-bold text-slate-800 pr-10">我的评论</h1>
       </div>
 
-      <div className="max-w-md mx-auto px-4 -mt-6 relative z-20">
+      <div className="max-w-md mx-auto py-6">
         {comments.length === 0 ? (
-          <div className="bg-white rounded-3xl p-8 text-center shadow-xl shadow-slate-200/50 border border-slate-100">
+          <div className="bg-white rounded-3xl p-8 text-center shadow-sm border border-slate-100">
             <div className="w-24 h-24 bg-sky-50 rounded-full flex items-center justify-center mx-auto mb-6 relative">
               <MessageCircle size={40} className="text-sky-300" />
               <div className="absolute top-0 right-0 bg-white p-1.5 rounded-full shadow-sm">

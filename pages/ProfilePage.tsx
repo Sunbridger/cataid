@@ -173,7 +173,7 @@ const ProfilePage: React.FC = () => {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center">
         {/* 全宽头部背景 - 粉色系可爱风 */}
-        <div className="w-full bg-gradient-to-r from-pink-400 via-rose-400 to-pink-300 relative overflow-hidden rounded-b-[2rem] shadow-xl shadow-pink-500/10 flex-shrink-0 pt-8 pb-12">
+        <div className="w-full bg-gradient-to-r from-pink-400 via-rose-400 to-pink-300 relative overflow-hidden rounded-b-[2rem] shadow-xl shadow-pink-500/10 flex-shrink-0 pt-8 pb-12 -mx-4">
           <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
           <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
           <div className="absolute top-4 left-4 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
@@ -330,7 +330,7 @@ const ProfilePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       {/* 顶部个人卡片区域 - 紧凑型 */}
-      <div className="bg-gradient-to-r from-pink-400 via-rose-400 to-pink-300 pb-10 pt-6 px-4 rounded-b-[2rem] shadow-xl shadow-pink-500/10 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-pink-400 via-rose-400 to-pink-300 pb-10 pt-6 px-4 rounded-b-[2rem] shadow-xl shadow-pink-500/10 relative overflow-hidden -mx-4">
         {/* 背景纹理 */}
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
         <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/5 to-transparent"></div>
