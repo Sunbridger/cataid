@@ -453,3 +453,69 @@ export const favoriteApi = {
 // 导出收藏服务
 export const favoriteService = favoriteApi;
 
+/**
+ * 评论点赞相关 API
+ */
+export const commentLikeApi = {
+  /**
+   * 获取用户点赞列表
+   */
+  getUserLikes: async (userId: string): Promise<any[]> => {
+    try {
+      const result = await request<{ data: any[] }>(`/comment-likes?userId=${userId}`);
+      return result.data;
+    } catch (error) {
+      console.error('获取点赞列表失败:', error);
+      return [];
+    }
+  },
+
+  /**
+   * 添加点赞
+   */
+  addLike: async (userId: string, commentId: string): Promise<boolean> => {
+    try {
+      await request('/comment-likes', {
+        method: 'POST',
+        body: JSON.stringify({ userId, commentId }),
+      });
+      return true;
+    } catch (error) {
+      console.error('添加点赞失败:', error);
+      return false;
+    }
+  },
+
+  /**
+   * 删除点赞
+   */
+  removeLike: async (userId: string, commentId: string): Promise<boolean> => {
+    try {
+      await request(`/comment-likes?userId=${userId}&commentId=${commentId}`, {
+        method: 'DELETE',
+      });
+      return true;
+    } catch (error) {
+      console.error('删除点赞失败:', error);
+      return false;
+    }
+  },
+
+  /**
+   * 检查是否已点赞
+   */
+  isLiked: async (userId: string, commentId: string): Promise<boolean> => {
+    try {
+      const likes = await commentLikeApi.getUserLikes(userId);
+      return likes.some(like => like.commentId === commentId);
+    } catch (error) {
+      console.error('检查点赞状态失败:', error);
+      return false;
+    }
+  },
+};
+
+// 导出点赞服务
+export const commentLikeService = commentLikeApi;
+
+

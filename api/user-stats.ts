@@ -57,12 +57,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           favoriteCount: Math.floor(Math.random() * 10),
           commentCount: Math.floor(Math.random() * 20),
           adoptionCount: Math.floor(Math.random() * 5),
+          likeCount: Math.floor(Math.random() * 15),
         }
       });
     }
 
-    // 并行查询三个统计数据
-    const [favoritesResult, commentsResult, applicationsResult] = await Promise.all([
+    // 并行查询四个统计数据
+    const [favoritesResult, commentsResult, applicationsResult, likesResult] = await Promise.all([
       // 收藏数（假设有 favorites 表）
       supabase
         .from('favorites')
@@ -80,12 +81,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .from('adoption_applications')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', userId),
+
+      // 点赞数
+      supabase
+        .from('comment_likes')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId),
     ]);
 
     const stats = {
       favoriteCount: favoritesResult.count || 0,
       commentCount: commentsResult.count || 0,
       adoptionCount: applicationsResult.count || 0,
+      likeCount: likesResult.count || 0,
     };
 
     // 可选：更新用户表中的统计字段（缓存）
@@ -95,6 +103,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         favorite_count: stats.favoriteCount,
         comment_count: stats.commentCount,
         adoption_count: stats.adoptionCount,
+        like_count: stats.likeCount,
       })
       .eq('id', userId);
 

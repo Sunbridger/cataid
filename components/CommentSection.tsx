@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Comment, NewCommentInput, Cat } from '../types';
-import { commentService } from '../services/apiService';
+import { commentService, commentLikeService } from '../services/apiService';
 import { generateCommentReply } from '../services/geminiService';
 import { Heart, Send, Loader2, Sparkles, ChevronDown, ChevronUp, Lock } from 'lucide-react';
 import { useUser } from '../context/UserContext';
@@ -154,10 +154,27 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
   // 加载评论
   useEffect(() => {
     loadComments();
-    // 从 localStorage 读取已点赞的评论
-    const liked = JSON.parse(localStorage.getItem(`liked_comments_${cat.id}`) || '[]');
-    setLikedComments(new Set(liked));
-  }, [cat.id]);
+    loadLikedComments();
+  }, [cat.id, user?.id]);
+
+  // 加载用户点赞的评论
+  const loadLikedComments = async () => {
+    if (!user?.id) {
+      // 未登录时，从 localStorage 读取
+      const liked = JSON.parse(localStorage.getItem(`liked_comments_${cat.id}`) || '[]');
+      setLikedComments(new Set(liked));
+      return;
+    }
+
+    try {
+      // 已登录时，从云端获取
+      const likes = await commentLikeService.getUserLikes(user.id);
+      const likedIds = likes.map(like => like.commentId);
+      setLikedComments(new Set(likedIds));
+    } catch (error) {
+      console.error('加载点赞失败:', error);
+    }
+  };
 
   const loadComments = async (silent = false) => {
     // 静默刷新时不显示 loading 状态，避免白屏闪烁
@@ -201,15 +218,29 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
   };
 
   const handleLike = async (commentId: string) => {
+    // 已点赞则不重复点赞
     if (likedComments.has(commentId)) return;
 
+    // 乐观更新 UI
     const newLiked = new Set(likedComments);
     newLiked.add(commentId);
     setLikedComments(newLiked);
-    localStorage.setItem(`liked_comments_${cat.id}`, JSON.stringify([...newLiked]));
 
-    // 后台调用 API（无需等待）
-    commentService.likeComment(commentId);
+    if (user?.id) {
+      // 已登录：使用云端 API
+      try {
+        await commentLikeService.addLike(user.id, commentId);
+      } catch (error) {
+        console.error('点赞失败:', error);
+        // 失败时回滚
+        setLikedComments(likedComments);
+      }
+    } else {
+      // 未登录：使用 localStorage
+      localStorage.setItem(`liked_comments_${cat.id}`, JSON.stringify([...newLiked]));
+      // 后台调用 API（无需等待）
+      commentService.likeComment(commentId);
+    }
   };
 
   const handleSubmit = async () => {

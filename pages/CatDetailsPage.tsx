@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { catService, adoptionService } from '../services/apiService';
+import { catService, adoptionService, favoriteService } from '../services/apiService';
 import { Cat, AdoptionApplication } from '../types';
 import { Loader2, ArrowLeft, Heart, CheckCircle2, XCircle, Clock, X, MoreHorizontal, Share, Lock } from 'lucide-react';
 import CatImageGallery from '../components/CatImageGallery';
@@ -30,6 +30,10 @@ const CatDetailsPage: React.FC = () => {
     contact: '',
     reason: ''
   });
+
+  // 收藏状态
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
 
   const [showMenu, setShowMenu] = useState(false);
 
@@ -68,12 +72,57 @@ const CatDetailsPage: React.FC = () => {
     }
   };
 
+  // 检查收藏状态
+  const checkFavoriteStatus = async () => {
+    if (!user?.id || !id) return;
+
+    try {
+      const favorited = await favoriteService.isFavorited(user.id, id);
+      setIsFavorited(favorited);
+    } catch (err) {
+      console.error('检查收藏状态失败:', err);
+    }
+  };
+
+  // 处理收藏/取消收藏
+  const handleToggleFavorite = async () => {
+    if (!user?.id || !id) {
+      error('请先登录');
+      return;
+    }
+
+    setFavoriteLoading(true);
+    try {
+      if (isFavorited) {
+        // 取消收藏
+        const result = await favoriteService.removeFavorite(user.id, id);
+        if (result) {
+          setIsFavorited(false);
+          success('已取消收藏');
+        }
+      } else {
+        // 添加收藏
+        const result = await favoriteService.addFavorite(user.id, id);
+        if (result) {
+          setIsFavorited(true);
+          success('收藏成功');
+        }
+      }
+    } catch (err) {
+      console.error('收藏操作失败:', err);
+      error('操作失败，请重试');
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (id) {
       loadCat(id);
       checkMyApplication(id);
+      checkFavoriteStatus();
     }
-  }, [id]);
+  }, [id, user?.id]);
 
   const loadCat = async (catId: string) => {
     try {
@@ -279,8 +328,20 @@ const CatDetailsPage: React.FC = () => {
                 <span className="bg-slate-100 px-2 py-1 rounded">{cat.breed}</span>
               </div>
             </div>
-            <button className="p-2 md:p-3 bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition-colors">
-              <Heart size={20} className="md:w-6 md:h-6" fill="currentColor" />
+            <button
+              onClick={handleToggleFavorite}
+              disabled={favoriteLoading}
+              className={`p-2 md:p-3 rounded-full transition-all ${isFavorited
+                  ? 'bg-red-500 text-white hover:bg-red-600'
+                  : 'bg-red-50 text-red-500 hover:bg-red-100'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              title={isFavorited ? '取消收藏' : '收藏'}
+            >
+              <Heart
+                size={20}
+                className="md:w-6 md:h-6"
+                fill={isFavorited ? "currentColor" : "none"}
+              />
             </button>
           </div>
 
