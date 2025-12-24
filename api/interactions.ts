@@ -139,7 +139,7 @@ async function handleGetFavorites(req: VercelRequest, res: VercelResponse) {
         is_sterilized: catData.is_sterilized,
         is_dewormed: catData.is_dewormed,
         is_stray: catData.is_stray,
-        commentCount: catData.comment_count,
+        commentCount: catData.comment_count || 0,
         created_at: catData.created_at,
       } : null,
     };
