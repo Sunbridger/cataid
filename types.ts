@@ -47,6 +47,7 @@ export interface AdoptionApplication {
   reason: string;
   status: ApplicationStatus;
   createdAt: string;
+  cat?: Cat;
 }
 
 export interface NewApplicationInput {

@@ -328,7 +328,7 @@ async function handleGetUserApplications(req: VercelRequest, res: VercelResponse
 
   const { data: applications, error } = await supabase
     .from('adoption_applications')
-    .select('*')
+    .select('*, cats(*)')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
@@ -349,6 +349,26 @@ async function handleGetUserApplications(req: VercelRequest, res: VercelResponse
     status: app.status,
     createdAt: app.created_at,
     reviewedAt: app.reviewed_at,
+    cat: (app.cats) ? (() => {
+      const catData = Array.isArray(app.cats) ? app.cats[0] : app.cats;
+      if (!catData) return null;
+      return {
+        id: catData.id,
+        name: catData.name,
+        age: catData.age,
+        gender: catData.gender,
+        breed: catData.breed,
+        description: catData.description,
+        image_url: catData.image_url,
+        tags: catData.tags || [],
+        status: catData.status,
+        created_at: catData.created_at,
+        is_sterilized: catData.is_sterilized,
+        is_dewormed: catData.is_dewormed,
+        is_vaccinated: catData.is_vaccinated,
+        is_stray: catData.is_stray,
+      };
+    })() : null
   })) || [];
 
   return res.status(200).json({ data: result });
