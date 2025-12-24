@@ -62,7 +62,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return handleGetUserApplications(req, res);
     }
 
-    return res.status(400).json({ error: '无效的操作类型' });
+    if (action === 'update' && req.method === 'POST') {
+      return handleUpdateProfile(req, res);
+    }
+
+    return res.status(400).json({ error: `无效的操作类型: ${action}` });
 
   } catch (error) {
     console.error('User API Error:', error);
@@ -372,4 +376,66 @@ async function handleGetUserApplications(req: VercelRequest, res: VercelResponse
   })) || [];
 
   return res.status(200).json({ data: result });
+}
+
+// ==================== 更新用户信息 ====================
+async function handleUpdateProfile(req: VercelRequest, res: VercelResponse) {
+  const { userId } = req.query;
+  const { nickname, avatarUrl } = req.body;
+
+  if (!userId || typeof userId !== 'string') {
+    return res.status(400).json({ error: '缺少用户ID' });
+  }
+
+  if (isDemoMode || !supabase) {
+    return res.status(200).json({
+      data: {
+        id: userId,
+        nickname: nickname || '演示用户',
+        avatarUrl: avatarUrl || null,
+        status: 'active',
+        role: 'user',
+      }
+    });
+  }
+
+  const updateData: any = {};
+  if (nickname) updateData.nickname = nickname;
+  if (avatarUrl) updateData.avatar_url = avatarUrl;
+
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({ error: '没有提供要更新的内容' });
+  }
+
+  const { data: updatedUser, error } = await supabase
+    .from('users')
+    .update(updateData)
+    .eq('id', userId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('更新用户信息失败:', error);
+    return res.status(500).json({ error: '更新失败' });
+  }
+
+  return res.status(200).json({
+    data: {
+      id: updatedUser.id,
+      phone: updatedUser.phone,
+      email: updatedUser.email,
+      deviceId: updatedUser.device_id,
+      nickname: updatedUser.nickname,
+      avatarUrl: updatedUser.avatar_url,
+      bio: updatedUser.bio,
+      gender: updatedUser.gender || 'unknown',
+      status: updatedUser.status,
+      role: updatedUser.role,
+      favoriteCount: updatedUser.favorite_count || 0,
+      commentCount: updatedUser.comment_count || 0,
+      adoptionCount: updatedUser.adoption_count || 0,
+      createdAt: updatedUser.created_at,
+      lastLoginAt: updatedUser.last_login_at,
+    }
+  });
 }

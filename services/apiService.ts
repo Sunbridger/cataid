@@ -403,6 +403,22 @@ export const userApi = {
       return [];
     }
   },
+
+  /**
+   * 更新用户信息
+   */
+  updateProfile: async (userId: string, data: { nickname?: string; avatarUrl?: string }): Promise<User | null> => {
+    try {
+      const result = await request<{ data: User }>(`/user?action=update&userId=${userId}`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+      return result.data;
+    } catch (error) {
+      console.error('更新用户信息失败:', error);
+      return null;
+    }
+  },
 };
 
 // 导出用户服务

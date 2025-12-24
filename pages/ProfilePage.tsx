@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { authService, userService } from '../services/apiService';
-import { User, Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle, ThumbsUp, Cat } from 'lucide-react';
+import { authService, userService, catService } from '../services/apiService';
+import { User, Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle, ThumbsUp, Cat, Loader2 } from 'lucide-react';
 
 type AuthMode = 'login' | 'register';
 
@@ -20,6 +20,8 @@ const ProfilePage: React.FC = () => {
   }, [user?.id, isGuest]);
   const [isEditing, setIsEditing] = useState(false);
   const [editNickname, setEditNickname] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // 认证相关状态
   const [authMode, setAuthMode] = useState<AuthMode>('register'); // 默认显示注册
@@ -119,11 +121,61 @@ const ProfilePage: React.FC = () => {
   };
 
   // 保存昵称
-  const handleSaveNickname = () => {
+  const handleSaveNickname = async () => {
+    if (!user?.id || isGuest) return;
+
     if (editNickname.trim() && editNickname !== user?.nickname) {
-      updateUser({ nickname: editNickname.trim() });
+      try {
+        const updatedUser = await userService.updateProfile(user.id, { nickname: editNickname.trim() });
+        if (updatedUser) {
+          updateUser(updatedUser);
+        }
+      } catch (err) {
+        console.error('更新昵称失败:', err);
+        alert('更新昵称失败，请重试');
+      }
     }
     setIsEditing(false);
+  };
+
+  // 处理头像点击
+  const handleAvatarClick = () => {
+    if (isGuest) return;
+    fileInputRef.current?.click();
+  };
+
+  // 处理文件选择和上传
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    // 限制 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      alert('图片大小不能超过 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // 1. 上传图片
+      const imageUrl = await catService.uploadImage(file);
+      if (!imageUrl) {
+        throw new Error('图片上传失败');
+      }
+
+      // 2. 更新用户信息
+      const updatedUser = await userService.updateProfile(user.id, { avatarUrl: imageUrl });
+      if (updatedUser) {
+        updateUser(updatedUser);
+      }
+    } catch (err) {
+      console.error('更新头像失败:', err);
+      alert('更新头像失败，请重试');
+    } finally {
+      setIsUploading(false);
+      // 清空 input，允许重复选择同一张图
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   // 未登录状态 - 显示注册/登录表单
@@ -334,15 +386,40 @@ const ProfilePage: React.FC = () => {
 
         {/* 用户信息 */}
         <div className="px-6 pb-6 -mt-10 relative">
-          <div className="relative inline-block">
-            <img
-              src={user?.avatarUrl || 'https://ui-avatars.com/api/?name=U&background=e2e8f0&color=94a3b8&rounded=true&size=128'}
-              alt={user?.nickname}
-              className="w-20 h-20 rounded-full border-4 border-white shadow-lg object-cover bg-slate-200"
+          <div className="relative inline-block group">
+            <div
+              className={`w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden relative bg-slate-200 ${!isGuest ? 'cursor-pointer' : ''}`}
+              onClick={handleAvatarClick}
+            >
+              <img
+                src={user?.avatarUrl || 'https://ui-avatars.com/api/?name=U&background=e2e8f0&color=94a3b8&rounded=true&size=128'}
+                alt={user?.nickname}
+                className={`w-full h-full object-cover transition-opacity ${isUploading ? 'opacity-50' : 'opacity-100'}`}
+              />
+              {isUploading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                  <Loader2 className="w-6 h-6 text-white animate-spin" />
+                </div>
+              )}
+            </div>
+            {!isGuest && (
+              <button
+                onClick={handleAvatarClick}
+                disabled={isUploading}
+                className="absolute bottom-0 right-0 p-1.5 bg-brand-500 text-white rounded-full shadow-lg hover:bg-brand-600 transition-colors disabled:bg-slate-400"
+              >
+                <Camera size={14} />
+              </button>
+            )}
+
+            {/* 隐藏的文件输入框 */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept="image/*"
+              className="hidden"
             />
-            <button className="absolute bottom-0 right-0 p-1.5 bg-brand-500 text-white rounded-full shadow-lg hover:bg-brand-600 transition-colors">
-              <Camera size={14} />
-            </button>
           </div>
 
           <div className="mt-3 flex items-center gap-2">
