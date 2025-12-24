@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { catService, adoptionService, favoriteService } from '../services/apiService';
+import { catService, adoptionService, favoriteService, userService } from '../services/apiService';
 import { Cat, AdoptionApplication } from '../types';
 import { Loader2, ArrowLeft, Heart, CheckCircle2, XCircle, Clock, X, MoreHorizontal, Share, Lock } from 'lucide-react';
 import CatImageGallery from '../components/CatImageGallery';
@@ -147,29 +147,16 @@ const CatDetailsPage: React.FC = () => {
   };
 
   const checkMyApplication = async (catId: string) => {
-    // 1. Get local record to find if we applied
-    const storedApps = JSON.parse(localStorage.getItem('my_applications') || '[]');
-    const localApp = storedApps.find((app: AdoptionApplication) => app.catId === catId);
+    if (!user?.id) return;
 
-    if (localApp) {
-      // Optimistically set local app first
-      setMyApplication(localApp);
-
-      // 2. Then fetch fresh data to get latest status from server/mock
-      try {
-        const freshApp = await adoptionService.getApplicationById(localApp.id);
-        if (freshApp) {
-          setMyApplication(freshApp);
-
-          // Sync back to local storage to keep it updated
-          const newStoredApps = storedApps.map((a: AdoptionApplication) =>
-            a.id === freshApp.id ? freshApp : a
-          );
-          localStorage.setItem('my_applications', JSON.stringify(newStoredApps));
-        }
-      } catch (e) {
-        console.error("Failed to sync application status", e);
+    try {
+      const applications = await userService.getUserApplications(user.id);
+      const app = applications.find(a => a.catId === catId);
+      if (app) {
+        setMyApplication(app);
       }
+    } catch (e) {
+      console.error("查申请状态失败", e);
     }
   };
 
@@ -188,18 +175,12 @@ const CatDetailsPage: React.FC = () => {
         reason: adoptForm.reason
       });
 
-      // Update Local Storage
-      const storedApps = JSON.parse(localStorage.getItem('my_applications') || '[]');
-      localStorage.setItem('my_applications', JSON.stringify([...storedApps, newApp]));
-
-      // 触发数据更新事件
-      window.dispatchEvent(new Event('cat-data-updated'));
-
       setMyApplication(newApp);
       setIsAdoptModalOpen(false);
 
-      // Refresh cat data to show status change if needed
+      // Refresh data
       loadCat(cat.id);
+      checkMyApplication(cat.id);
       success('申请已提交，请耐心等待审核！');
 
     } catch (err) {

@@ -377,6 +377,32 @@ export const userApi = {
       };
     }
   },
+
+  /**
+   * 获取用户评论
+   */
+  getUserComments: async (userId: string): Promise<Comment[]> => {
+    try {
+      const result = await request<{ data: Comment[] }>(`/user?action=comments&userId=${userId}`);
+      return result.data;
+    } catch (error) {
+      console.error('获取用户评论失败:', error);
+      return [];
+    }
+  },
+
+  /**
+   * 获取用户申请
+   */
+  getUserApplications: async (userId: string): Promise<AdoptionApplication[]> => {
+    try {
+      const result = await request<{ data: AdoptionApplication[] }>(`/user?action=applications&userId=${userId}`);
+      return result.data;
+    } catch (error) {
+      console.error('获取用户申请失败:', error);
+      return [];
+    }
+  },
 };
 
 // 导出用户服务

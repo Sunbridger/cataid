@@ -160,14 +160,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
   // 加载用户点赞的评论
   const loadLikedComments = async () => {
     if (!user?.id) {
-      // 未登录时，从 localStorage 读取
-      const liked = JSON.parse(localStorage.getItem(`liked_comments_${cat.id}`) || '[]');
-      setLikedComments(new Set(liked));
       return;
     }
 
     try {
-      // 已登录时，从云端获取
+      // 从云端获取
       const likes = await commentLikeService.getUserLikes(user.id);
       const likedIds = likes.map(like => like.commentId);
       setLikedComments(new Set(likedIds));
@@ -235,11 +232,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
         // 失败时回滚
         setLikedComments(likedComments);
       }
-    } else {
-      // 未登录：使用 localStorage
-      localStorage.setItem(`liked_comments_${cat.id}`, JSON.stringify([...newLiked]));
-      // 后台调用 API（无需等待）
-      commentService.likeComment(commentId);
     }
   };
 
