@@ -17,7 +17,8 @@ const HomePage: React.FC = () => {
 
     // Listen for global data updates (e.g. from background upload in AddCatPage)
     const handleDataUpdate = () => {
-      fetchCats();
+      // 强制刷新，绕过 CDN 缓存
+      fetchCats(true);
     };
 
     window.addEventListener('cat-data-updated', handleDataUpdate);

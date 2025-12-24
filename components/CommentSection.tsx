@@ -267,6 +267,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cat }) => {
       // 刷新评论列表
       await loadComments(true);
 
+      // 触发首页数据更新事件（更新评论数）
+      window.dispatchEvent(new Event('cat-data-updated'));
+
       // 触发 AI 回复（仅对顶级评论）
       if (!replyTo?.parentId) {
         generateAiReply(newComment);
