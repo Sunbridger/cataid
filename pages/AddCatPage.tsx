@@ -221,10 +221,10 @@ const AddCatPage: React.FC = () => {
         <div key={step.id} className="flex flex-col items-center relative z-10">
           <div
             className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${step.id === currentStep
-                ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/30 scale-110'
-                : step.id < currentStep
-                  ? 'bg-pink-100 text-pink-600'
-                  : 'bg-slate-100 text-slate-400'
+              ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/30 scale-110'
+              : step.id < currentStep
+                ? 'bg-pink-100 text-pink-600'
+                : 'bg-slate-100 text-slate-400'
               }`}
           >
             {step.id < currentStep ? <Check size={18} /> : step.id}
@@ -249,7 +249,7 @@ const AddCatPage: React.FC = () => {
         <h1 className="text-lg font-bold text-slate-800">发布猫咪</h1>
       </div>
 
-      <div className="max-w-xl mx-auto py-6 px-4">
+      <div className="max-w-xl mx-auto py-6">
 
         {/* 权限提示 */}
         {!canPost ? (
@@ -372,8 +372,8 @@ const AddCatPage: React.FC = () => {
                         <button
                           onClick={() => setFormData(p => ({ ...p, gender: 'Male' }))}
                           className={`py-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${formData.gender === 'Male'
-                              ? 'border-blue-500 bg-blue-50 text-blue-600'
-                              : 'border-slate-100 text-slate-400 hover:bg-slate-50'
+                            ? 'border-blue-500 bg-blue-50 text-blue-600'
+                            : 'border-slate-100 text-slate-400 hover:bg-slate-50'
                             }`}
                         >
                           <span className="text-2xl">♂</span>
@@ -382,8 +382,8 @@ const AddCatPage: React.FC = () => {
                         <button
                           onClick={() => setFormData(p => ({ ...p, gender: 'Female' }))}
                           className={`py-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${formData.gender === 'Female'
-                              ? 'border-pink-500 bg-pink-50 text-pink-600'
-                              : 'border-slate-100 text-slate-400 hover:bg-slate-50'
+                            ? 'border-pink-500 bg-pink-50 text-pink-600'
+                            : 'border-slate-100 text-slate-400 hover:bg-slate-50'
                             }`}
                         >
                           <span className="text-2xl">♀</span>
@@ -422,8 +422,8 @@ const AddCatPage: React.FC = () => {
                           key={tag}
                           onClick={() => handleTagToggle(tag)}
                           className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${formData.tags.includes(tag)
-                              ? 'bg-pink-500 text-white border-pink-500'
-                              : 'bg-white text-slate-500 border-slate-200 hover:border-pink-300'
+                            ? 'bg-pink-500 text-white border-pink-500'
+                            : 'bg-white text-slate-500 border-slate-200 hover:border-pink-300'
                             }`}
                         >
                           {tag}
