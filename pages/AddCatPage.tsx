@@ -1,26 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { catService } from '../services/apiService';
 import { generateCatBio, analyzeCatImage } from '../services/geminiService';
-import { Sparkles, Upload, ArrowRight, Loader2, Camera, Info, Lock } from 'lucide-react';
+import { Sparkles, Upload, ArrowRight, Loader2, Camera, Info, Lock, ChevronLeft, ChevronRight, Check, Heart, Shield, X, Smile } from 'lucide-react';
 import { CAT_CATEGORIES } from '../constants';
 import { useToast } from '../context/ToastContext';
 import { useUser } from '../context/UserContext';
 import ConfirmModal from '../components/ConfirmModal';
 
+// 定义步骤
+const STEPS = [
+  { id: 1, title: '照片', desc: '美照' },
+  { id: 2, title: '身份', desc: '基本' },
+  { id: 3, title: '详情', desc: '特征' },
+  { id: 4, title: '故事', desc: '简介' },
+];
+
 const AddCatPage: React.FC = () => {
   const navigate = useNavigate();
   const { success, error, info } = useToast();
   const { user, isLoggedIn, isGuest } = useUser();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 是否可以发布（登录且非游客）
+  // 权限控制
   const canPost = isLoggedIn && !isGuest;
 
-  // const [loading, setLoading] = useState(false); // 移除全屏 loading state
+  // 状态管理
+  const [currentStep, setCurrentStep] = useState(1);
   const [generatingBio, setGeneratingBio] = useState(false);
   const [analyzingImage, setAnalyzingImage] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
 
   const [formData, setFormData] = useState({
     name: '',
@@ -37,11 +46,13 @@ const AddCatPage: React.FC = () => {
     is_stray: false
   });
 
+  // 处理输入变化
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // 处理标签选择
   const handleTagToggle = (tag: string) => {
     setFormData(prev => ({
       ...prev,
@@ -51,6 +62,7 @@ const AddCatPage: React.FC = () => {
     }));
   };
 
+  // 处理图片上传
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
@@ -63,26 +75,19 @@ const AddCatPage: React.FC = () => {
         imagePreviews: newPreviews
       }));
 
-      // Trigger AI Analysis if this is the first image upload (and we aren't already analyzing)
-      // This enhances UX by auto-filling breed/tags.
-      // We upload the image first to get a URL for analysis.
+      // 如果是第一张图片，触发 AI 识别
       if (newFiles.length > 0 && !formData.breed && !analyzingImage) {
-        // Non-blocking async operation
         const analyze = async () => {
           setAnalyzingImage(true);
           try {
-            // Immediately upload the first image to get a public URL
             const imageUrl = await catService.uploadImage(newFiles[0]);
-
             if (imageUrl) {
               const analysis = await analyzeCatImage(imageUrl);
-
               if (analysis) {
                 setFormData(prev => {
                   const newTags = analysis.characteristics
                     ? Array.from(new Set([...prev.tags, ...analysis.characteristics.slice(0, 3)]))
                     : prev.tags;
-
                   return {
                     ...prev,
                     breed: analysis.breed || prev.breed,
@@ -91,7 +96,7 @@ const AddCatPage: React.FC = () => {
                     gender: analysis.gender || prev.gender
                   };
                 });
-                success(`AI 识别成功：这是一个 ${analysis.breed || '可爱猫咪'}`);
+                success(`AI 识别成功：看上去是 ${analysis.breed || '可爱猫咪'}`);
               }
             }
           } catch (err) {
@@ -100,7 +105,6 @@ const AddCatPage: React.FC = () => {
             setAnalyzingImage(false);
           }
         };
-
         analyze();
       }
     }
@@ -109,22 +113,15 @@ const AddCatPage: React.FC = () => {
   const removeImage = (index: number) => {
     const newFiles = [...formData.imageFiles];
     newFiles.splice(index, 1);
-
     const newPreviews = [...formData.imagePreviews];
-    // Revoke the old URL to avoid memory leaks
     URL.revokeObjectURL(newPreviews[index]);
     newPreviews.splice(index, 1);
-
-    setFormData(prev => ({
-      ...prev,
-      imageFiles: newFiles,
-      imagePreviews: newPreviews
-    }));
+    setFormData(prev => ({ ...prev, imageFiles: newFiles, imagePreviews: newPreviews }));
   };
 
   const handleGenerateBio = async () => {
     if (!formData.name || !formData.breed || formData.tags.length === 0) {
-      info("请先输入名字、品种，并至少选择一个性格标签。");
+      info("请先告诉我们它的名字、品种和性格哦~");
       return;
     }
     setGeneratingBio(true);
@@ -133,24 +130,65 @@ const AddCatPage: React.FC = () => {
     setGeneratingBio(false);
   };
 
-  // 引用 hidden file input
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const validateStep = (step: number) => {
+    switch (step) {
+      case 1:
+        if (formData.imageFiles.length === 0) {
+          info('请至少上传一张可爱的照片');
+          return false;
+        }
+        return true;
+      case 2:
+        if (!formData.name) {
+          info('请给猫咪起个名字');
+          return false;
+        }
+        if (!formData.age) {
+          info('请输入猫咪的年龄');
+          return false;
+        }
+        return true;
+      case 3:
+        if (!formData.breed) {
+          info('请输入猫咪的品种');
+          return false;
+        }
+        // 品种和健康状况是选填或有默认值
+        return true;
+      case 4:
+        if (!formData.description) {
+          info('请填写猫咪的简介');
+          return false;
+        }
+        return true;
+      default:
+        return true;
+    }
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.age || !formData.breed) return;
-    setShowConfirm(true);
+  const nextStep = () => {
+    if (validateStep(currentStep)) {
+      if (currentStep < 4) {
+        setCurrentStep(c => c + 1);
+        window.scrollTo(0, 0);
+      } else {
+        setShowConfirm(true);
+      }
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(c => c - 1);
+      window.scrollTo(0, 0);
+    }
   };
 
   const handleConfirmSubmit = async () => {
     setShowConfirm(false);
-
-    // 1. 立即反馈并跳转，减少用户等待
-    info('正在后台发布，完成后将通知您...');
+    info('正在把猫咪送往云端...');
     navigate('/');
 
-    // 2. 后台执行发布任务（Fire and forget in UI, but handled in background）
-    // 注意：利用闭包捕获当前的 formData
     const submitData = {
       name: formData.name,
       age: parseInt(formData.age),
@@ -167,36 +205,63 @@ const AddCatPage: React.FC = () => {
 
     catService.create(submitData)
       .then(() => {
-        // 3. 成功回调
-        success(`${submitData.name} 发布成功！`);
-        // 派发全局事件通知首页刷新
+        success('发布成功！希望它能很快找到家。');
         window.dispatchEvent(new Event('cat-data-updated'));
       })
       .catch((err) => {
-        console.error("Background upload failed:", err);
-        error(`发布失败: ${err.message || '请重试'}`);
+        console.error("Upload failed", err);
+        error('发布出错了，请稍后再试');
       });
   };
 
+  // 渲染进度条
+  const renderProgressBar = () => (
+    <div className="flex items-center justify-between mb-8 px-2">
+      {STEPS.map((step, index) => (
+        <div key={step.id} className="flex flex-col items-center relative z-10">
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${step.id === currentStep
+                ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/30 scale-110'
+                : step.id < currentStep
+                  ? 'bg-pink-100 text-pink-600'
+                  : 'bg-slate-100 text-slate-400'
+              }`}
+          >
+            {step.id < currentStep ? <Check size={18} /> : step.id}
+          </div>
+          <span className={`text-[10px] mt-2 font-medium ${step.id === currentStep ? 'text-pink-600' : 'text-slate-400'}`}>
+            {step.title}
+          </span>
+          {/* 连接线 */}
+          {index < STEPS.length - 1 && (
+            <div className={`absolute top-5 left-10 w-[calc(100%+2rem)] h-0.5 -z-10 ${step.id < currentStep ? 'bg-pink-200' : 'bg-slate-100'
+              }`} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
-      {/* 标准顶部导航栏 */}
+      {/* 顶部导航 */}
       <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-30 px-4 py-3 flex items-center justify-center shadow-sm border-b border-slate-100 -mx-4">
         <h1 className="text-lg font-bold text-slate-800">发布猫咪</h1>
       </div>
 
-      <div className="max-w-2xl mx-auto py-6">
-        {/* 权限检查 - 未登录或游客 */}
-        {!canPost && (
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 text-center">
+      <div className="max-w-xl mx-auto py-6 px-4">
+
+        {/* 权限提示 */}
+        {!canPost ? (
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 text-center mt-10">
             <div className="w-20 h-20 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-6">
               <Lock size={32} className="text-pink-300" />
             </div>
-            <h2 className="text-xl font-bold text-slate-800 mb-3">需要登录才能发布</h2>
+            <h2 className="text-xl font-bold text-slate-800 mb-3">登录开启领养之旅</h2>
             <p className="text-slate-500 mb-8 text-sm leading-relaxed max-w-xs mx-auto">
               {!isLoggedIn
-                ? '请先登录您的账号，然后才能发布猫咪领养信息。'
-                : '您当前是游客模式，请绑定手机号或邮箱后才能发布。'}
+                ? '登录后即可发布猫咪信息，帮助它们找到温暖的家。'
+                : '请先绑定手机号或邮箱，完善身份信息后即可发布。'}
             </p>
             <Link
               to="/profile"
@@ -206,293 +271,286 @@ const AddCatPage: React.FC = () => {
               <ArrowRight size={18} />
             </Link>
           </div>
-        )}
+        ) : (
+          <>
+            {renderProgressBar()}
 
-        {/* 已登录用户显示表单 */}
-        {canPost && (
-          <form onSubmit={handleSubmit} className="bg-white px-6 py-8 md:p-10 rounded-3xl shadow-sm border border-slate-100 space-y-8">
+            {/* 步骤内容容器 */}
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 md:p-8 min-h-[400px]">
 
-            {/* Section: 基本信息 */}
-            <div className="space-y-6">
-              <div className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
-                <span className="w-1.5 h-6 bg-pink-500 rounded-full"></span>
-                基本信息
-              </div>
-
-              {/* Image Upload */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <label className="block text-sm font-bold text-slate-700 flex items-center gap-2">
-                    <Camera size={18} className="text-pink-500" />
-                    猫咪照片
-                    <span className="text-slate-400 font-normal text-xs">(最多9张)</span>
-                  </label>
-                  {analyzingImage && (
-                    <div className="flex items-center gap-2 text-xs text-pink-600 font-medium bg-pink-50 px-3 py-1 rounded-full animate-pulse">
-                      <Sparkles size={12} />
-                      AI 正在识别品种...
-                    </div>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
-                  {formData.imagePreviews.map((preview, index) => (
-                    <div key={index} className="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 shadow-sm group">
-                      <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute top-1.5 right-1.5 bg-white/90 text-slate-700 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 hover:text-red-500 shadow-sm transform hover:scale-110"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-                      </button>
-                      {index === 0 && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-pink-500/80 text-white text-[10px] font-bold py-1 text-center backdrop-blur-sm">
-                          封面
-                        </div>
-                      )}
-                    </div>
-                  ))}
-
-                  {formData.imageFiles.length < 9 && (
-                    <div
-                      onClick={() => fileInputRef.current?.click()}
-                      className="aspect-square rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:bg-white hover:border-pink-400 hover:shadow-md transition-all group overflow-hidden"
-                    >
-                      <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mb-2 group-hover:scale-110 transition-transform text-pink-500">
-                        <Upload size={20} />
-                      </div>
-                      <span className="text-xs font-bold text-slate-400 group-hover:text-pink-500">上传照片</span>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        className="hidden"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-medium text-slate-700">名字</label>
-                  <input
-                    required
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all placeholder:text-slate-300"
-                    placeholder="例如：咪咪"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-medium text-slate-700">品种</label>
-                  <input
-                    required
-                    name="breed"
-                    value={formData.breed}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all placeholder:text-slate-300"
-                    placeholder="例如：中华田园猫"
-                  />
-                </div>
-
-                <div className="space-y-4 pt-2">
-                  <label className="block text-sm font-medium text-slate-700">健康状况与来源</label>
+              {/* Step 1: 照片 */}
+              {currentStep === 1 && (
+                <div className="space-y-6 animate-fadeIn">
+                  <div className="text-center mb-6">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-2">这只小猫长什么样？</h2>
+                    <p className="text-slate-500 text-sm">上传可爱的照片，AI 会自动帮你识别品种哦！</p>
+                  </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    {/* is_stray */}
-                    <div className="flex flex-col gap-2">
-                      <span className="text-xs text-slate-500">来源</span>
-                      <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
+                    {formData.imagePreviews.map((preview, index) => (
+                      <div key={index} className="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 shadow-sm group">
+                        <img src={preview} alt="Cat" className="w-full h-full object-cover" />
                         <button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, is_stray: false }))}
-                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_stray ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 bg-white/90 text-red-500 rounded-full p-1.5 shadow-sm"
                         >
-                          家养
+                          <X size={14} />
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, is_stray: true }))}
-                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_stray ? 'bg-white text-pink-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                          流浪
-                        </button>
+                        {index === 0 && (
+                          <div className="absolute bottom-0 inset-x-0 bg-pink-500/80 text-white text-[10px] text-center py-1">封面</div>
+                        )}
                       </div>
-                    </div>
+                    ))}
 
-                    {/* is_sterilized */}
-                    <div className="flex flex-col gap-2">
-                      <span className="text-xs text-slate-500">是否绝育</span>
-                      <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
-                        <button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, is_sterilized: true }))}
-                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_sterilized ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                          已绝育
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, is_sterilized: false }))}
-                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_sterilized ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                          未绝育
-                        </button>
+                    {formData.imageFiles.length < 9 && (
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="aspect-square rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:bg-pink-50 hover:border-pink-300 transition-all"
+                      >
+                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-3 text-pink-500">
+                          <Camera size={24} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-400">添加照片</span>
                       </div>
-                    </div>
-
-                    {/* is_dewormed */}
-                    <div className="flex flex-col gap-2">
-                      <span className="text-xs text-slate-500">是否驱虫</span>
-                      <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
-                        <button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, is_dewormed: true }))}
-                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_dewormed ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                          已驱虫
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, is_dewormed: false }))}
-                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_dewormed ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                          未驱虫
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* is_vaccinated */}
-                    <div className="flex flex-col gap-2">
-                      <span className="text-xs text-slate-500">是否接种疫苗</span>
-                      <div className="flex rounded-xl bg-slate-50 p-1 border border-slate-200">
-                        <button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, is_vaccinated: true }))}
-                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.is_vaccinated ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                          已接种
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, is_vaccinated: false }))}
-                          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${!formData.is_vaccinated ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                          未接种
-                        </button>
-                      </div>
-                    </div>
+                    )}
                   </div>
-                </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-medium text-slate-700">年龄 (岁)</label>
                   <input
-                    required
-                    type="number"
-                    name="age"
-                    min="0"
-                    max="30"
-                    value={formData.age}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileChange}
+                    className="hidden"
                   />
-                </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-medium text-slate-700">性别</label>
-                  <div className="flex gap-4">
-                    <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border cursor-pointer transition-all ${formData.gender === 'Male' ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
-                      <input type="radio" name="gender" value="Male" checked={formData.gender === 'Male'} onChange={handleInputChange} className="hidden" />
-                      <span className="font-semibold text-sm">公猫</span>
-                    </label>
-                    <label className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border cursor-pointer transition-all ${formData.gender === 'Female' ? 'bg-pink-50 border-pink-200 text-pink-700' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
-                      <input type="radio" name="gender" value="Female" checked={formData.gender === 'Female'} onChange={handleInputChange} className="hidden" />
-                      <span className="font-semibold text-sm">母猫</span>
-                    </label>
+                  {analyzingImage && (
+                    <div className="flex items-center justify-center gap-2 text-sm text-pink-600 font-medium bg-pink-50 p-3 rounded-xl animate-pulse">
+                      <Sparkles size={16} />
+                      <span>AI 正在仔细观察这只猫咪...</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Step 2: 身份 */}
+              {currentStep === 2 && (
+                <div className="space-y-8 animate-fadeIn">
+                  <div className="text-center mb-2">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-2">它的基本信息</h2>
+                    <p className="text-slate-500 text-sm">告诉我们它的名字和年龄吧</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">名字</label>
+                      <input
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="例如：咪咪"
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition-all text-lg"
+                        autoFocus
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">年龄 (岁)</label>
+                      <input
+                        type="number"
+                        name="age"
+                        value={formData.age}
+                        onChange={handleInputChange}
+                        placeholder="0.5"
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition-all text-lg"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">性别</label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <button
+                          onClick={() => setFormData(p => ({ ...p, gender: 'Male' }))}
+                          className={`py-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${formData.gender === 'Male'
+                              ? 'border-blue-500 bg-blue-50 text-blue-600'
+                              : 'border-slate-100 text-slate-400 hover:bg-slate-50'
+                            }`}
+                        >
+                          <span className="text-2xl">♂</span>
+                          <span className="font-bold">帅气公猫</span>
+                        </button>
+                        <button
+                          onClick={() => setFormData(p => ({ ...p, gender: 'Female' }))}
+                          className={`py-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${formData.gender === 'Female'
+                              ? 'border-pink-500 bg-pink-50 text-pink-600'
+                              : 'border-slate-100 text-slate-400 hover:bg-slate-50'
+                            }`}
+                        >
+                          <span className="text-2xl">♀</span>
+                          <span className="font-bold">可爱母猫</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Step 3: 详情 */}
+              {currentStep === 3 && (
+                <div className="space-y-6 animate-fadeIn">
+                  <div className="text-center mb-2">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-2">更多细节</h2>
+                    <p className="text-slate-500 text-sm">完善更多信息，让领养人更了解它</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-bold text-slate-700">品种</label>
+                    <input
+                      name="breed"
+                      value={formData.breed}
+                      onChange={handleInputChange}
+                      placeholder="例如：中华田园猫"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-pink-500 transition-all"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-bold text-slate-700">性格特点</label>
+                    <div className="flex flex-wrap gap-2">
+                      {CAT_CATEGORIES.map(tag => (
+                        <button
+                          key={tag}
+                          onClick={() => handleTagToggle(tag)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${formData.tags.includes(tag)
+                              ? 'bg-pink-500 text-white border-pink-500'
+                              : 'bg-white text-slate-500 border-slate-200 hover:border-pink-300'
+                            }`}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-bold text-slate-700">健康状况</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => setFormData(p => ({ ...p, is_vaccinated: !p.is_vaccinated }))}
+                        className={`p-3 rounded-xl border text-sm font-medium flex items-center justify-center gap-2 transition-all ${formData.is_vaccinated ? 'border-green-500 bg-green-50 text-green-700' : 'border-slate-200 text-slate-400'
+                          }`}
+                      >
+                        <Shield size={16} /> 已接种疫苗
+                      </button>
+                      <button
+                        onClick={() => setFormData(p => ({ ...p, is_sterilized: !p.is_sterilized }))}
+                        className={`p-3 rounded-xl border text-sm font-medium flex items-center justify-center gap-2 transition-all ${formData.is_sterilized ? 'border-green-500 bg-green-50 text-green-700' : 'border-slate-200 text-slate-400'
+                          }`}
+                      >
+                        <Check size={16} /> 已绝育
+                      </button>
+                      <button
+                        onClick={() => setFormData(p => ({ ...p, is_dewormed: !p.is_dewormed }))}
+                        className={`p-3 rounded-xl border text-sm font-medium flex items-center justify-center gap-2 transition-all ${formData.is_dewormed ? 'border-green-500 bg-green-50 text-green-700' : 'border-slate-200 text-slate-400'
+                          }`}
+                      >
+                        <Check size={16} /> 已驱虫
+                      </button>
+                      <button
+                        onClick={() => setFormData(p => ({ ...p, is_stray: !p.is_stray }))}
+                        className={`p-3 rounded-xl border text-sm font-medium flex items-center justify-center gap-2 transition-all ${formData.is_stray ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-slate-200 text-slate-400'
+                          }`}
+                      >
+                        <Info size={16} /> 流浪猫
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4: 故事简介 */}
+              {currentStep === 4 && (
+                <div className="space-y-6 animate-fadeIn">
+                  <div className="text-center mb-4">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-2">最后一步！</h2>
+                    <p className="text-slate-500 text-sm">写一段话介绍它，或者让 AI 来帮忙</p>
+                  </div>
+
+                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <div className="flex justify-between items-center mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">🐱</span>
+                        <div>
+                          <p className="font-bold text-slate-800">{formData.name || '猫咪名字'}</p>
+                          <p className="text-xs text-slate-500">{formData.breed} · {formData.age}岁</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleGenerateBio}
+                        disabled={generatingBio}
+                        className="flex items-center gap-1 text-xs bg-pink-500 text-white px-3 py-1.5 rounded-full font-bold shadow-sm hover:bg-pink-600 transition-colors disabled:opacity-50"
+                      >
+                        {generatingBio ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                        AI 写故事
+                      </button>
+                    </div>
+                    <textarea
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      name="description"
+                      rows={6}
+                      className="w-full bg-white rounded-xl border-0 p-4 text-sm leading-relaxed text-slate-600 placeholder:text-slate-300 focus:ring-2 focus:ring-pink-200"
+                      placeholder="在这里写下它的故事..."
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs text-slate-400 justify-center">
+                    <Smile size={14} />
+                    <span>真诚的故事更容易打动领养人哦</span>
+                  </div>
+                </div>
+              )}
+
             </div>
 
-            {/* Section: 更多细节 */}
-            <div className="space-y-6">
-              <div className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
-                <span className="w-1.5 h-6 bg-pink-500 rounded-full"></span>
-                性格与故事
-              </div>
+            {/* 底部按钮栏 */}
+            <div className="mt-8 flex gap-4">
+              {currentStep > 1 && (
+                <button
+                  onClick={prevStep}
+                  className="flex-1 py-3.5 rounded-2xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+                >
+                  <ChevronLeft size={20} /> 上一步
+                </button>
+              )}
 
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-slate-700">性格特点 (多选)</label>
-                <div className="flex flex-wrap gap-2">
-                  {CAT_CATEGORIES.map(tag => (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => handleTagToggle(tag)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${formData.tags.includes(tag)
-                        ? 'bg-pink-500 text-white border-pink-600 shadow-md shadow-pink-500/20'
-                        : 'bg-white text-slate-600 border-slate-200 hover:border-pink-300 hover:text-pink-600'
-                        }`}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <label className="block text-sm font-medium text-slate-700">猫咪简介</label>
-                  <button
-                    type="button"
-                    onClick={handleGenerateBio}
-                    disabled={generatingBio}
-                    className="text-xs flex items-center gap-1.5 text-pink-600 font-bold bg-pink-50 px-2 py-1 rounded-md hover:bg-pink-100 transition-colors disabled:opacity-50"
-                  >
-                    {generatingBio ? <Loader2 className="animate-spin" size={12} /> : <Sparkles size={12} />}
-                    {generatingBio ? '正在撰写...' : 'AI 生成故事'}
-                  </button>
-                </div>
-                <textarea
-                  required
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  rows={4}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all resize-none placeholder:text-slate-300 text-sm leading-relaxed"
-                  placeholder="请介绍一下猫咪的来历、性格习惯，以及对领养人的小期待..."
-                />
-              </div>
+              <button
+                onClick={nextStep}
+                disabled={generatingBio || analyzingImage}
+                className="flex-[2] py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold shadow-lg shadow-pink-500/30 hover:shadow-pink-500/40 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {currentStep === 4 ? (
+                  <>发布领养 <Check size={20} /></>
+                ) : (
+                  <>下一步 <ChevronRight size={20} /></>
+                )}
+              </button>
             </div>
-
-            <button
-              type="submit"
-              className="w-full py-4 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-xl shadow-lg shadow-pink-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 mt-4"
-            >
-              发布领养信息
-              <ArrowRight size={20} />
-            </button>
-          </form>
+          </>
         )}
 
-        <ConfirmModal
-          isOpen={showConfirm}
-          title="确认发布"
-          message="确定要发布这条领养信息吗？请确保所有信息真实有效，每一条信息都代表着对一个小生命的责任。"
-          onConfirm={handleConfirmSubmit}
-          onCancel={() => setShowConfirm(false)}
-          confirmText="确认发布"
-          cancelText="我再想想"
-          type="info"
-        />
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        title="确认发布"
+        message={`准备好为 ${formData.name} 寻找新家了吗？`}
+        onConfirm={handleConfirmSubmit}
+        onCancel={() => setShowConfirm(false)}
+        confirmText="确认发布"
+        cancelText="再检查下"
+        type="info"
+      />
     </div>
   );
 };
