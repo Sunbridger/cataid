@@ -147,9 +147,10 @@ async function getAllCats() {
     console.log('[Debug] 评论数统计:', Object.fromEntries(countMap));
   }
 
-  // 合并评论数到猫咪数据
+  // 合并评论数到猫咪数据，并进行字段映射
   return cats?.map(cat => ({
     ...cat,
+    userId: cat.user_id, // 将数据库的 user_id 映射为前端使用的 userId
     commentCount: countMap.get(String(cat.id)) || 0
   })) || [];
 }
