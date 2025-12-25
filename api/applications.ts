@@ -181,6 +181,48 @@ async function submitApplication(app: NewApplicationInput) {
     console.warn('[API] No userId provided for application, skipping notification');
   }
 
+  // 为所有管理员创建通知
+  try {
+    console.log('[API] Creating notifications for admins');
+
+    // 获取所有管理员
+    const { data: admins, error: adminError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('role', 'admin')
+      .eq('status', 'active');
+
+    if (adminError) {
+      console.error('[API] Failed to fetch admins:', adminError);
+    } else if (admins && admins.length > 0) {
+      console.log(`[API] Found ${admins.length} admin(s)`);
+
+      // 为每个管理员创建通知
+      const adminNotifications = admins.map(admin => ({
+        user_id: admin.id,
+        type: 'new_application',
+        title: '新的领养申请',
+        content: `${app.applicantName} 申请领养 ${app.catName}`,
+        related_id: data.id,
+        related_type: 'application',
+      }));
+
+      const { error: notifError } = await supabase
+        .from('notifications')
+        .insert(adminNotifications);
+
+      if (notifError) {
+        console.error('[API] Failed to create admin notifications:', notifError);
+      } else {
+        console.log('[API] Admin notifications created successfully');
+      }
+    } else {
+      console.warn('[API] No active admins found');
+    }
+  } catch (err) {
+    console.error('[API] Error creating admin notifications:', err);
+  }
+
   return data;
 }
 

@@ -14,6 +14,7 @@ const getNotificationIcon = (type: NotificationType) => {
     case 'application_submitted':
     case 'application_approved':
     case 'application_rejected':
+    case 'new_application':
       return <FileText size={20} />;
     case 'comment_reply':
       return <MessageCircle size={20} />;
@@ -31,6 +32,8 @@ const getNotificationIcon = (type: NotificationType) => {
 // 通知颜色映射
 const getNotificationColor = (type: NotificationType) => {
   switch (type) {
+    case 'new_application':
+      return 'from-orange-500 to-amber-500';
     case 'application_approved':
       return 'from-green-500 to-emerald-500';
     case 'application_rejected':

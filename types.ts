@@ -130,9 +130,10 @@ export interface RegisterInput {
 
 // 通知类型
 export type NotificationType =
-  | 'application_submitted'
+  | 'application_submitted'   // 用户提交申请后收到的确认通知
   | 'application_approved'
   | 'application_rejected'
+  | 'new_application'         // 管理员收到的新申请通知
   | 'comment_reply'
   | 'comment_like'
   | 'comment_liked'      // 评论被点赞
