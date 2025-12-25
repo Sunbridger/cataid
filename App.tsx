@@ -11,8 +11,10 @@ import MyLikesPage from './pages/MyLikesPage';
 import MyCommentsPage from './pages/MyCommentsPage';
 import MyApplicationsPage from './pages/MyApplicationsPage';
 import MyAdoptedCatsPage from './pages/MyAdoptedCatsPage';
+import NotificationsPage from './pages/NotificationsPage';
 import { ToastProvider } from './context/ToastContext';
 import { UserProvider } from './context/UserContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 // 布局组件：根据当前路由动态调整底部内边距
 const Layout: React.FC = () => {
@@ -36,6 +38,8 @@ const Layout: React.FC = () => {
           <Route path="/my/comments" element={<MyCommentsPage />} />
           <Route path="/my/applications" element={<MyApplicationsPage />} />
           <Route path="/my/cats" element={<MyAdoptedCatsPage />} />
+          {/* 通知页面 */}
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -47,9 +51,11 @@ const App: React.FC = () => {
   return (
     <HashRouter>
       <UserProvider>
-        <ToastProvider>
-          <Layout />
-        </ToastProvider>
+        <NotificationProvider>
+          <ToastProvider>
+            <Layout />
+          </ToastProvider>
+        </NotificationProvider>
       </UserProvider>
     </HashRouter>
   );

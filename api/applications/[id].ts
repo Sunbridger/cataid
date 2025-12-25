@@ -120,6 +120,13 @@ async function reviewApplication(appId: string, status: string, catId: string) {
     return;
   }
 
+  // 先获取申请信息用于通知
+  const { data: application } = await supabase
+    .from('adoption_applications')
+    .select('user_id, cat_name')
+    .eq('id', appId)
+    .single();
+
   const { error } = await supabase
     .from('adoption_applications')
     .update({
@@ -136,4 +143,22 @@ async function reviewApplication(appId: string, status: string, catId: string) {
   } else if (status === 'rejected') {
     await supabase.from('cats').update({ status: '可领养' }).eq('id', catId);
   }
+
+  // 为申请人创建审核结果通知
+  if (application?.user_id) {
+    const isApproved = status === 'approved';
+    await supabase
+      .from('notifications')
+      .insert([{
+        user_id: application.user_id,
+        type: isApproved ? 'application_approved' : 'application_rejected',
+        title: isApproved ? '领养申请已通过 🎉' : '领养申请未通过',
+        content: isApproved
+          ? `恭喜！您对 ${application.cat_name} 的领养申请已通过，请联系管理员领取`
+          : `抱歉，您对 ${application.cat_name} 的领养申请未通过`,
+        related_id: appId,
+        related_type: 'application',
+      }]);
+  }
 }
+

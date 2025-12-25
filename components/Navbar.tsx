@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Cat, PlusCircle, Home, Settings, User } from 'lucide-react';
+import { Cat, PlusCircle, Home, Settings, User, Bell } from 'lucide-react';
 import { useUser } from '../context/UserContext';
+import { useNotifications } from '../context/NotificationContext';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
   const { user, isLoggedIn } = useUser();
+  const { unreadCount } = useNotifications();
 
   // 是否为管理员
   const isAdmin = isLoggedIn && user?.role === 'admin';
@@ -55,6 +57,21 @@ const Navbar: React.FC = () => {
               >
                 <Settings size={18} />
                 <span>管理后台</span>
+              </Link>
+            )}
+
+            {/* 通知图标 */}
+            {isLoggedIn && (
+              <Link
+                to="/notifications"
+                className={`relative flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${isActive('/notifications')}`}
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 right-2 bg-pink-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </Link>
             )}
 

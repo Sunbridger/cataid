@@ -154,5 +154,20 @@ async function submitApplication(app: NewApplicationInput) {
     .update({ status: '待定' })
     .eq('id', app.catId);
 
+  // 为申请人创建通知
+  if (app.userId) {
+    await supabase
+      .from('notifications')
+      .insert([{
+        user_id: app.userId,
+        type: 'application_submitted',
+        title: `已提交领养申请`,
+        content: `您对 ${app.catName} 的领养申请已提交，请等待审核`,
+        related_id: data.id,
+        related_type: 'application',
+      }]);
+  }
+
   return data;
 }
+

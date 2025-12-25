@@ -557,4 +557,68 @@ export const commentLikeApi = {
 // 导出点赞服务
 export const commentLikeService = commentLikeApi;
 
+/**
+ * 通知相关 API
+ */
+export const notificationApi = {
+  /**
+   * 获取通知列表
+   */
+  getNotifications: async (userId: string): Promise<any[]> => {
+    try {
+      const result = await request<{ data: any[] }>(`/user?action=notifications&userId=${userId}`);
+      return result.data;
+    } catch (error) {
+      console.error('获取通知列表失败:', error);
+      return [];
+    }
+  },
 
+  /**
+   * 获取未读通知数量
+   */
+  getUnreadCount: async (userId: string): Promise<number> => {
+    try {
+      const result = await request<{ data: { count: number } }>(`/user?action=unread_count&userId=${userId}`);
+      return result.data.count;
+    } catch (error) {
+      console.error('获取未读数量失败:', error);
+      return 0;
+    }
+  },
+
+  /**
+   * 标记单条已读
+   */
+  markRead: async (userId: string, notificationId: string): Promise<boolean> => {
+    try {
+      await request('/user?action=mark_read', {
+        method: 'POST',
+        body: JSON.stringify({ userId, notificationId }),
+      });
+      return true;
+    } catch (error) {
+      console.error('标记已读失败:', error);
+      return false;
+    }
+  },
+
+  /**
+   * 标记全部已读
+   */
+  markAllRead: async (userId: string): Promise<boolean> => {
+    try {
+      await request('/user?action=mark_all_read', {
+        method: 'POST',
+        body: JSON.stringify({ userId }),
+      });
+      return true;
+    } catch (error) {
+      console.error('标记全部已读失败:', error);
+      return false;
+    }
+  },
+};
+
+// 导出通知服务
+export const notificationService = notificationApi;

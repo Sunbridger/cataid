@@ -127,3 +127,25 @@ export interface RegisterInput {
   nickname: string;
   avatarUrl?: string;
 }
+
+// 通知类型
+export type NotificationType =
+  | 'application_submitted'
+  | 'application_approved'
+  | 'application_rejected'
+  | 'comment_reply'
+  | 'comment_like'
+  | 'system';
+
+// 通知
+export interface Notification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  content?: string;
+  isRead: boolean;
+  relatedId?: string;
+  relatedType?: 'cat' | 'comment' | 'application';
+  createdAt: string;
+}

@@ -66,6 +66,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return handleUpdateProfile(req, res);
     }
 
+    // ==================== 通知相关 ====================
+    if (action === 'notifications' && req.method === 'GET') {
+      return handleGetNotifications(req, res);
+    }
+
+    if (action === 'unread_count' && req.method === 'GET') {
+      return handleGetUnreadCount(req, res);
+    }
+
+    if (action === 'mark_read' && req.method === 'POST') {
+      return handleMarkRead(req, res);
+    }
+
+    if (action === 'mark_all_read' && req.method === 'POST') {
+      return handleMarkAllRead(req, res);
+    }
+
     return res.status(400).json({ error: `无效的操作类型: ${action}` });
 
   } catch (error) {
@@ -438,4 +455,155 @@ async function handleUpdateProfile(req: VercelRequest, res: VercelResponse) {
       lastLoginAt: updatedUser.last_login_at,
     }
   });
+}
+
+// ==================== 获取通知列表 ====================
+async function handleGetNotifications(req: VercelRequest, res: VercelResponse) {
+  const { userId } = req.query;
+
+  if (!userId || typeof userId !== 'string') {
+    return res.status(400).json({ error: '缺少用户ID' });
+  }
+
+  if (isDemoMode || !supabase) {
+    return res.status(200).json({ data: [] });
+  }
+
+  const { data: notifications, error } = await supabase
+    .from('notifications')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (error) {
+    console.error('获取通知列表失败:', error);
+    return res.status(500).json({ error: '获取通知列表失败' });
+  }
+
+  const result = notifications?.map(n => ({
+    id: n.id,
+    userId: n.user_id,
+    type: n.type,
+    title: n.title,
+    content: n.content,
+    isRead: n.is_read,
+    relatedId: n.related_id,
+    relatedType: n.related_type,
+    createdAt: n.created_at,
+  })) || [];
+
+  return res.status(200).json({ data: result });
+}
+
+// ==================== 获取未读通知数量 ====================
+async function handleGetUnreadCount(req: VercelRequest, res: VercelResponse) {
+  const { userId } = req.query;
+
+  if (!userId || typeof userId !== 'string') {
+    return res.status(400).json({ error: '缺少用户ID' });
+  }
+
+  if (isDemoMode || !supabase) {
+    return res.status(200).json({ data: { count: 0 } });
+  }
+
+  const { count, error } = await supabase
+    .from('notifications')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('is_read', false);
+
+  if (error) {
+    console.error('获取未读数量失败:', error);
+    return res.status(500).json({ error: '获取未读数量失败' });
+  }
+
+  return res.status(200).json({ data: { count: count || 0 } });
+}
+
+// ==================== 标记单条已读 ====================
+async function handleMarkRead(req: VercelRequest, res: VercelResponse) {
+  const { notificationId, userId } = req.body;
+
+  if (!notificationId || !userId) {
+    return res.status(400).json({ error: '缺少必要参数' });
+  }
+
+  if (isDemoMode || !supabase) {
+    return res.status(200).json({ message: '标记成功' });
+  }
+
+  const { error } = await supabase
+    .from('notifications')
+    .update({ is_read: true })
+    .eq('id', notificationId)
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('标记已读失败:', error);
+    return res.status(500).json({ error: '标记已读失败' });
+  }
+
+  return res.status(200).json({ message: '标记成功' });
+}
+
+// ==================== 标记全部已读 ====================
+async function handleMarkAllRead(req: VercelRequest, res: VercelResponse) {
+  const { userId } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({ error: '缺少用户ID' });
+  }
+
+  if (isDemoMode || !supabase) {
+    return res.status(200).json({ message: '全部标记成功' });
+  }
+
+  const { error } = await supabase
+    .from('notifications')
+    .update({ is_read: true })
+    .eq('user_id', userId)
+    .eq('is_read', false);
+
+  if (error) {
+    console.error('标记全部已读失败:', error);
+    return res.status(500).json({ error: '标记全部已读失败' });
+  }
+
+  return res.status(200).json({ message: '全部标记成功' });
+}
+
+// ==================== 创建通知（内部函数，供其他模块调用） ====================
+export async function createNotification(
+  userId: string,
+  type: string,
+  title: string,
+  content?: string,
+  relatedId?: string,
+  relatedType?: string
+) {
+  if (isDemoMode || !supabase) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from('notifications')
+    .insert([{
+      user_id: userId,
+      type,
+      title,
+      content,
+      related_id: relatedId,
+      related_type: relatedType,
+    }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('创建通知失败:', error);
+    return null;
+  }
+
+  return data;
 }
