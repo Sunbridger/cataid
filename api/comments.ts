@@ -161,5 +161,49 @@ async function submitComment(comment: NewCommentInput) {
     .single();
 
   if (error) throw error;
+
+  // 创建通知
+  try {
+    // 如果是回复评论,通知被回复的用户
+    if (comment.parentId && !comment.isAiReply) {
+      const { data: parentComment } = await supabase
+        .from('comments')
+        .select('user_id, nickname')
+        .eq('id', comment.parentId)
+        .single();
+
+      if (parentComment?.user_id && parentComment.user_id !== comment.userId) {
+        console.log(`[API] Creating reply notification for user ${parentComment.user_id}`);
+        await supabase
+          .from('notifications')
+          .insert([{
+            user_id: parentComment.user_id,
+            type: 'comment_reply',
+            title: '收到新回复',
+            content: `${comment.nickname} 回复了你的评论: ${comment.content.substring(0, 50)}${comment.content.length > 50 ? '...' : ''}`,
+            related_id: data.id,
+            related_type: 'comment',
+          }]);
+      }
+    }
+    // 如果是新评论(非AI回复),通知猫咪的所有关注者
+    else if (!comment.isAiReply && comment.userId) {
+      // 获取猫咪信息
+      const { data: catData } = await supabase
+        .from('cats')
+        .select('name')
+        .eq('id', comment.catId)
+        .single();
+
+      if (catData) {
+        console.log(`[API] Creating comment notification for cat ${comment.catId}`);
+        // 这里可以扩展为通知所有收藏该猫咪的用户
+        // 暂时只记录日志
+      }
+    }
+  } catch (err) {
+    console.error('[API] Error creating comment notification:', err);
+  }
+
   return data;
 }
