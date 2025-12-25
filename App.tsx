@@ -11,6 +11,7 @@ import MyLikesPage from './pages/MyLikesPage';
 import MyCommentsPage from './pages/MyCommentsPage';
 import MyApplicationsPage from './pages/MyApplicationsPage';
 import MyAdoptedCatsPage from './pages/MyAdoptedCatsPage';
+import MyPublishedCatsPage from './pages/MyPublishedCatsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import { ToastProvider } from './context/ToastContext';
 import { UserProvider } from './context/UserContext';
@@ -38,6 +39,7 @@ const Layout: React.FC = () => {
           <Route path="/my/comments" element={<MyCommentsPage />} />
           <Route path="/my/applications" element={<MyApplicationsPage />} />
           <Route path="/my/cats" element={<MyAdoptedCatsPage />} />
+          <Route path="/my/published" element={<MyPublishedCatsPage />} />
           {/* 通知页面 */}
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />

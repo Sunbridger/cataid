@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { useNotifications } from '../context/NotificationContext';
 import { authService, userService, catService } from '../services/apiService';
-import { Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle, ThumbsUp, Cat, Loader2, Lock as LockIcon } from 'lucide-react';
+import { Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle, ThumbsUp, Cat, Loader2, Lock as LockIcon, CheckCircle2 } from 'lucide-react';
 
 type AuthMode = 'login' | 'register';
 
@@ -473,38 +473,25 @@ const ProfilePage: React.FC = () => {
           </div>
         )}
 
-        {/* 主要功能入口 - 强调 "我的猫咪" - 替换暗色为暖色可爱风 */}
-        <Link
-          to="/my/cats"
-          className="block bg-gradient-to-r from-amber-50 to-orange-50 rounded-3xl p-5 shadow-lg shadow-orange-100/50 relative overflow-hidden group hover:scale-[1.01] transition-transform duration-300 border border-orange-100"
-        >
-          {/* 装饰圆点 */}
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-            <div className="flex gap-2">
-              <div className="w-2 h-2 rounded-full bg-orange-400"></div>
-              <div className="w-2 h-2 rounded-full bg-orange-400"></div>
-            </div>
-            <div className="flex gap-2 mt-2 ml-4">
-              <div className="w-2 h-2 rounded-full bg-orange-400"></div>
-              <div className="w-2 h-2 rounded-full bg-orange-400"></div>
-            </div>
-          </div>
-
-          <div className="relative z-10 flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <div className="p-2 bg-white rounded-xl shadow-sm text-amber-500">
-                  <Cat size={20} />
-                </div>
-                <h3 className="text-lg font-bold tracking-tight text-amber-900">我的猫咪</h3>
-              </div>
-              <p className="text-amber-700/70 text-xs font-medium pl-1">查看已成功领养的毛孩子</p>
-            </div>
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-amber-400 group-hover:bg-amber-400 group-hover:text-white transition-all shadow-sm">
-              <ChevronRight size={18} />
-            </div>
-          </div>
-        </Link>
+        {/* 我的猫咪 */}
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+          <MenuItemGroup title="我的猫咪">
+            <MenuItem
+              icon={<Cat size={18} />}
+              title="我领养的猫猫"
+              description="查看已成功领养的毛孩子"
+              color="text-amber-500"
+              to="/my/cats"
+            />
+            <MenuItem
+              icon={<Heart size={18} />}
+              title="我发布的猫猫"
+              description="管理我发布的领养信息"
+              color="text-blue-500"
+              to="/my/published"
+            />
+          </MenuItemGroup>
+        </div>
 
         {/* 其他功能菜单 */}
         <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
@@ -566,16 +553,20 @@ const MenuItemGroup: React.FC<{ title: string; children: React.ReactNode }> = ({
 const MenuItem: React.FC<{
   icon: React.ReactNode;
   title: string;
+  description?: string;
   color?: string;
   to?: string;
   onClick?: () => void;
   badge?: string;
-}> = ({ icon, title, color = 'text-slate-600', to, onClick, badge }) => {
+}> = ({ icon, title, description, color = 'text-slate-600', to, onClick, badge }) => {
   const content = (
     <>
       <div className="flex items-center gap-3.5">
         <div className={`p-1.5 rounded-lg bg-slate-50 ${color}`}>{icon}</div>
-        <span className="font-bold text-slate-700 text-sm">{title}</span>
+        <div className="flex-1">
+          <div className="font-bold text-slate-700 text-sm">{title}</div>
+          {description && <div className="text-slate-400 text-xs mt-0.5">{description}</div>}
+        </div>
       </div>
       <div className="flex items-center gap-2">
         {badge && <span className="px-2 py-0.5 bg-rose-500 text-white text-[10px] font-bold rounded-full">{badge}</span>}

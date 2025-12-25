@@ -47,7 +47,7 @@ const MyAdoptedCatsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
-      {/* 标准顶部导航栏 */}
+      {/* 标准顶部导航栏 - 占满宽度 */}
       <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-30 px-4 py-3 flex items-center shadow-sm border-b border-slate-100 -mx-4">
         <Link to="/profile" className="p-2 -ml-2 text-slate-600 hover:bg-slate-50 rounded-full transition-colors">
           <ArrowLeft size={24} />
@@ -55,6 +55,7 @@ const MyAdoptedCatsPage: React.FC = () => {
         <h1 className="flex-1 text-center text-lg font-bold text-slate-800 pr-10">我的猫咪家族</h1>
       </div>
 
+      {/* 内容区域 - 限制最大宽度 */}
       <div className="max-w-md mx-auto py-6">
         {adoptedCats.length === 0 ? (
           <div className="bg-white rounded-3xl p-8 text-center shadow-xl shadow-slate-200/50 border border-slate-100 mt-8">
