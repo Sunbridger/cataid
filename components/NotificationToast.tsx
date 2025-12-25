@@ -77,47 +77,49 @@ const NotificationToast: React.FC<NotificationToastProps> = ({ notification, onC
 
   return (
     <div
-      className={`fixed top-0 left-0 right-0 z-[9999] flex justify-center px-4 pt-4 pointer-events-none transition-all duration-300 ${isVisible && !isLeaving ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
+      className={`fixed top-0 left-0 right-0 z-[9999] flex justify-center px-4 pt-2 pointer-events-none transition-all duration-300 ${isVisible && !isLeaving ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
         }`}
+      style={{ position: 'fixed' }}
     >
       <div
         onClick={handleClick}
         className={`
           pointer-events-auto
-          max-w-md w-full
+          max-w-sm w-full
           bg-white/95 backdrop-blur-xl
-          rounded-2xl
-          shadow-2xl shadow-black/10
-          border border-white/20
+          rounded-lg
+          shadow-lg shadow-black/10
+          border border-slate-200/50
           overflow-hidden
           cursor-pointer
           transform transition-all duration-300
-          hover:scale-[1.02] hover:shadow-2xl
+          hover:shadow-xl
           active:scale-[0.98]
+          relative
         `}
       >
-        {/* 顶部渐变条 */}
-        <div className={`h-1 bg-gradient-to-r ${getNotificationColor(notification.type)}`} />
+        {/* 左侧彩色边框 */}
+        <div className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${getNotificationColor(notification.type)}`} />
 
-        <div className="p-4">
-          <div className="flex items-start gap-3">
+        <div className="p-3 pl-4">
+          <div className="flex items-start gap-2.5">
             {/* 图标 */}
             <div className={`
               flex-shrink-0
-              w-12 h-12
-              rounded-xl
+              w-8 h-8
+              rounded-lg
               bg-gradient-to-br ${getNotificationColor(notification.type)}
               flex items-center justify-center
               text-white
-              shadow-lg
+              shadow-sm
             `}>
               {getNotificationIcon(notification.type)}
             </div>
 
             {/* 内容 */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <h4 className="font-bold text-slate-800 text-sm leading-tight">
+              <div className="flex items-start justify-between gap-2">
+                <h4 className="font-bold text-slate-800 text-xs leading-tight">
                   {notification.title}
                 </h4>
                 <button
@@ -125,46 +127,25 @@ const NotificationToast: React.FC<NotificationToastProps> = ({ notification, onC
                     e.stopPropagation();
                     handleClose();
                   }}
-                  className="flex-shrink-0 p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="flex-shrink-0 p-0.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors"
                 >
-                  <X size={16} />
+                  <X size={14} />
                 </button>
               </div>
 
               {notification.content && (
-                <p className="text-slate-600 text-xs leading-relaxed line-clamp-2">
+                <p className="text-slate-600 text-[11px] leading-snug line-clamp-1 mt-0.5">
                   {notification.content}
                 </p>
               )}
 
-              <p className="text-slate-400 text-[10px] mt-2">
+              <p className="text-slate-400 text-[9px] mt-1">
                 刚刚
               </p>
             </div>
           </div>
         </div>
-
-        {/* 底部进度条 */}
-        <div className="h-1 bg-slate-100">
-          <div
-            className={`h-full bg-gradient-to-r ${getNotificationColor(notification.type)} animate-[shrink_5s_linear]`}
-            style={{
-              animation: 'shrink 5s linear forwards'
-            }}
-          />
-        </div>
       </div>
-
-      <style>{`
-        @keyframes shrink {
-          from {
-            width: 100%;
-          }
-          to {
-            width: 0%;
-          }
-        }
-      `}</style>
     </div>
   );
 };

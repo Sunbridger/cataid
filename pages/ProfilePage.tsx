@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
+import { useNotifications } from '../context/NotificationContext';
 import { authService, userService, catService } from '../services/apiService';
 import { Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle, ThumbsUp, Cat, Loader2, Lock as LockIcon } from 'lucide-react';
 
@@ -8,6 +9,7 @@ type AuthMode = 'login' | 'register';
 
 const ProfilePage: React.FC = () => {
   const { user, isLoggedIn, isGuest, login, logout, updateUser } = useUser();
+  const { unreadCount } = useNotifications();
   const navigate = useNavigate();
 
   // 获取用户统计数据（包括游客）
@@ -507,7 +509,13 @@ const ProfilePage: React.FC = () => {
         {/* 其他功能菜单 */}
         <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
           <MenuItemGroup title="服务中心">
-            <MenuItem icon={<Mail size={18} />} title="消息通知" color="text-pink-500" badge="0" />
+            <MenuItem
+              icon={<Mail size={18} />}
+              title="消息通知"
+              color="text-pink-500"
+              badge={unreadCount > 0 ? String(unreadCount) : undefined}
+              to="/notifications"
+            />
             <MenuItem icon={<Phone size={18} />} title="联系客服" color="text-emerald-500" />
           </MenuItemGroup>
         </div>
