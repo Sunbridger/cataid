@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { catService } from '../services/apiService';
 import { Cat } from '../types';
 import { useUser } from '../context/UserContext';
-import { Loader2, ArrowLeft, Heart, Cat as CatIcon, Edit2, Sparkles } from 'lucide-react';
+import { Loader2, ArrowLeft, Heart, Cat as CatIcon, Sparkles } from 'lucide-react';
 import CatCard from '../components/CatCard';
 
 const MyPublishedCatsPage: React.FC = () => {
@@ -101,24 +101,6 @@ const MyPublishedCatsPage: React.FC = () => {
                         cat={cat}
                         isFavorited={false}
                       />
-                      <div className="px-4 pb-4 -mt-2 relative z-10 bg-white">
-                        <div className="flex items-center gap-2 justify-between">
-                          <div className="flex items-center gap-2 text-xs text-slate-400 font-medium bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
-                            <span className={`w-2 h-2 rounded-full ${cat.status === '可领养' ? 'bg-green-400' :
-                              cat.status === '待定' ? 'bg-amber-400' :
-                                'bg-slate-400'
-                              }`}></span>
-                            <span>状态：{cat.status}</span>
-                          </div>
-                          <Link
-                            to={`/cats/${cat.id}/edit`}
-                            className="flex items-center gap-1.5 text-xs text-blue-500 font-medium hover:text-blue-600 transition-colors"
-                          >
-                            <Edit2 size={14} />
-                            <span>编辑</span>
-                          </Link>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 );
