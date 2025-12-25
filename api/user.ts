@@ -66,6 +66,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return handleUpdateProfile(req, res);
     }
 
+    if (action === 'profile' && req.method === 'GET') {
+      return handleGetUserProfile(req, res);
+    }
+
     // ==================== 通知相关 ====================
     if (action === 'notifications' && req.method === 'GET') {
       return handleGetNotifications(req, res);
@@ -453,6 +457,51 @@ async function handleUpdateProfile(req: VercelRequest, res: VercelResponse) {
       adoptionCount: updatedUser.adoption_count || 0,
       createdAt: updatedUser.created_at,
       lastLoginAt: updatedUser.last_login_at,
+    }
+  });
+}
+
+// ==================== 获取用户信息 ====================
+async function handleGetUserProfile(req: VercelRequest, res: VercelResponse) {
+  const { userId } = req.query;
+
+  if (!userId || typeof userId !== 'string') {
+    return res.status(400).json({ error: '缺少用户ID' });
+  }
+
+  if (isDemoMode || !supabase) {
+    return res.status(200).json({
+      data: {
+        id: userId,
+        nickname: '演示用户',
+        avatarUrl: null,
+        status: 'active',
+        role: 'user',
+      }
+    });
+  }
+
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', userId)
+    .single();
+
+  if (error || !user) {
+    console.error('获取用户信息失败:', error);
+    return res.status(404).json({ error: '用户不存在' });
+  }
+
+  return res.status(200).json({
+    data: {
+      id: user.id,
+      phone: user.phone,
+      email: user.email,
+      deviceId: user.device_id,
+      nickname: user.nickname,
+      avatarUrl: user.avatar_url,
+      status: user.status,
+      role: user.role,
     }
   });
 }

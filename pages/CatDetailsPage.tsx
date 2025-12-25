@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { catService, adoptionService, favoriteService, userService } from '../services/apiService';
-import { Cat, AdoptionApplication } from '../types';
+import { Cat, AdoptionApplication, User } from '../types';
 import { Loader2, ArrowLeft, Heart, CheckCircle2, XCircle, Clock, X, MoreHorizontal, Share, Lock } from 'lucide-react';
 import CatImageGallery from '../components/CatImageGallery';
 import CommentSection from '../components/CommentSection';
@@ -20,6 +20,7 @@ const CatDetailsPage: React.FC = () => {
   // 使用 SWR Hook 获取猫咪数据
   const [cat, setCat] = useState<Cat | null>(null);
   const [loading, setLoading] = useState(true);
+  const [publisher, setPublisher] = useState<User | null>(null);
 
   // Adoption State
   const [isAdoptModalOpen, setIsAdoptModalOpen] = useState(false);
@@ -124,6 +125,13 @@ const CatDetailsPage: React.FC = () => {
     }
   }, [id, user?.id]);
 
+  // 加载发布人信息
+  useEffect(() => {
+    if (cat?.userId) {
+      loadPublisher(cat.userId);
+    }
+  }, [cat?.userId]);
+
   // 当打开领养模态框时，自动填充用户信息
   useEffect(() => {
     if (isAdoptModalOpen && user) {
@@ -143,6 +151,16 @@ const CatDetailsPage: React.FC = () => {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 获取发布人信息
+  const loadPublisher = async (userId: string) => {
+    try {
+      const userData = await userService.getUserById(userId);
+      if (userData) setPublisher(userData);
+    } catch (err) {
+      console.error('获取发布人信息失败:', err);
     }
   };
 
@@ -301,6 +319,25 @@ const CatDetailsPage: React.FC = () => {
 
         {/* Info Side */}
         <div className="md:w-1/2 p-6 md:p-10 flex flex-col">
+          {/* 发布人信息 */}
+          {cat.userId && publisher && (
+            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl mb-4">
+              <img
+                src={publisher.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(publisher.nickname)}&background=fce7f3&color=db2777&rounded=true&size=128`}
+                alt={publisher.nickname}
+                className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
+              />
+              <div className="flex-1">
+                <div className="font-bold text-slate-800 text-sm">
+                  {publisher.nickname}
+                </div>
+                <div className="text-slate-500 text-xs">
+                  发布于 {new Date(cat.created_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-between items-start mb-4">
             <div>
               <div className="flex items-center gap-2 mb-1">

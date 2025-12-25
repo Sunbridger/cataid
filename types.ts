@@ -135,6 +135,8 @@ export type NotificationType =
   | 'application_rejected'
   | 'comment_reply'
   | 'comment_like'
+  | 'comment_liked'      // 评论被点赞
+  | 'cat_favorited'      // 猫咪被收藏
   | 'system';
 
 // 通知

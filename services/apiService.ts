@@ -422,6 +422,19 @@ export const userApi = {
       return null;
     }
   },
+
+  /**
+   * 获取用户信息
+   */
+  getUserById: async (userId: string): Promise<User | null> => {
+    try {
+      const result = await request<{ data: User }>(`/user?action=profile&userId=${userId}`);
+      return result.data;
+    } catch (error) {
+      console.error('获取用户信息失败:', error);
+      return null;
+    }
+  },
 };
 
 // 导出用户服务

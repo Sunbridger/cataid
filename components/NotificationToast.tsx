@@ -18,6 +18,8 @@ const getNotificationIcon = (type: NotificationType) => {
     case 'comment_reply':
       return <MessageCircle size={20} />;
     case 'comment_like':
+    case 'comment_liked':
+    case 'cat_favorited':
       return <Heart size={20} className="fill-current" />;
     case 'system':
       return <Sparkles size={20} />;
@@ -34,6 +36,8 @@ const getNotificationColor = (type: NotificationType) => {
     case 'application_rejected':
       return 'from-red-500 to-rose-500';
     case 'comment_like':
+    case 'comment_liked':
+    case 'cat_favorited':
       return 'from-pink-500 to-rose-500';
     case 'comment_reply':
       return 'from-blue-500 to-indigo-500';

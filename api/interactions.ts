@@ -205,6 +205,44 @@ async function handleAddFavorite(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: '添加收藏失败' });
   }
 
+  // 创建收藏通知
+  try {
+    // 获取猫咪信息
+    const { data: cat } = await supabase
+      .from('cats')
+      .select('user_id, name')
+      .eq('id', catId)
+      .single();
+
+    // 获取收藏者信息
+    const { data: favoriter } = await supabase
+      .from('users')
+      .select('nickname')
+      .eq('id', userId)
+      .single();
+
+    // 如果猫咪有发布者且不是自己收藏自己的猫
+    if (cat?.user_id && cat.user_id !== userId && favoriter) {
+      console.log(`[API] Creating favorite notification for user ${cat.user_id}`);
+
+      await supabase
+        .from('notifications')
+        .insert([{
+          user_id: cat.user_id,
+          type: 'cat_favorited',
+          title: '有人收藏了你的猫咪',
+          content: `${favoriter.nickname} 收藏了 ${cat.name}`,
+          related_id: catId,
+          related_type: 'cat',
+        }]);
+
+      console.log('[API] Favorite notification created successfully');
+    }
+  } catch (err) {
+    console.error('[API] Error creating favorite notification:', err);
+    // 不影响主流程，只记录错误
+  }
+
   return res.status(201).json({
     message: '收藏成功',
     action: 'added',
@@ -356,6 +394,44 @@ async function handleAddLike(req: VercelRequest, res: VercelResponse) {
 
   // 更新评论的点赞数
   await supabase.rpc('increment_comment_likes', { comment_id: commentId });
+
+  // 创建点赞通知
+  try {
+    // 获取评论信息
+    const { data: comment } = await supabase
+      .from('comments')
+      .select('user_id, nickname, content')
+      .eq('id', commentId)
+      .single();
+
+    // 获取点赞者信息
+    const { data: liker } = await supabase
+      .from('users')
+      .select('nickname')
+      .eq('id', userId)
+      .single();
+
+    // 如果评论有作者且不是自己点赞自己的评论
+    if (comment?.user_id && comment.user_id !== userId && liker) {
+      console.log(`[API] Creating like notification for user ${comment.user_id}`);
+
+      await supabase
+        .from('notifications')
+        .insert([{
+          user_id: comment.user_id,
+          type: 'comment_liked',
+          title: '有人点赞了你的评论',
+          content: `${liker.nickname} 觉得你的评论很赞`,
+          related_id: commentId,
+          related_type: 'comment',
+        }]);
+
+      console.log('[API] Like notification created successfully');
+    }
+  } catch (err) {
+    console.error('[API] Error creating like notification:', err);
+    // 不影响主流程，只记录错误
+  }
 
   return res.status(201).json({
     data: {
