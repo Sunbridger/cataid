@@ -96,7 +96,17 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   // Supabase Realtime 订阅
   useEffect(() => {
-    if (!supabase || !user?.id) return;
+    if (!supabase) {
+      console.warn('[Notification] Supabase client not initialized');
+      return;
+    }
+
+    if (!user?.id) {
+      console.warn('[Notification] No user ID, skipping subscription');
+      return;
+    }
+
+    console.log('[Notification] Setting up Realtime subscription for user:', user.id);
 
     const channel = supabase
       .channel(`notifications:${user.id}`)
@@ -109,6 +119,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
+          console.log('[Notification] Received new notification:', payload);
           // 新通知：增加未读数，添加到列表
           const newNotification: Notification = {
             id: payload.new.id,
@@ -121,13 +132,26 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
             relatedType: payload.new.related_type,
             createdAt: payload.new.created_at,
           };
+          console.log('[Notification] Adding notification to state:', newNotification);
           setNotifications(prev => [newNotification, ...prev]);
           setUnreadCount(prev => prev + 1);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[Notification] Subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('[Notification] ✅ Successfully subscribed to notifications');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('[Notification] ❌ Channel error');
+        } else if (status === 'TIMED_OUT') {
+          console.error('[Notification] ❌ Subscription timed out');
+        } else if (status === 'CLOSED') {
+          console.warn('[Notification] ⚠️ Channel closed');
+        }
+      });
 
     return () => {
+      console.log('[Notification] Cleaning up subscription for user:', user.id);
       supabase.removeChannel(channel);
     };
   }, [user?.id]);
