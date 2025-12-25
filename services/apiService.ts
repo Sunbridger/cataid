@@ -134,12 +134,13 @@ export const catApi = {
   /**
    * 更新猫咪状态
    */
-  updateStatus: async (id: string, status: CatStatus): Promise<void> => {
+  updateStatus: async (id: string, status: CatStatus): Promise<{ message?: string }> => {
     // PUT /api/cats/[id]
-    await request(`/cats/${id}`, {
+    const result = await request<{ data: Cat; message: string }>(`/cats/${id}`, {
       method: 'PUT',
       body: JSON.stringify({ status }),
     });
+    return { message: result.message };
   },
 
   /**

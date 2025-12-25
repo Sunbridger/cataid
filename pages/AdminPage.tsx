@@ -53,10 +53,10 @@ const AdminPage: React.FC = () => {
   const handleStatusChange = async (id: string, newStatus: CatStatus) => {
     try {
       setUpdatingId(id);
-      await catService.updateStatus(id, newStatus);
+      const result = await catService.updateStatus(id, newStatus);
       setCats(cats.map(cat => cat.id === id ? { ...cat, status: newStatus } : cat));
       window.dispatchEvent(new Event('cat-data-updated'));
-      success('状态更新成功');
+      success(result.message || '状态更新成功');
     } catch (err) {
       console.error("Failed to update status", err);
       error("更新状态失败");
