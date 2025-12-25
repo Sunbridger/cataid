@@ -119,10 +119,10 @@ async function handleUpdateCat(id: string, body: any, res: VercelResponse) {
     return res.status(400).json({ error: '缺少状态参数' });
   }
 
-  // 先获取当前猫咪状态
+  // 先获取当前猫咪状态和名称
   const { data: currentCat, error: fetchError } = await supabase
     .from('cats')
-    .select('status')
+    .select('status, name')
     .eq('id', id)
     .single();
 
@@ -133,16 +133,17 @@ async function handleUpdateCat(id: string, body: any, res: VercelResponse) {
 
   const oldStatus = currentCat.status;
   const newStatus = status;
+  const catName = currentCat.name;
 
-  // 数据一致性处理：如果从"已领养"改为"可领养"
-  // 需要将该猫咪所有已通过的申请状态改为 rejected
-  if (oldStatus === '已领养' && newStatus === '可领养') {
-    console.log(`[状态变更] 猫咪 ${id} 从"已领养"改为"可领养",处理相关申请...`);
+  // 数据一致性处理:如果从"已领养"改为其他状态
+  // 需要将该猫咪所有已通过的申请状态改为 rejected,并通知用户
+  if (oldStatus === '已领养' && newStatus !== '已领养') {
+    console.log(`[状态变更] 猫咪 ${id} 从"已领养"改为"${newStatus}",处理相关申请...`);
 
     // 查找该猫咪所有已通过的申请
     const { data: approvedApps, error: appsError } = await supabase
       .from('adoption_applications')
-      .select('id, applicant_name')
+      .select('id, applicant_name, user_id')
       .eq('cat_id', id)
       .eq('status', 'approved');
 
@@ -166,6 +167,31 @@ async function handleUpdateCat(id: string, body: any, res: VercelResponse) {
       }
 
       console.log('已成功将相关申请状态更新为 rejected');
+
+      // 发送通知给所有受影响的用户
+      const notifications = approvedApps
+        .filter(app => app.user_id) // 只通知有用户ID的申请
+        .map(app => ({
+          user_id: app.user_id,
+          type: 'adoption_cancelled',
+          title: '领养状态变更通知',
+          content: `很抱歉,您领养的猫咪"${catName}"的状态已被管理员更改为"${newStatus}"。如有疑问,请联系管理员。`,
+          related_id: id,
+          related_type: 'cat'
+        }));
+
+      if (notifications.length > 0) {
+        const { error: notifyError } = await supabase
+          .from('notifications')
+          .insert(notifications);
+
+        if (notifyError) {
+          console.error('发送通知失败:', notifyError);
+          // 不阻断主流程,只记录错误
+        } else {
+          console.log(`已发送 ${notifications.length} 条通知给受影响的用户`);
+        }
+      }
     }
   }
 
@@ -183,8 +209,8 @@ async function handleUpdateCat(id: string, body: any, res: VercelResponse) {
   }
 
   // 返回更新结果,包含是否处理了相关申请的信息
-  const message = oldStatus === '已领养' && newStatus === '可领养'
-    ? '状态更新成功,已自动处理相关领养申请'
+  const message = oldStatus === '已领养' && newStatus !== '已领养'
+    ? '状态更新成功,已自动处理相关领养申请并通知用户'
     : '更新成功';
 
   return res.status(200).json({ data, message });

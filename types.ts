@@ -138,6 +138,7 @@ export type NotificationType =
   | 'comment_like'
   | 'comment_liked'      // 评论被点赞
   | 'cat_favorited'      // 猫咪被收藏
+  | 'adoption_cancelled' // 领养被取消(管理员更改已领养猫咪状态)
   | 'system';
 
 // 通知
