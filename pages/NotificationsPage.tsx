@@ -67,12 +67,21 @@ const NotificationsPage: React.FC = () => {
   } = useNotifications();
 
   useEffect(() => {
+    console.log('[NotificationsPage] Component mounted/updated');
+    console.log('[NotificationsPage] isLoggedIn:', isLoggedIn);
+    console.log('[NotificationsPage] notifications:', notifications);
+    console.log('[NotificationsPage] notifications.length:', notifications.length);
+
     if (!isLoggedIn) {
       navigate('/profile');
       return;
     }
+
+    // 加载通知列表
     refreshNotifications();
-  }, [isLoggedIn, navigate, refreshNotifications]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, navigate]); // 移除 refreshNotifications 避免无限循环
 
   const handleNotificationClick = async (notification: Notification) => {
     // 标记已读
@@ -114,7 +123,11 @@ const NotificationsPage: React.FC = () => {
       </div>
 
       <div className="max-w-md mx-auto py-6">
-        {notifications.length === 0 ? (
+        {(() => {
+          console.log('[NotificationsPage] Rendering. notifications.length:', notifications.length);
+          console.log('[NotificationsPage] Rendering. notifications:', notifications);
+          return notifications.length === 0;
+        })() ? (
           <div className="bg-white rounded-3xl p-8 text-center shadow-sm border border-slate-100">
             <div className="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-6 text-pink-300">
               <Bell size={40} />
@@ -137,8 +150,8 @@ const NotificationsPage: React.FC = () => {
                 key={notification.id}
                 onClick={() => handleNotificationClick(notification)}
                 className={`w-full text-left bg-white rounded-2xl shadow-sm p-4 transition-all border ${notification.isRead
-                    ? 'border-slate-100 opacity-70'
-                    : 'border-pink-100 hover:shadow-md'
+                  ? 'border-slate-100 opacity-70'
+                  : 'border-pink-100 hover:shadow-md'
                   }`}
               >
                 <div className="flex items-start gap-3">

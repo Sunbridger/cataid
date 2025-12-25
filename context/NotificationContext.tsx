@@ -3,6 +3,7 @@ import { notificationService } from '../services/apiService';
 import { useUser } from './UserContext';
 import { Notification } from '../types';
 import { createClient } from '@supabase/supabase-js';
+import NotificationToast from '../components/NotificationToast';
 
 // Supabase 客户端（仅用于 Realtime）
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -40,6 +41,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [currentToast, setCurrentToast] = useState<Notification | null>(null);
 
   // 获取通知列表
   const refreshNotifications = useCallback(async () => {
@@ -154,6 +156,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
               console.log('[Notification] Updated unreadCount:', updated);
               return updated;
             });
+
+            // 显示顶部 Toast 提示
+            console.log('[Notification] Showing toast for new notification');
+            setCurrentToast(newNotification);
           } else {
             console.log('[Notification] Notification is already read, not incrementing unreadCount');
           }
@@ -203,6 +209,14 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       }}
     >
       {children}
+
+      {/* 全局顶部通知提示 */}
+      {currentToast && (
+        <NotificationToast
+          notification={currentToast}
+          onClose={() => setCurrentToast(null)}
+        />
+      )}
     </NotificationContext.Provider>
   );
 };
