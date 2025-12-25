@@ -127,15 +127,15 @@ async function handleRegister(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: '用户已存在' });
   }
 
-  // 密码哈希
-  const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+  // 密码处理 (应用户要求存储明文)
+  // const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
 
   // 创建用户
   const { data: newUser, error } = await supabase
     .from('users')
     .insert([{
       phone, email, device_id: deviceId,
-      password_hash: passwordHash,
+      password_hash: password,
       nickname,
       status: 'active',
       role: 'user',
@@ -205,9 +205,9 @@ async function handleLogin(req: VercelRequest, res: VercelResponse) {
     return res.status(401).json({ error: '用户不存在' });
   }
 
-  // 验证密码
-  const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
-  if (userData.password_hash !== passwordHash) {
+  // 验证密码 (应用户要求使用明文比对)
+  // const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+  if (userData.password_hash !== password) {
     return res.status(401).json({ error: '密码错误' });
   }
 
