@@ -156,16 +156,29 @@ async function submitApplication(app: NewApplicationInput) {
 
   // 为申请人创建通知
   if (app.userId) {
-    await supabase
-      .from('notifications')
-      .insert([{
-        user_id: app.userId,
-        type: 'application_submitted',
-        title: `已提交领养申请`,
-        content: `您对 ${app.catName} 的领养申请已提交，请等待审核`,
-        related_id: data.id,
-        related_type: 'application',
-      }]);
+    try {
+      console.log(`[API] Creating notification for user ${app.userId}`);
+      const { error: notifError } = await supabase
+        .from('notifications')
+        .insert([{
+          user_id: app.userId,
+          type: 'application_submitted',
+          title: `已提交领养申请`,
+          content: `您对 ${app.catName} 的领养申请已提交，请等待审核`,
+          related_id: data.id,
+          related_type: 'application',
+        }]);
+
+      if (notifError) {
+        console.error('[API] Failed to create notification:', notifError);
+      } else {
+        console.log('[API] Notification created successfully');
+      }
+    } catch (err) {
+      console.error('[API] Error creating notification:', err);
+    }
+  } else {
+    console.warn('[API] No userId provided for application, skipping notification');
   }
 
   return data;

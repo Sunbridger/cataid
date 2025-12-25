@@ -146,19 +146,31 @@ async function reviewApplication(appId: string, status: string, catId: string) {
 
   // 为申请人创建审核结果通知
   if (application?.user_id) {
-    const isApproved = status === 'approved';
-    await supabase
-      .from('notifications')
-      .insert([{
-        user_id: application.user_id,
-        type: isApproved ? 'application_approved' : 'application_rejected',
-        title: isApproved ? '领养申请已通过 🎉' : '领养申请未通过',
-        content: isApproved
-          ? `恭喜！您对 ${application.cat_name} 的领养申请已通过，请联系管理员领取`
-          : `抱歉，您对 ${application.cat_name} 的领养申请未通过`,
-        related_id: appId,
-        related_type: 'application',
-      }]);
+    try {
+      const isApproved = status === 'approved';
+      console.log(`[API] Creating review notification for user ${application.user_id}, status: ${status}`);
+
+      const { error: notifError } = await supabase
+        .from('notifications')
+        .insert([{
+          user_id: application.user_id,
+          type: isApproved ? 'application_approved' : 'application_rejected',
+          title: isApproved ? '领养申请已通过 🎉' : '领养申请未通过',
+          content: isApproved
+            ? `恭喜！您对 ${application.cat_name} 的领养申请已通过，请联系管理员领取`
+            : `抱歉，您对 ${application.cat_name} 的领养申请未通过`,
+          related_id: appId,
+          related_type: 'application',
+        }]);
+
+      if (notifError) {
+        console.error('[API] Failed to create review notification:', notifError);
+      } else {
+        console.log('[API] Review notification created successfully');
+      }
+    } catch (err) {
+      console.error('[API] Error creating review notification:', err);
+    }
   }
 }
 
