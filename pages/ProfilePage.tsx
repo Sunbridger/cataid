@@ -27,7 +27,14 @@ const ProfilePage: React.FC = () => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // 认证相关状态
-  const [authMode, setAuthMode] = useState<AuthMode>('register');
+  const [authMode, setAuthMode] = useState<AuthMode>('login');
+
+  // 当从登录状态变为未登录状态（即退出登录）时，默认显示登录界面
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setAuthMode('login');
+    }
+  }, [isLoggedIn]);
   const [authMethod, setAuthMethod] = useState<'phone' | 'email'>('phone');
   const [showPassword, setShowPassword] = useState(false);
   const [authForm, setAuthForm] = useState({
