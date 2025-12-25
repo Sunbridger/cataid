@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { authService, userService, catService } from '../services/apiService';
-import { Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle, ThumbsUp, Cat, Loader2 } from 'lucide-react';
+import { Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle, ThumbsUp, Cat, Loader2, Lock as LockIcon } from 'lucide-react';
 
 type AuthMode = 'login' | 'register';
 
@@ -250,7 +250,7 @@ const ProfilePage: React.FC = () => {
               <div className="group">
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-rose-500 transition-colors">
-                    <div className="w-5 flex justify-center font-mono text-base font-bold">***</div>
+                    <LockIcon size={18} />
                   </div>
                   <input
                     type={showPassword ? 'text' : 'password'}
