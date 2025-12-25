@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, Bell, MessageCircle, FileText, Heart, Sparkles } from 'lucide-react';
 import { Notification, NotificationType } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 
 interface NotificationToastProps {
   notification: Notification;
@@ -55,6 +56,7 @@ const NotificationToast: React.FC<NotificationToastProps> = ({ notification, onC
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const navigate = useNavigate();
+  const { user } = useUser();
 
   useEffect(() => {
     // 进入动画
@@ -77,8 +79,13 @@ const NotificationToast: React.FC<NotificationToastProps> = ({ notification, onC
   };
 
   const handleClick = () => {
-    // 跳转到通知页面
-    navigate('/notifications');
+    // 如果是 new_application 类型且用户是管理员，跳转到管理后台
+    if (notification.type === 'new_application' && user?.role === 'admin') {
+      navigate('/admin');
+    } else {
+      // 其他情况跳转到通知页面
+      navigate('/notifications');
+    }
     handleClose();
   };
 

@@ -45,8 +45,14 @@ const getNotificationColor = (type: NotificationType) => {
 };
 
 // 获取通知跳转链接
-const getNotificationLink = (notification: Notification): string | null => {
+const getNotificationLink = (notification: Notification, userRole?: string): string | null => {
   if (!notification.relatedId) return null;
+
+  // 如果是 new_application 类型且用户是管理员，跳转到管理后台
+  if (notification.type === 'new_application' && userRole === 'admin') {
+    return '/admin';
+  }
+
   switch (notification.relatedType) {
     case 'cat':
       return `/cat/${notification.relatedId}`;
@@ -58,7 +64,7 @@ const getNotificationLink = (notification: Notification): string | null => {
 };
 
 const NotificationsPage: React.FC = () => {
-  const { isLoggedIn } = useUser();
+  const { isLoggedIn, user } = useUser();
   const navigate = useNavigate();
   const {
     notifications,
@@ -92,7 +98,7 @@ const NotificationsPage: React.FC = () => {
       await markAsRead(notification.id);
     }
     // 跳转
-    const link = getNotificationLink(notification);
+    const link = getNotificationLink(notification, user?.role);
     if (link) {
       navigate(link);
     }

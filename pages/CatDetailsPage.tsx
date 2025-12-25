@@ -256,11 +256,20 @@ const CatDetailsPage: React.FC = () => {
     }
     if (myApplication.status === 'rejected') {
       return (
-        <div className="w-full py-4 bg-slate-50 border border-slate-200 text-slate-600 rounded-xl flex flex-col items-center justify-center gap-2 animate-in fade-in zoom-in duration-300">
+        <div className="w-full py-4 bg-slate-50 border border-slate-200 text-slate-600 rounded-xl flex flex-col items-center justify-center gap-3 animate-in fade-in zoom-in duration-300">
           <div className="flex items-center gap-2 font-bold text-lg">
             <XCircle /> 申请未通过
           </div>
-          <p className="text-sm opacity-80">很抱歉，根据目前情况我们无法通过您的申请。</p>
+          <p className="text-sm opacity-80 text-center px-4">很抱歉，根据目前情况我们无法通过您的申请。</p>
+          <button
+            onClick={() => {
+              setMyApplication(null);
+              setIsAdoptModalOpen(true);
+            }}
+            className="mt-2 px-6 py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-pink-500/30 transition-all active:scale-95"
+          >
+            再次申请
+          </button>
         </div>
       );
     }
