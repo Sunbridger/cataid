@@ -219,11 +219,15 @@ const HomePage: React.FC = () => {
             {error}
           </div>
         ) : filteredCats.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
-            <p className="text-slate-400 text-lg">没有找到符合条件的猫咪。</p>
+          <div className="bg-white rounded-3xl p-10 text-center shadow-sm border border-slate-100">
+            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+              <Search size={32} />
+            </div>
+            <h3 className="text-lg font-bold text-slate-800 mb-2">未找到相关猫咪</h3>
+            <p className="text-slate-500 text-sm mb-6">试着换个关键词或者筛选条件看看吧。</p>
             <button
               onClick={() => setSearchTerm('')}
-              className="mt-4 text-pink-500 font-medium hover:underline"
+              className="px-6 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors text-sm"
             >
               清除筛选条件
             </button>

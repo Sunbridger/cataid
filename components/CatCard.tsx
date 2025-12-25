@@ -15,7 +15,7 @@ const CatCard: React.FC<CatCardProps> = ({ cat, isFavorited = false }) => {
   return (
     <Link
       to={`/cat/${cat.id}`}
-      className={`group block bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-slate-100`}
+      className={`group block bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-slate-100`}
     >
       <div className="relative aspect-square md:aspect-[4/3] overflow-hidden bg-slate-100">
         <img
@@ -26,7 +26,7 @@ const CatCard: React.FC<CatCardProps> = ({ cat, isFavorited = false }) => {
         />
 
         {/* Badges Container */}
-        <div className="absolute top-2 left-2 md:top-3 md:left-3 flex flex-col gap-1.5 z-10 items-start">
+        <div className="absolute top-3 left-3 md:top-4 md:left-4 flex flex-col gap-1.5 z-10 items-start">
           {status !== '可领养' && (
             <div className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold shadow-sm uppercase tracking-wide
              ${status === '已领养' ? 'bg-gradient-to-r from-rose-400 to-pink-500 text-white shadow-md' : 'bg-amber-100 text-amber-800'}`}>
@@ -40,7 +40,7 @@ const CatCard: React.FC<CatCardProps> = ({ cat, isFavorited = false }) => {
         </div>
 
         {/* 收藏状态图标 */}
-        <div className={`absolute top-2 right-2 md:top-3 md:right-3 p-1.5 md:p-2 rounded-full shadow-sm backdrop-blur-sm transition-colors
+        <div className={`absolute top-3 right-3 md:top-4 md:right-4 p-1.5 md:p-2 rounded-full shadow-sm backdrop-blur-sm transition-colors
           ${isFavorited ? 'bg-red-50 text-red-500' : 'bg-white/90 text-slate-300'}`}>
           <Heart size={16} className="md:w-[18px] md:h-[18px]" fill={isFavorited ? "currentColor" : "none"} />
         </div>

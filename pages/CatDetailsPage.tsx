@@ -276,9 +276,9 @@ const CatDetailsPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto relative pt-14 md:pt-0">
+    <div className="max-w-4xl mx-auto relative">
       {/* Mobile App-like Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md shadow-sm z-30 flex items-center justify-between px-4 border-b border-slate-100">
+      <div className="md:hidden sticky top-0 bg-white/95 backdrop-blur-md shadow-sm z-30 flex items-center justify-between px-4 py-2.5 border-b border-slate-100 mb-4 -mx-4">
         <div className="flex items-center gap-2 overflow-hidden">
           <Link to="/" className="p-2 -ml-2 text-slate-800 active:bg-slate-100 rounded-full transition-colors flex-shrink-0">
             <ArrowLeft size={24} />
@@ -350,10 +350,10 @@ const CatDetailsPage: React.FC = () => {
           <div className="flex justify-between items-start mb-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className={`px-2 py-0.5 rounded text-xs font-bold text-white ${cat.is_stray ? 'bg-orange-400' : 'bg-pink-500'}`}>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-bold text-white ${cat.is_stray ? 'bg-orange-400' : 'bg-pink-500'}`}>
                   {cat.is_stray ? '流浪' : '家养'}
                 </span>
-                <span className={`px-2 py-0.5 rounded text-xs font-bold ${status === '可领养' ? 'bg-green-100 text-green-700' :
+                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${status === '可领养' ? 'bg-green-100 text-green-700' :
                   status === '待定' ? 'bg-amber-100 text-amber-700' :
                     status === '已领养' ? 'bg-gradient-to-r from-rose-400 to-pink-500 text-white shadow-md' :
                       'bg-slate-200 text-slate-600'
