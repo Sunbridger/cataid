@@ -119,7 +119,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          console.log('[Notification] Received new notification:', payload);
+          console.log('[Notification] ========== NEW NOTIFICATION RECEIVED ==========');
+          console.log('[Notification] Payload:', payload);
+
           // 新通知：增加未读数，添加到列表
           const newNotification: Notification = {
             id: payload.new.id,
@@ -132,9 +134,31 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
             relatedType: payload.new.related_type,
             createdAt: payload.new.created_at,
           };
-          console.log('[Notification] Adding notification to state:', newNotification);
-          setNotifications(prev => [newNotification, ...prev]);
-          setUnreadCount(prev => prev + 1);
+
+          console.log('[Notification] New notification object:', newNotification);
+          console.log('[Notification] isRead:', newNotification.isRead);
+
+          // 更新通知列表
+          setNotifications(prev => {
+            console.log('[Notification] Updating notifications. Previous count:', prev.length);
+            const updated = [newNotification, ...prev];
+            console.log('[Notification] Updated notifications count:', updated.length);
+            return updated;
+          });
+
+          // 只有未读通知才增加未读数
+          if (!newNotification.isRead) {
+            setUnreadCount(prev => {
+              console.log('[Notification] Updating unreadCount. Previous:', prev);
+              const updated = prev + 1;
+              console.log('[Notification] Updated unreadCount:', updated);
+              return updated;
+            });
+          } else {
+            console.log('[Notification] Notification is already read, not incrementing unreadCount');
+          }
+
+          console.log('[Notification] ========== END ==========');
         }
       )
       .subscribe((status) => {
@@ -155,6 +179,16 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       supabase.removeChannel(channel);
     };
   }, [user?.id]);
+
+  // 监听 unreadCount 变化
+  useEffect(() => {
+    console.log('[Notification] unreadCount changed to:', unreadCount);
+  }, [unreadCount]);
+
+  // 监听 notifications 变化
+  useEffect(() => {
+    console.log('[Notification] notifications changed. Count:', notifications.length);
+  }, [notifications]);
 
   return (
     <NotificationContext.Provider

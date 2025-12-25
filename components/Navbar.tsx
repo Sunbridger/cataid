@@ -9,6 +9,9 @@ const Navbar: React.FC = () => {
   const { user, isLoggedIn } = useUser();
   const { unreadCount } = useNotifications();
 
+  // 调试日志
+  console.log('[Navbar] unreadCount:', unreadCount, 'isLoggedIn:', isLoggedIn);
+
   // 是否为管理员
   const isAdmin = isLoggedIn && user?.role === 'admin';
 
@@ -108,6 +111,24 @@ const Navbar: React.FC = () => {
             </div>
             <span className={`text-[10px] ${location.pathname === '/add' ? 'font-bold' : 'font-medium'}`}>发布</span>
           </Link>
+
+          {/* 移动端通知图标 */}
+          {isLoggedIn && (
+            <Link
+              to="/notifications"
+              className={`relative flex flex-col items-center justify-center w-20 h-full gap-0.5 group ${location.pathname === '/notifications' ? 'text-pink-600' : 'text-slate-400 hover:text-slate-500'}`}
+            >
+              <div className={`p-1.5 rounded-2xl ${location.pathname === '/notifications' ? 'bg-pink-50 shadow-sm shadow-pink-100' : ''}`}>
+                <Bell size={22} strokeWidth={location.pathname === '/notifications' ? 2.5 : 2} className={location.pathname === '/notifications' ? 'fill-pink-500/10' : ''} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 bg-pink-500 text-white text-[10px] font-bold min-w-[16px] h-[16px] rounded-full flex items-center justify-center px-1">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </div>
+              <span className={`text-[10px] ${location.pathname === '/notifications' ? 'font-bold' : 'font-medium'}`}>通知</span>
+            </Link>
+          )}
 
           {isAdmin && (
             <Link
