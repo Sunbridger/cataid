@@ -510,13 +510,16 @@ const ProfilePage: React.FC = () => {
               badge={unreadCount > 0 ? String(unreadCount) : undefined}
               to="/notifications"
             />
-            <MenuItem
-              icon={<MessageSquareText size={18} />}
-              title="在线客服"
-              description="专属顾问在线解答"
-              color="text-emerald-500"
-              to="/support"
-            />
+            {/* 管理员通过后台处理客服消息，不显示在线客服入口 */}
+            {user?.role !== 'admin' && (
+              <MenuItem
+                icon={<MessageSquareText size={18} />}
+                title="在线客服"
+                description="专属顾问在线解答"
+                color="text-emerald-500"
+                to="/support"
+              />
+            )}
           </MenuItemGroup>
         </div>
 

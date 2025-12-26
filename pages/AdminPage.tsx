@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { catService, adoptionService, supportApi } from '../services/apiService';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { catService, adoptionService, supportApi, userService } from '../services/apiService';
 import { Cat, CatStatus, AdoptionApplication, ApplicationStatus, SupportSession } from '../types';
 import { CAT_STATUSES } from '../constants';
-import { Loader2, Settings, FileText, CheckCircle, XCircle, Trash2, Shield, MessageSquare } from 'lucide-react';
+import { Loader2, Settings, FileText, CheckCircle, XCircle, Trash2, Shield, MessageSquare, RefreshCw } from 'lucide-react';
+import { supabase } from '../utils/supabaseClient';
 
 import { useToast } from '../context/ToastContext';
 
 const AdminPage: React.FC = () => {
   const { success, error } = useToast();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'cats' | 'applications' | 'support'>('applications'); // Default to applications for easier testing
 
   // Cat Management State
@@ -22,13 +25,43 @@ const AdminPage: React.FC = () => {
   const [processingAppId, setProcessingAppId] = useState<string | null>(null);
 
   // Support Sessions State
-  const [sessions, setSessions] = useState<SupportSession[]>([]);
+  const [sessions, setSessions] = useState<any[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
+  // 用户昵称缓存 (userId -> nickname)
+  const [userNicknames, setUserNicknames] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetchCats();
     fetchApplications();
     fetchSessions();
+  }, []);
+
+  // Supabase Realtime 订阅客服会话变化（自动刷新）
+  useEffect(() => {
+    if (!supabase) return;
+
+    const channel = supabase
+      .channel('admin-support-sessions')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'support_sessions'
+        },
+        (payload) => {
+          console.log('[Admin] Support session changed:', payload);
+          // 自动刷新会话列表
+          fetchSessions();
+        }
+      )
+      .subscribe((status) => {
+        console.log('[Admin] Support sessions subscription status:', status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchCats = async () => {
@@ -60,6 +93,24 @@ const AdminPage: React.FC = () => {
     try {
       const data = await supportApi.getAllSessions('admin');
       setSessions(data);
+
+      // 获取所有用户昵称
+      const userIds = [...new Set(data.map((s: any) => s.user_id).filter(Boolean))];
+      const nicknameMap: Record<string, string> = { ...userNicknames };
+
+      for (const userId of userIds) {
+        if (!nicknameMap[userId as string]) {
+          try {
+            const userInfo = await userService.getUserById(userId as string);
+            if (userInfo?.nickname) {
+              nicknameMap[userId as string] = userInfo.nickname;
+            }
+          } catch (e) {
+            console.error('获取用户信息失败:', e);
+          }
+        }
+      }
+      setUserNicknames(nicknameMap);
     } catch (err) {
       console.error(err);
     } finally {
@@ -182,20 +233,6 @@ const AdminPage: React.FC = () => {
             )}
           </button>
         </div>
-
-        {/* 顶部工具栏 (仅在客服 Tab 显示) */}
-        {activeTab === 'support' && (
-          <div className="flex justify-end mb-4 px-2">
-            <button
-              onClick={fetchSessions}
-              disabled={loadingSessions}
-              className="flex items-center gap-1.5 text-sm text-pink-500 font-bold hover:text-pink-600 transition-colors disabled:opacity-50"
-            >
-              <Loader2 size={14} className={loadingSessions ? 'animate-spin' : ''} />
-              {loadingSessions ? '刷新中...' : '刷新列表'}
-            </button>
-          </div>
-        )}
 
         {activeTab === 'cats' && (
           // Cats Table
@@ -425,32 +462,37 @@ const AdminPage: React.FC = () => {
               </div>
             ) : (
               <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden divide-y divide-slate-100">
-                {sessions.map((session: any) => (
-                  <div
-                    key={session.id}
-                    className="p-4 hover:bg-slate-50 transition-colors cursor-pointer flex items-center justify-between group"
-                    onClick={() => window.open(`#/support?sessionId=${session.id}&userId=${session.user_id}`, '_blank')}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-pink-100 text-pink-500 rounded-full flex items-center justify-center font-bold relative">
-                        {(session.unread_count || 0) > 0 && (
-                          <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white">
-                            {session.unread_count}
-                          </span>
-                        )}
-                        <MessageSquare size={20} />
+                {sessions.map((session: any) => {
+                  const userId = session.user_id || '';
+                  const nickname = userNicknames[userId] || `用户 ${userId.slice(-4)}`;
+
+                  return (
+                    <div
+                      key={session.id}
+                      className="p-4 hover:bg-slate-50 transition-colors cursor-pointer flex items-center justify-between group"
+                      onClick={() => navigate(`/support?sessionId=${session.id}&userId=${userId}`)}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-pink-100 text-pink-500 rounded-full flex items-center justify-center font-bold relative">
+                          {(session.unread_count || 0) > 0 && (
+                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white">
+                              {session.unread_count}
+                            </span>
+                          )}
+                          <MessageSquare size={20} />
+                        </div>
+                        <div>
+                          <div className="font-bold text-slate-800 text-sm">{nickname}</div>
+                          <div className="text-xs text-slate-500 mt-0.5 truncate max-w-[200px]">{session.last_message || '等待回复...'}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="font-bold text-slate-800 text-sm">用户 (ID: {(session.user_id || '').slice(-4)})</div>
-                        <div className="text-xs text-slate-500 mt-0.5 truncate max-w-[200px]">{session.last_message || '无消息'}</div>
+                      <div className="text-right">
+                        <div className="text-[10px] text-slate-400">{session.last_message_at ? new Date(session.last_message_at).toLocaleString() : '-'}</div>
+                        <div className="text-pink-500 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">点击回复 &rarr;</div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-[10px] text-slate-400">{session.last_message_at ? new Date(session.last_message_at).toLocaleString() : '-'}</div>
-                      <div className="text-pink-500 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">点击回复 &rarr;</div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
