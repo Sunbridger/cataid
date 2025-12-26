@@ -285,7 +285,7 @@ export const commentApi = {
    */
   likeComment: async (commentId: string): Promise<boolean> => {
     try {
-      await request(`/comments/${commentId}/like`, {
+      await request(`/comments?id=${commentId}&action=like`, {
         method: 'POST',
       });
       return true;
@@ -648,7 +648,7 @@ export const supportApi = {
   getAllSessions: async (role?: string): Promise<any[]> => {
     // 传递 role=admin 以获取所有会话
     const roleParam = role ? `&role=${role}` : '';
-    const result = await request<{ data: any[] }>(`/support/sessions?limit=100${roleParam}`);
+    const result = await request<{ data: any[] }>(`/support?type=sessions&limit=100${roleParam}`);
     return result.data;
   }
 };

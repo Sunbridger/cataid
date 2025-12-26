@@ -38,7 +38,7 @@ export const SupportProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setLoading(true);
     try {
       // 1. 获取或创建会话
-      const res = await fetch(`${API_BASE}/api/support/sessions`, {
+      const res = await fetch(`${API_BASE}/api/support?type=sessions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user.id })
@@ -85,7 +85,7 @@ export const SupportProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const fetchMessages = async (sessionId: string) => {
     try {
-      const res = await fetch(`${API_BASE}/api/support/messages?sessionId=${sessionId}`);
+      const res = await fetch(`${API_BASE}/api/support?type=messages&sessionId=${sessionId}`);
       const result = await res.json();
       if (result.data) {
         // 转换下划线字段到驼峰 (API返回的是数据库原有字段)
@@ -117,7 +117,7 @@ export const SupportProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // 我们暂时依赖 API 返回或 Realtime。
 
     try {
-      const res = await fetch(`${API_BASE}/api/support/messages`, {
+      const res = await fetch(`${API_BASE}/api/support?type=messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -141,7 +141,7 @@ export const SupportProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const markAsRead = async () => {
     if (!session) return;
     try {
-      await fetch(`${API_BASE}/api/support/sessions`, {
+      await fetch(`${API_BASE}/api/support?type=sessions`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId: session.id, action: 'read' })

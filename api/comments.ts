@@ -99,8 +99,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ data: toCamelCase(data) });
     }
 
-    // POST /api/comments - 提交评论
+    // POST /api/comments - 提交评论 或 点赞
     if (req.method === 'POST') {
+      // 检查是否是点赞操作
+      const action = req.query.action || req.body.action;
+      if (action === 'like') {
+        const commentId = (req.query.id as string) || req.body.id;
+        if (!commentId) return res.status(400).json({ error: '缺少评论 ID' });
+
+        await handleLike(commentId);
+        return res.status(200).json({ success: true });
+      }
+
       const data = await submitComment(req.body);
       return res.status(201).json({ data: toCamelCase(data) });
     }
@@ -206,4 +216,34 @@ async function submitComment(comment: NewCommentInput) {
   }
 
   return data;
+}
+
+async function handleLike(id: string) {
+  if (isDemoMode || !supabase) {
+    // 演示模式：更新 Mock
+    const comment = MOCK_COMMENTS.find(c => c.id === id);
+    if (comment) comment.like_count++;
+    return;
+  }
+
+  // 尝试使用 RPC
+  const { error } = await supabase.rpc('increment_like_count', { comment_id: id });
+
+  if (error) {
+    // 回退：先查后更
+    const { data: dbComment, error: getError } = await supabase
+      .from('comments')
+      .select('like_count')
+      .eq('id', id)
+      .single();
+
+    if (getError) throw getError;
+
+    const { error: updateError } = await supabase
+      .from('comments')
+      .update({ like_count: (dbComment?.like_count || 0) + 1 })
+      .eq('id', id);
+
+    if (updateError) throw updateError;
+  }
 }
