@@ -153,3 +153,29 @@ export interface Notification {
   relatedType?: 'cat' | 'comment' | 'application';
   createdAt: string;
 }
+// === 客服系统相关类型 ===
+
+export type SupportSessionStatus = 'active' | 'closed';
+export type SupportMessageType = 'text' | 'image' | 'system';
+
+export interface SupportSession {
+  id: string;
+  userId: string;
+  adminId?: string; // 接待客服ID
+  status: SupportSessionStatus;
+  lastMessage?: string;
+  lastMessageAt: string;
+  unreadCount: number; // 管理员侧未读数
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SupportMessage {
+  id: string;
+  sessionId: string;
+  senderId: string;
+  content: string;
+  msgType: SupportMessageType;
+  isRead: boolean;
+  createdAt: string;
+}

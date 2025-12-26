@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { catService, adoptionService } from '../services/apiService';
-import { Cat, CatStatus, AdoptionApplication, ApplicationStatus } from '../types';
+import { catService, adoptionService, supportApi } from '../services/apiService';
+import { Cat, CatStatus, AdoptionApplication, ApplicationStatus, SupportSession } from '../types';
 import { CAT_STATUSES } from '../constants';
-import { Loader2, Settings, FileText, CheckCircle, XCircle, Trash2, Shield } from 'lucide-react';
+import { Loader2, Settings, FileText, CheckCircle, XCircle, Trash2, Shield, MessageSquare } from 'lucide-react';
 
 import { useToast } from '../context/ToastContext';
 
 const AdminPage: React.FC = () => {
   const { success, error } = useToast();
-  const [activeTab, setActiveTab] = useState<'cats' | 'applications'>('applications'); // Default to applications for easier testing
+  const [activeTab, setActiveTab] = useState<'cats' | 'applications' | 'support'>('applications'); // Default to applications for easier testing
 
   // Cat Management State
   const [cats, setCats] = useState<Cat[]>([]);
@@ -21,9 +21,14 @@ const AdminPage: React.FC = () => {
   const [loadingApps, setLoadingApps] = useState(false);
   const [processingAppId, setProcessingAppId] = useState<string | null>(null);
 
+  // Support Sessions State
+  const [sessions, setSessions] = useState<SupportSession[]>([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
+
   useEffect(() => {
     fetchCats();
     fetchApplications();
+    fetchSessions();
   }, []);
 
   const fetchCats = async () => {
@@ -47,6 +52,18 @@ const AdminPage: React.FC = () => {
       console.error(err);
     } finally {
       setLoadingApps(false);
+    }
+  };
+
+  const fetchSessions = async () => {
+    setLoadingSessions(true);
+    try {
+      const data = await supportApi.getAllSessions('admin');
+      setSessions(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingSessions(false);
     }
   };
 
@@ -150,9 +167,23 @@ const AdminPage: React.FC = () => {
           >
             猫咪管理
           </button>
+          <button
+            onClick={() => setActiveTab('support')}
+            className={`flex-1 md:flex-none whitespace-nowrap px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'support'
+              ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-500/20'
+              : 'text-slate-500 hover:text-pink-600 hover:bg-pink-50'
+              }`}
+          >
+            客服消息
+            {sessions.length > 0 && (
+              <span className="ml-2 bg-white/20 text-white text-[10px] px-1.5 py-0.5 rounded-full backdrop-blur-sm">
+                {sessions.length}
+              </span>
+            )}
+          </button>
         </div>
 
-        {activeTab === 'cats' ? (
+        {activeTab === 'cats' && (
           // Cats Table
           <div className="animate-in fade-in slide-in-from-bottom-2">
             {loadingCats ? (
@@ -291,7 +322,9 @@ const AdminPage: React.FC = () => {
               </>
             )}
           </div>
-        ) : (
+        )}
+
+        {activeTab === 'applications' && (
           // Applications Table
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
             {loadingApps ? (
@@ -357,6 +390,50 @@ const AdminPage: React.FC = () => {
                           {app.status === 'approved' ? '已通过' : '已驳回'}
                         </div>
                       )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'support' && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 space-y-4">
+            {loadingSessions ? (
+              <div className="flex justify-center items-center py-20">
+                <Loader2 className="animate-spin text-pink-400" size={32} />
+              </div>
+            ) : sessions.length === 0 ? (
+              <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-slate-300">
+                <MessageSquare className="mx-auto text-slate-300 mb-4" size={48} />
+                <p className="text-slate-500">暂时没有咨询消息</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden divide-y divide-slate-100">
+                {sessions.map(session => (
+                  <div
+                    key={session.id}
+                    className="p-4 hover:bg-slate-50 transition-colors cursor-pointer flex items-center justify-between group"
+                    onClick={() => window.open(`#/support?sessionId=${session.id}&userId=${session.userId}`, '_blank')}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-pink-100 text-pink-500 rounded-full flex items-center justify-center font-bold relative">
+                        {session.unreadCount > 0 && (
+                          <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white">
+                            {session.unreadCount}
+                          </span>
+                        )}
+                        <MessageSquare size={20} />
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-800 text-sm">用户 (ID: {session.userId.slice(-4)})</div>
+                        <div className="text-xs text-slate-500 mt-0.5 truncate max-w-[200px]">{session.lastMessage || '无消息'}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[10px] text-slate-400">{new Date(session.lastMessageAt).toLocaleString()}</div>
+                      <div className="text-pink-500 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">点击回复 &rarr;</div>
                     </div>
                   </div>
                 ))}

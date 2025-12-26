@@ -636,3 +636,19 @@ export const notificationApi = {
 
 // 导出通知服务
 export const notificationService = notificationApi;
+// ... existing code ...
+
+/**
+ * 客服相关 API
+ */
+export const supportApi = {
+  /**
+   * 获取所有会话列表 (管理员)
+   */
+  getAllSessions: async (role?: string): Promise<any[]> => {
+    // 传递 role=admin 以获取所有会话
+    const roleParam = role ? `&role=${role}` : '';
+    const result = await request<{ data: any[] }>(`/support/sessions?limit=100${roleParam}`);
+    return result.data;
+  }
+};

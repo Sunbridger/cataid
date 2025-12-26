@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { useNotifications } from '../context/NotificationContext';
 import { authService, userService, catService } from '../services/apiService';
-import { Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle, ThumbsUp, Cat, Loader2, Lock as LockIcon, CheckCircle2 } from 'lucide-react';
+import { Settings, ChevronRight, Heart, MessageCircle, FileText, LogOut, Edit2, Camera, Mail, Phone, Eye, EyeOff, AlertCircle, ThumbsUp, Cat, Loader2, Lock as LockIcon, CheckCircle2, MessageSquareText } from 'lucide-react';
 
 type AuthMode = 'login' | 'register';
 
@@ -510,7 +510,13 @@ const ProfilePage: React.FC = () => {
               badge={unreadCount > 0 ? String(unreadCount) : undefined}
               to="/notifications"
             />
-            <MenuItem icon={<Phone size={18} />} title="联系客服" color="text-emerald-500" />
+            <MenuItem
+              icon={<MessageSquareText size={18} />}
+              title="在线客服"
+              description="专属顾问在线解答"
+              color="text-emerald-500"
+              to="/support"
+            />
           </MenuItemGroup>
         </div>
 
