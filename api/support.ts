@@ -64,16 +64,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (!userId) return res.status(400).json({ error: '缺少 userId' });
 
         // 1. 检查是否存在活跃会话
-        const { data: existingSession, error: fetchError } = await supabase
+        const { data: existingSessions, error: fetchError } = await supabase
           .from('support_sessions')
           .select('*')
           .eq('user_id', userId)
           .eq('status', 'active')
-          .single();
+          .order('created_at', { ascending: false }) // 优先取最新的
+          .limit(1);
 
-        if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
-        if (existingSession) {
-          return res.status(200).json({ data: existingSession, isNew: false });
+        if (fetchError) throw fetchError;
+
+        if (existingSessions && existingSessions.length > 0) {
+          return res.status(200).json({ data: existingSessions[0], isNew: false });
         }
 
         // 2. 创建新会话
