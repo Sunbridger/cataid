@@ -23,12 +23,15 @@ import { SupportProvider } from './context/SupportContext';
 const Layout: React.FC = () => {
   const location = useLocation();
   // 有底部导航栏的页面
+  // 有底部导航栏的页面
   const showBottomNav = ['/', '/add', '/admin', '/profile'].includes(location.pathname);
+  // 全屏页面（无导航栏、无容器内边距）
+  const isFullScreen = ['/support'].includes(location.pathname.split('?')[0]);
 
   return (
     <div className="min-h-screen flex flex-col font-sans text-slate-800 bg-slate-50">
-      <Navbar />
-      <main className={`flex-grow container mx-auto px-4 md:py-8 max-w-6xl ${showBottomNav ? 'pb-24 md:pb-8' : 'pb-4 md:pb-8'}`}>
+      {!isFullScreen && <Navbar />}
+      <main className={`flex-grow ${isFullScreen ? '' : 'container mx-auto px-4 md:py-8 max-w-6xl'} ${showBottomNav ? 'pb-24 md:pb-8' : isFullScreen ? '' : 'pb-4 md:pb-8'}`}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/add" element={<AddCatPage />} />

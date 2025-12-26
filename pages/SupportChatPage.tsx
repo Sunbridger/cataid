@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSupport } from '../context/SupportContext';
 import { useUser } from '../context/UserContext';
-import { ArrowLeft, Send, Image as ImageIcon, Smile, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Image as ImageIcon, Smile, Loader2, User as UserIcon } from 'lucide-react';
 
 const SupportChatPage: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +13,8 @@ const SupportChatPage: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const isAdmin = user?.role === 'admin';
 
   // 页面加载时初始化
   useEffect(() => {
@@ -82,10 +84,10 @@ const SupportChatPage: React.FC = () => {
           <ArrowLeft size={24} className="text-slate-700" />
         </button>
         <div className="text-center">
-          <h1 className="font-bold text-lg text-slate-800">在线客服</h1>
+          <h1 className="font-bold text-lg text-slate-800">{isAdmin ? '回复用户' : '在线客服'}</h1>
           <div className="flex items-center justify-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-            <span className="text-xs text-slate-500">客服在线</span>
+            <span className="text-xs text-slate-500">{isAdmin ? '用户在线' : '客服在线'}</span>
           </div>
         </div>
         <div className="w-10"></div> {/* 占位，保持标题居中 */}
@@ -93,31 +95,41 @@ const SupportChatPage: React.FC = () => {
 
       {/* 消息列表区域 */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* 系统欢迎语 */}
-        <div className="flex justify-start">
-          <div className="flex items-end gap-2 max-w-[85%]">
-            <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0 border border-pink-200">
-              <span className="text-xs font-bold text-pink-500">客服</span>
-            </div>
-            <div className="bg-white p-3 rounded-2xl rounded-bl-sm shadow-sm border border-slate-100 text-slate-700 text-sm">
-              您好，我是您的专属领养顾问，请问有什么可以帮您？
+        {/* 系统欢迎语 - 仅用户可见 */}
+        {!isAdmin && (
+          <div className="flex justify-start">
+            <div className="flex items-end gap-2 max-w-[85%]">
+              <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0 border border-pink-200">
+                <span className="text-xs font-bold text-pink-500">客服</span>
+              </div>
+              <div className="bg-white p-3 rounded-2xl rounded-bl-sm shadow-sm border border-slate-100 text-slate-700 text-sm">
+                您好，我是您的专属领养顾问，请问有什么可以帮您？
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* 历史消息 */}
         {messages.map((msg) => {
-          const isSelf = msg.senderId === user?.id;
+          const isSelf = msg.senderId === user?.id; // 我发送的
           return (
             <div key={msg.id} className={`flex ${isSelf ? 'justify-end' : 'justify-start'}`}>
               <div className={`flex items-end gap-2 max-w-[85%] ${isSelf ? 'flex-row-reverse' : ''}`}>
                 {/* 头像 */}
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border
-                  ${isSelf ? 'bg-slate-200 border-slate-300' : 'bg-pink-100 border-pink-200'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border overflow-hidden
+                  ${isSelf ? 'bg-slate-200 border-slate-300' : isAdmin ? 'bg-blue-100 border-blue-200' : 'bg-pink-100 border-pink-200'}`}>
                   {isSelf ? (
-                    <img src={user?.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + user?.id} alt="Me" className="w-full h-full rounded-full object-cover" />
+                    // 我方头像
+                    <img src={user?.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + user?.id} alt="Me" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-xs font-bold text-pink-500">客服</span>
+                    // 对方头像
+                    isAdmin ? (
+                      // 管理员看用户：显示用户头像或通用图标
+                      <UserIcon size={18} className="text-blue-500" />
+                    ) : (
+                      // 用户看客服：显示客服字样
+                      <span className="text-xs font-bold text-pink-500">客服</span>
+                    )
                   )}
                 </div>
 
@@ -139,8 +151,8 @@ const SupportChatPage: React.FC = () => {
 
       {/* 底部输入框 */}
       <div className="bg-white p-3 border-t border-slate-100 safe-area-bottom">
-        {/* 快捷回复 Chips (可选) */}
-        {!session?.lastMessageAt && (
+        {/* 快捷回复 Chips (仅用户可见) */}
+        {!isAdmin && !session?.lastMessageAt && (
           <div className="flex gap-2 overflow-x-auto pb-3 no-scrollbar mb-1">
             {['怎么领养?', '店铺地址在哪里?', '猫咪打疫苗了吗?'].map(text => (
               <button
