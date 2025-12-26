@@ -55,15 +55,15 @@ const Layout: React.FC = () => {
 const App: React.FC = () => {
   return (
     <HashRouter>
-      <UserProvider>
-        <NotificationProvider>
-          <SupportProvider>
-            <ToastProvider>
+      <ToastProvider>
+        <UserProvider>
+          <NotificationProvider>
+            <SupportProvider>
               <Layout />
-            </ToastProvider>
-          </SupportProvider>
-        </NotificationProvider>
-      </UserProvider>
+            </SupportProvider>
+          </NotificationProvider>
+        </UserProvider>
+      </ToastProvider>
     </HashRouter>
   );
 };
