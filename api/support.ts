@@ -144,6 +144,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           .single();
 
         if (error) throw error;
+
+        // 3. 更新会话状态 (last_message, unread_count)
+        try {
+          // 先获取会话以判断发送者是不是用户
+          const { data: session } = await supabase
+            .from('support_sessions')
+            .select('user_id, unread_count')
+            .eq('id', sessionId)
+            .single();
+
+          if (session) {
+            const isUserSender = session.user_id === senderId;
+            const updates: any = {
+              last_message: content,
+              last_message_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            };
+
+            // 如果是用户发送的，管理员未读数 +1
+            if (isUserSender) {
+              // 确保 unread_count 是数字
+              const currentCount = session.unread_count || 0;
+              updates.unread_count = currentCount + 1;
+            }
+
+            await supabase
+              .from('support_sessions')
+              .update(updates)
+              .eq('id', sessionId);
+          }
+        } catch (updateErr) {
+          console.error('更新会话状态失败:', updateErr);
+          // 不阻断消息发送成功的返回
+        }
+
         return res.status(201).json({ data });
       }
     }

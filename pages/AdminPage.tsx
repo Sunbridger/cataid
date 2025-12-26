@@ -177,11 +177,25 @@ const AdminPage: React.FC = () => {
             客服消息
             {sessions.length > 0 && (
               <span className="ml-2 bg-white/20 text-white text-[10px] px-1.5 py-0.5 rounded-full backdrop-blur-sm">
-                {sessions.length}
+                {sessions.reduce((acc, s) => acc + (s.unreadCount || 0), 0)}
               </span>
             )}
           </button>
         </div>
+
+        {/* 顶部工具栏 (仅在客服 Tab 显示) */}
+        {activeTab === 'support' && (
+          <div className="flex justify-end mb-4 px-2">
+            <button
+              onClick={fetchSessions}
+              disabled={loadingSessions}
+              className="flex items-center gap-1.5 text-sm text-pink-500 font-bold hover:text-pink-600 transition-colors disabled:opacity-50"
+            >
+              <Loader2 size={14} className={loadingSessions ? 'animate-spin' : ''} />
+              {loadingSessions ? '刷新中...' : '刷新列表'}
+            </button>
+          </div>
+        )}
 
         {activeTab === 'cats' && (
           // Cats Table
