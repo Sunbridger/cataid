@@ -177,7 +177,7 @@ const AdminPage: React.FC = () => {
             客服消息
             {sessions.length > 0 && (
               <span className="ml-2 bg-white/20 text-white text-[10px] px-1.5 py-0.5 rounded-full backdrop-blur-sm">
-                {sessions.reduce((acc, s) => acc + (s.unreadCount || 0), 0)}
+                {sessions.reduce((acc: number, s: any) => acc + (s.unread_count || 0), 0)}
               </span>
             )}
           </button>
@@ -425,28 +425,28 @@ const AdminPage: React.FC = () => {
               </div>
             ) : (
               <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden divide-y divide-slate-100">
-                {sessions.map(session => (
+                {sessions.map((session: any) => (
                   <div
                     key={session.id}
                     className="p-4 hover:bg-slate-50 transition-colors cursor-pointer flex items-center justify-between group"
-                    onClick={() => window.open(`#/support?sessionId=${session.id}&userId=${session.userId}`, '_blank')}
+                    onClick={() => window.open(`#/support?sessionId=${session.id}&userId=${session.user_id}`, '_blank')}
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-pink-100 text-pink-500 rounded-full flex items-center justify-center font-bold relative">
-                        {session.unreadCount > 0 && (
+                        {(session.unread_count || 0) > 0 && (
                           <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white">
-                            {session.unreadCount}
+                            {session.unread_count}
                           </span>
                         )}
                         <MessageSquare size={20} />
                       </div>
                       <div>
-                        <div className="font-bold text-slate-800 text-sm">用户 (ID: {session.userId.slice(-4)})</div>
-                        <div className="text-xs text-slate-500 mt-0.5 truncate max-w-[200px]">{session.lastMessage || '无消息'}</div>
+                        <div className="font-bold text-slate-800 text-sm">用户 (ID: {(session.user_id || '').slice(-4)})</div>
+                        <div className="text-xs text-slate-500 mt-0.5 truncate max-w-[200px]">{session.last_message || '无消息'}</div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-[10px] text-slate-400">{new Date(session.lastMessageAt).toLocaleString()}</div>
+                      <div className="text-[10px] text-slate-400">{session.last_message_at ? new Date(session.last_message_at).toLocaleString() : '-'}</div>
                       <div className="text-pink-500 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">点击回复 &rarr;</div>
                     </div>
                   </div>
