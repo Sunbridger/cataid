@@ -186,6 +186,66 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     };
   }, [user?.id]);
 
+  // 管理员专属：监听客服消息通知
+  useEffect(() => {
+    if (!supabase) return;
+    if (!user?.id || user.role !== 'admin') return;
+
+    console.log('[Notification] Admin: Setting up support messages subscription');
+
+    // 订阅 support_messages 表的新增（用户发送的消息）
+    const supportChannel = supabase
+      .channel(`admin-support-messages:${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'support_messages'
+        },
+        (payload) => {
+          console.log('[Notification] Admin: New support message:', payload);
+
+          // 检查是否是用户发送的（不是管理员自己发的）
+          const senderId = payload.new.sender_id;
+          if (senderId === user.id) {
+            console.log('[Notification] Admin: Message is from self, skipping toast');
+            return;
+          }
+
+          // 检查当前是否在客服聊天页面（通过 URL 判断）
+          const isOnSupportPage = window.location.hash.includes('/support');
+          if (isOnSupportPage) {
+            console.log('[Notification] Admin: Already on support page, skipping toast');
+            return;
+          }
+
+          // 显示 Toast 通知
+          console.log('[Notification] Admin: Showing support message toast');
+          const toastNotification: Notification = {
+            id: `support-${payload.new.id}`,
+            userId: user.id,
+            type: 'support_message',
+            title: '💬 新客服消息',
+            content: payload.new.content?.slice(0, 50) + (payload.new.content?.length > 50 ? '...' : ''),
+            isRead: false,
+            relatedId: payload.new.session_id,
+            relatedType: 'support',
+            createdAt: payload.new.created_at,
+          };
+          setCurrentToast(toastNotification);
+        }
+      )
+      .subscribe((status) => {
+        console.log('[Notification] Admin support subscription status:', status);
+      });
+
+    return () => {
+      console.log('[Notification] Admin: Cleaning up support subscription');
+      supabase.removeChannel(supportChannel);
+    };
+  }, [user?.id, user?.role]);
+
   // 监听 unreadCount 变化
   useEffect(() => {
     console.log('[Notification] unreadCount changed to:', unreadCount);

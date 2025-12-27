@@ -139,6 +139,7 @@ export type NotificationType =
   | 'comment_liked'      // 评论被点赞
   | 'cat_favorited'      // 猫咪被收藏
   | 'adoption_cancelled' // 领养被取消(管理员更改已领养猫咪状态)
+  | 'support_message'    // 客服消息通知
   | 'system';
 
 // 通知
@@ -150,7 +151,7 @@ export interface Notification {
   content?: string;
   isRead: boolean;
   relatedId?: string;
-  relatedType?: 'cat' | 'comment' | 'application';
+  relatedType?: 'cat' | 'comment' | 'application' | 'support';
   createdAt: string;
 }
 // === 客服系统相关类型 ===
