@@ -3,7 +3,15 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSupport } from '../context/SupportContext';
 import { useUser } from '../context/UserContext';
+import { userService } from '../services/apiService';
 import { ArrowLeft, Send, Image as ImageIcon, Smile, Loader2, User as UserIcon } from 'lucide-react';
+
+// 对方用户信息（管理员视角下的用户）
+interface TargetUserInfo {
+  id: string;
+  nickname: string;
+  avatarUrl?: string;
+}
 
 const SupportChatPage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,6 +23,9 @@ const SupportChatPage: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const isAdmin = user?.role === 'admin';
+
+  // 管理员视角下的用户信息
+  const [targetUser, setTargetUser] = useState<TargetUserInfo | null>(null);
 
   // 页面加载时初始化
   useEffect(() => {
@@ -30,6 +41,21 @@ const SupportChatPage: React.FC = () => {
 
     if (targetSessionId) {
       loadSessionById(targetSessionId, targetUserId || undefined);
+
+      // 管理员模式：获取用户信息
+      if (targetUserId) {
+        userService.getUserById(targetUserId).then(userInfo => {
+          if (userInfo) {
+            setTargetUser({
+              id: userInfo.id,
+              nickname: userInfo.nickname,
+              avatarUrl: userInfo.avatarUrl || undefined
+            });
+          }
+        }).catch(err => {
+          console.error('获取用户信息失败:', err);
+        });
+      }
     } else {
       initSession();
     }
@@ -84,7 +110,9 @@ const SupportChatPage: React.FC = () => {
           <ArrowLeft size={24} className="text-slate-700" />
         </button>
         <div className="text-center">
-          <h1 className="font-bold text-lg text-slate-800">{isAdmin ? '回复用户' : '在线客服'}</h1>
+          <h1 className="font-bold text-lg text-slate-800">
+            {isAdmin ? (targetUser?.nickname || '回复用户') : '在线客服'}
+          </h1>
           <div className="flex items-center justify-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
             <span className="text-xs text-slate-500">{isAdmin ? '用户在线' : '客服在线'}</span>
@@ -124,8 +152,12 @@ const SupportChatPage: React.FC = () => {
                   ) : (
                     // 对方头像
                     isAdmin ? (
-                      // 管理员看用户：显示用户头像或通用图标
-                      <UserIcon size={18} className="text-blue-500" />
+                      // 管理员看用户：显示用户头像
+                      targetUser?.avatarUrl ? (
+                        <img src={targetUser.avatarUrl} alt={targetUser.nickname} className="w-full h-full object-cover" />
+                      ) : (
+                        <UserIcon size={18} className="text-blue-500" />
+                      )
                     ) : (
                       // 用户看客服：显示客服字样
                       <span className="text-xs font-bold text-pink-500">客服</span>

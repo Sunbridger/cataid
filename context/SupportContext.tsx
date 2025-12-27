@@ -113,9 +113,6 @@ export const SupportProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const sendMessage = async (content: string, type: 'text' | 'image' = 'text'): Promise<boolean> => {
     if (!session || !user) return false;
 
-    // 乐观 UI 更新在此处比较复杂，因为需要 ID。
-    // 我们暂时依赖 API 返回或 Realtime。
-
     try {
       const res = await fetch(`${API_BASE}/api/support?type=messages`, {
         method: 'POST',
@@ -129,6 +126,18 @@ export const SupportProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
 
       if (!res.ok) throw new Error('发送失败');
+
+      // 获取 API 返回的新消息数据
+      const result = await res.json();
+      if (result.data) {
+        const newMsg = mapDbMessageToType(result.data);
+        // 立即添加到消息列表（乐观更新）
+        setMessages(prev => {
+          if (messageIdsRef.current.has(newMsg.id)) return prev;
+          messageIdsRef.current.add(newMsg.id);
+          return [...prev, newMsg];
+        });
+      }
 
       return true;
     } catch (err) {
@@ -155,7 +164,12 @@ export const SupportProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Realtime 订阅
   useEffect(() => {
-    if (!supabase || !session) return;
+    if (!supabase || !session) {
+      console.log('[Support] Skipping Realtime subscription: supabase or session not ready');
+      return;
+    }
+
+    console.log('[Support] Setting up Realtime subscription for session:', session.id);
 
     // 订阅 Messages 表的新增
     const channel = supabase
@@ -169,24 +183,32 @@ export const SupportProvider: React.FC<{ children: React.ReactNode }> = ({ child
           filter: `session_id=eq.${session.id}`
         },
         (payload) => {
+          console.log('[Support] Realtime: New message received:', payload);
           // 处理新消息
           const newMsgRaw = payload.new;
           const newMsg = mapDbMessageToType(newMsgRaw);
 
           setMessages(prev => {
             // 防止重复
-            if (messageIdsRef.current.has(newMsg.id)) return prev;
+            if (messageIdsRef.current.has(newMsg.id)) {
+              console.log('[Support] Realtime: Message already exists, skipping');
+              return prev;
+            }
             messageIdsRef.current.add(newMsg.id);
+            console.log('[Support] Realtime: Adding new message to list');
             return [...prev, newMsg];
           });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[Support] Realtime subscription status:', status);
+      });
 
     return () => {
+      console.log('[Support] Cleaning up Realtime subscription for session:', session.id);
       supabase.removeChannel(channel);
     };
-  }, [session]);
+  }, [session?.id]); // 只依赖 session.id，避免不必要的重新订阅
 
   return (
     <SupportContext.Provider value={{
