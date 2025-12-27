@@ -162,6 +162,9 @@ export const SupportProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  // Realtime 订阅状态
+  const realtimeStatusRef = useRef<string>('');
+
   // Realtime 订阅
   useEffect(() => {
     if (!supabase || !session) {
@@ -202,6 +205,7 @@ export const SupportProvider: React.FC<{ children: React.ReactNode }> = ({ child
       )
       .subscribe((status) => {
         console.log('[Support] Realtime subscription status:', status);
+        realtimeStatusRef.current = status;
       });
 
     return () => {
@@ -209,6 +213,45 @@ export const SupportProvider: React.FC<{ children: React.ReactNode }> = ({ child
       supabase.removeChannel(channel);
     };
   }, [session?.id]); // 只依赖 session.id，避免不必要的重新订阅
+
+  // 轮询备用机制：当 Realtime 不可用时，每 3 秒刷新一次消息
+  useEffect(() => {
+    if (!session) return;
+
+    // 定时检查是否需要轮询
+    const pollInterval = setInterval(async () => {
+      // 如果 Realtime 没有正常工作（不是 SUBSCRIBED），则手动刷新
+      if (realtimeStatusRef.current !== 'SUBSCRIBED') {
+        console.log('[Support] Polling: Realtime not subscribed, fetching messages...');
+        try {
+          const res = await fetch(`${API_BASE}/api/support?type=messages&sessionId=${session.id}`);
+          const result = await res.json();
+          if (result.data) {
+            const formattedMessages = result.data.map(mapDbMessageToType);
+
+            // 检查是否有新消息
+            const newMessages = formattedMessages.filter(
+              (m: SupportMessage) => !messageIdsRef.current.has(m.id)
+            );
+
+            if (newMessages.length > 0) {
+              console.log('[Support] Polling: Found', newMessages.length, 'new messages');
+              // 更新消息列表
+              setMessages(formattedMessages);
+              // 更新 ID 集合
+              messageIdsRef.current = new Set(formattedMessages.map((m: SupportMessage) => m.id));
+            }
+          }
+        } catch (err) {
+          console.error('[Support] Polling error:', err);
+        }
+      }
+    }, 3000); // 每 3 秒检查一次
+
+    return () => {
+      clearInterval(pollInterval);
+    };
+  }, [session?.id]);
 
   return (
     <SupportContext.Provider value={{
